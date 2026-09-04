@@ -189,7 +189,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                 <button
                   type="button"
                   onClick={() => setWebTier('2d')}
-                  className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`py-2.5 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
                     webTier === '2d'
                       ? 'bg-[#c6f554] text-black shadow-[0_0_15px_rgba(198,245,84,0.4)]'
                       : 'text-zinc-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08]'
@@ -203,7 +203,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                 <button
                   type="button"
                   onClick={() => setWebTier('3d')}
-                  className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`py-2.5 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
                     webTier === '3d'
                       ? 'bg-[#c6f554] text-black shadow-[0_0_15px_rgba(198,245,84,0.4)]'
                       : 'text-zinc-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08]'

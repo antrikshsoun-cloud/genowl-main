@@ -100,19 +100,19 @@ export default function LegalModal({ isOpen, onClose, initialTab = 'terms' }: Le
               <div>
                 <h3 className="text-sm sm:text-base font-bold text-white mb-1.5">1. Acceptance of Terms</h3>
                 <p>
-                  By accessing, browsing, or utilizing any services provided by Genowl ("the Company", "we", "our", "us"), including signing in via Google Authentication or ordering our digital services, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use our services.
+                  By accessing, browsing, or utilizing any services provided by Genowl ("the Company", "we", "our", "us"), including creating an account, signing in, or ordering our digital services, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use our services.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-white mb-1.5">2. Service Fulfillment &amp; Flat Fee Structure</h3>
+                <h3 className="text-sm sm:text-base font-bold text-white mb-1.5">2. Service Fulfillment &amp; Transparent Fee Structure</h3>
                 <p>
-                  Genowl offers high-end digital services—including Web Design, Video Generation, Personalized AI, and Content Creation—at a transparent flat rate of <strong>$99 USD per project/service</strong>. Upon payment and requirement submission:
+                  Genowl offers bespoke digital services—including 2D &amp; 3D Websites, Video Generation, Personalized AI, and Content Creation. Upon payment and requirement submission:
                 </p>
                 <ul className="list-disc pl-5 mt-1.5 space-y-1 text-zinc-400">
                   <li>Project scope begins immediately upon receiving project brief and guidelines.</li>
                   <li>Initial deliverables are provided within standard timelines communicated in your confirmation.</li>
-                  <li>Clients receive up to two rounds of revisions included within the standard flat fee.</li>
+                  <li>Clients receive up to two rounds of revisions included within the standard fee.</li>
                 </ul>
               </div>
 
@@ -144,19 +144,19 @@ export default function LegalModal({ isOpen, onClose, initialTab = 'terms' }: Le
               <div>
                 <h3 className="text-sm sm:text-base font-bold text-white mb-1.5">1. Information We Collect</h3>
                 <p>
-                  We prioritize user privacy and data security. When you authenticate via <strong>Google Authentication</strong> or our platform, we only request:
+                  We prioritize user privacy and data security. When you authenticate or register on our platform, we only request:
                 </p>
                 <ul className="list-disc pl-5 mt-1.5 space-y-1 text-zinc-400">
-                  <li>Your basic profile information (Full Name, verified Email address, profile photo).</li>
+                  <li>Your basic profile information (Full Name, verified Email address).</li>
                   <li>Project details and specifications submitted through our inquiry or checkout forms.</li>
                   <li>Technical telemetry strictly required for session management and website performance.</li>
                 </ul>
               </div>
 
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-white mb-1.5">2. Google User Data Policy Compliance</h3>
+                <h3 className="text-sm sm:text-base font-bold text-white mb-1.5">2. User Account Privacy &amp; Data Protection</h3>
                 <p>
-                  Genowl complies strictly with Google API Services User Data Policy. We never sell, rent, or distribute your Google account data or email address to third-party data brokers or advertisers. Data obtained via Google OAuth is utilized strictly to authenticate your account and securely associate your orders.
+                  Genowl complies strictly with modern data privacy and encryption standards. We never sell, rent, or distribute your personal data or email address to third-party data brokers or advertisers. Data is utilized strictly to authenticate your account and securely associate your orders.
                 </p>
               </div>
 

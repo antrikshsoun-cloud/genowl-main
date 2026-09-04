@@ -163,21 +163,22 @@ export default function App() {
         }}
         onSignOut={handleSignOut}
         onOpenProfile={() => setProfileModalOpen(true)}
+        onOpenAdmin={() => setAdminModalOpen(true)}
       />
 
       {/* 3. Sequential Scroll-Based Pages */}
-      <main className="relative z-10 flex flex-col w-full">
+      <main className="relative z-10 flex flex-col w-full overflow-x-hidden">
         
         {/* PAGE 1: Home (Hero & FeatureCards) */}
-        <section id="home" className="w-full flex flex-col justify-between pt-6 sm:pt-8 pb-16">
+        <section id="home" className="w-full flex flex-col justify-between pt-6 sm:pt-8 pb-10 sm:pb-16 overflow-x-hidden">
           <Hero onStartTrial={() => handleOpenOrder('2D Website')} />
-          <div className="pt-4">
+          <div className="pt-2 sm:pt-4">
             <FeatureCards />
           </div>
         </section>
 
         {/* PAGE 2: Services & Transparent Pricing */}
-        <section id="services" className="w-full min-h-screen flex flex-col justify-center py-12">
+        <section id="services" className="w-full py-6 sm:py-10 md:py-16 md:min-h-screen flex flex-col justify-center overflow-x-hidden">
           <ServicesPage
             onSelectService={(srv) => handleOpenOrder(srv)}
             onNavigateContact={() => handleNavigate('contact')}
@@ -185,7 +186,7 @@ export default function App() {
         </section>
 
         {/* PAGE 3: About & Core Philosophy */}
-        <section id="about" className="w-full min-h-screen flex flex-col justify-center py-12">
+        <section id="about" className="w-full py-6 sm:py-10 md:py-16 md:min-h-screen flex flex-col justify-center overflow-x-hidden">
           <AboutPage
             onNavigateServices={() => handleNavigate('services')}
             onNavigateContact={() => handleNavigate('contact')}
@@ -193,7 +194,7 @@ export default function App() {
         </section>
 
         {/* PAGE 4: Contact & Direct Inquiries */}
-        <section id="contact" className="w-full min-h-screen flex flex-col justify-center py-12">
+        <section id="contact" className="w-full py-6 sm:py-10 md:py-16 md:min-h-screen flex flex-col justify-center overflow-x-hidden">
           <ContactPage
             initialService={selectedService}
             onNavigateServices={() => handleNavigate('services')}
