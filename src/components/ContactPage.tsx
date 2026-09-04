@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, Clock, ShieldCheck, Sparkles, AlertCircle, HelpCircle } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 import { sendProblemOrInquiryEmail, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM } from '../services/emailService.ts';
+import { syncInquiryToSupabase } from '../services/supabaseClient.ts';
 
 interface ContactPageProps {
   initialService?: string;
@@ -57,6 +58,15 @@ export default function ContactPage({ initialService = '', onNavigateServices }:
       });
       localStorage.setItem('genowl_client_inquiries', JSON.stringify(list));
     } catch {}
+
+    // Stream real-time inquiry to Supabase Cloud PostgreSQL
+    syncInquiryToSupabase({
+      id,
+      name: name.trim(),
+      email: email.trim(),
+      service: isProblem ? `[Problem] ${service}` : service,
+      message: message.trim(),
+    }).catch(() => {});
 
     // Dispatch real email with golden owl logo to client and forward to genowlai@gmail.com
     try {

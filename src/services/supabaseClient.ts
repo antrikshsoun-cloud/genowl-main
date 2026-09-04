@@ -139,6 +139,45 @@ export async function syncOrderToSupabase(order: {
 }
 
 /**
+ * Syncs an inquiry or problem report to Supabase cloud PostgreSQL
+ */
+export async function syncInquiryToSupabase(inquiry: {
+  id: string;
+  name: string;
+  email: string;
+  service: string;
+  message: string;
+}): Promise<boolean> {
+  const config = getSupabaseConfig();
+  if (!config.connected) return false;
+
+  try {
+    const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/genowl_inquiries`;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: config.anonKey,
+        Authorization: `Bearer ${config.anonKey}`,
+        Prefer: 'resolution=merge-duplicates',
+      },
+      body: JSON.stringify({
+        id: inquiry.id,
+        name: inquiry.name,
+        email: inquiry.email,
+        service: inquiry.service,
+        message: inquiry.message,
+        created_at: new Date().toISOString(),
+      }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn('Supabase inquiry sync note:', err);
+    return false;
+  }
+}
+
+/**
  * Tests live connection to Supabase instance
  */
 export async function testSupabaseConnection(url: string, anonKey: string): Promise<{ success: boolean; message: string }> {
