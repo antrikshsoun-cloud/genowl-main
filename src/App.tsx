@@ -163,7 +163,6 @@ export default function App() {
         }}
         onSignOut={handleSignOut}
         onOpenProfile={() => setProfileModalOpen(true)}
-        onOpenAdmin={() => setAdminModalOpen(true)}
       />
 
       {/* 3. Sequential Scroll-Based Pages */}

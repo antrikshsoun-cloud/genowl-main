@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, Clock, ShieldCheck, Sparkles, AlertCircle, HelpCircle, Lock, Phone } from 'lucide-react';
+import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, ShieldCheck, Sparkles, AlertCircle, FileText, HelpCircle, Lock, Phone, ExternalLink, RefreshCw } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
-import { sendProblemOrInquiryEmail, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM } from '../services/emailService.ts';
+import { sendProblemOrInquiryEmail, OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM } from '../services/emailService.ts';
 import { syncInquiryToSupabase } from '../services/supabaseClient.ts';
 import { UserProfile } from './AuthModal.tsx';
 
@@ -18,17 +18,25 @@ export default function ContactPage({
   currentUser,
   onOpenAuth,
 }: ContactPageProps) {
-  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedHostinger, setCopiedHostinger] = useState(false);
+  const [copiedGmail, setCopiedGmail] = useState(false);
   const [copiedInsta, setCopiedInsta] = useState(false);
-  const [contactMode, setContactMode] = useState<'project' | 'problem'>('project');
+  const [copiedTicket, setCopiedTicket] = useState(false);
+
+  // 3 Official Report Issuance Modes
+  const [reportType, setReportType] = useState<'project' | 'problem' | 'inquiry'>('project');
   const [name, setName] = useState(currentUser?.name || '');
   const [email, setEmail] = useState(currentUser?.email || '');
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [service, setService] = useState(initialService || 'Web design');
-  const [message, setMessage] = useState('');
+  const [category, setCategory] = useState(initialService || '2D Website ($500)');
+  const [priority, setPriority] = useState<'standard' | 'high' | 'urgent'>('standard');
+  const [referenceUrl, setReferenceUrl] = useState('');
+  const [description, setDescription] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [ticketId, setTicketId] = useState('');
+  const [mailtoBackupUrl, setMailtoBackupUrl] = useState('');
 
   useEffect(() => {
     if (currentUser) {
@@ -37,13 +45,20 @@ export default function ContactPage({
     }
   }, [currentUser]);
 
-  const instagramId = OFFICIAL_INSTAGRAM;
+  const hostingerEmail = OFFICIAL_HOSTINGER_EMAIL;
   const gmailAccount = OFFICIAL_GENOWL_GMAIL;
+  const instagramId = OFFICIAL_INSTAGRAM;
 
-  const handleCopyEmail = () => {
+  const handleCopyHostinger = () => {
+    navigator.clipboard.writeText(hostingerEmail);
+    setCopiedHostinger(true);
+    setTimeout(() => setCopiedHostinger(false), 2000);
+  };
+
+  const handleCopyGmail = () => {
     navigator.clipboard.writeText(gmailAccount);
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2000);
+    setCopiedGmail(true);
+    setTimeout(() => setCopiedGmail(false), 2000);
   };
 
   const handleCopyInsta = () => {
@@ -52,13 +67,50 @@ export default function ContactPage({
     setTimeout(() => setCopiedInsta(false), 2000);
   };
 
-  const [ticketId, setTicketId] = useState('');
+  const handleCopyTicketId = () => {
+    navigator.clipboard.writeText(`#${ticketId}`);
+    setCopiedTicket(true);
+    setTimeout(() => setCopiedTicket(false), 2000);
+  };
+
+  const getCategoryOptions = () => {
+    switch (reportType) {
+      case 'project':
+        return [
+          '2D Custom Website ($500)',
+          '3D WebGL World ($2,500)',
+          'AI Video Production ($99)',
+          'Personalized AI Solution ($99)',
+          'Content & Creative Sprint ($99)',
+          'Full Custom Architecture',
+        ];
+      case 'problem':
+        return [
+          'Website Bug / UI Issue',
+          'Account & Login Assistance',
+          'Payment & Checkout Support',
+          'Deliverable Revision Request',
+          'Performance / Slow Loading',
+          'Critical Blocker',
+        ];
+      case 'inquiry':
+      default:
+        return [
+          'Studio Consultation',
+          'Enterprise Licensing & IP',
+          'Custom Solution Request',
+          'Partnership & Collaboration',
+          'Client Feedback',
+          'General Question',
+        ];
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPhoneError(null);
 
-    // Strict check: User must be logged in before submitting any inquiry or problem report
+    // Strict check: User must be logged in before issuing any report or inquiry
     if (!currentUser) {
       onOpenAuth?.('signin');
       return;
@@ -72,50 +124,64 @@ export default function ContactPage({
       return;
     }
 
+    if (description.trim().length < 10) {
+      alert('Please provide at least 10 characters describing your report or brief.');
+      return;
+    }
+
     setIsSending(true);
 
-    const isProblem = contactMode === 'problem';
-    const id = (isProblem ? 'PRB-' : 'INQ-') + Math.floor(100000 + Math.random() * 900000);
+    const prefix = reportType === 'problem' ? 'PRB-' : reportType === 'project' ? 'PRJ-' : 'INQ-';
+    const id = prefix + Math.floor(100000 + Math.random() * 900000);
     setTicketId(id);
 
-    const clientName = currentUser.name.trim();
+    const clientName = (name.trim() || currentUser.name).trim();
     const clientEmail = currentUser.email.trim();
+    const priorityLabel = priority === 'urgent' ? 'Urgent Blocker' : priority === 'high' ? 'High Priority (2-4h)' : 'Standard (24h)';
 
+    // Save to local storage
     try {
       const raw = localStorage.getItem('genowl_client_inquiries');
       const list = raw ? JSON.parse(raw) : [];
-      list.push({
+      list.unshift({
         id,
         name: clientName,
         email: clientEmail,
         phone: cleanPhone,
-        service: isProblem ? `[Problem] ${service}` : service,
-        message: message.trim(),
+        service: `[${reportType.toUpperCase()}] ${category}`,
+        priority: priorityLabel,
+        referenceUrl: referenceUrl.trim() || undefined,
+        message: description.trim(),
         createdAt: new Date().toISOString(),
       });
       localStorage.setItem('genowl_client_inquiries', JSON.stringify(list));
     } catch {}
 
-    // Stream real-time inquiry to Supabase Cloud PostgreSQL with phone
+    // Stream real-time report to Supabase Cloud PostgreSQL
     syncInquiryToSupabase({
       id,
       name: clientName,
       email: clientEmail,
       phone: cleanPhone,
-      service: isProblem ? `[Problem] ${service}` : service,
-      message: message.trim(),
+      service: `[${reportType.toUpperCase()}] ${category}`,
+      message: `${priorityLabel} | ${referenceUrl ? `Ref: ${referenceUrl.trim()} | ` : ''}${description.trim()}`,
     }).catch(() => {});
 
-    // Dispatch real email with golden owl logo to client and forward to genowlai@gmail.com
+    // Dispatch real email with golden owl logo to client, forward to Hostinger (support@genowl.tech) AND Gmail (genowlai@gmail.com)
     try {
-      await sendProblemOrInquiryEmail(
+      const result = await sendProblemOrInquiryEmail(
         clientName,
         clientEmail,
-        isProblem ? `Problem Report: ${service}` : service,
-        message.trim(),
+        category,
+        description.trim(),
         id,
-        cleanPhone
+        cleanPhone,
+        priorityLabel,
+        referenceUrl.trim()
       );
+      if (result.mailtoLink) {
+        setMailtoBackupUrl(result.mailtoLink);
+      }
     } catch (err) {
       console.warn('Mail dispatch warning:', err);
     }
@@ -129,54 +195,142 @@ export default function ContactPage({
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#121c13]/90 border border-white/10 shadow-lg mb-3">
-          <MessageSquare className="w-3.5 h-3.5 text-[#c6f554]" />
-          <span className="text-xs text-zinc-300 font-medium">Get in Touch</span>
+          <FileText className="w-3.5 h-3.5 text-[#c6f554]" />
+          <span className="text-xs text-zinc-300 font-medium tracking-wide">Official Report &amp; Inquiry Desk</span>
         </div>
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">
-          Contact <span className="text-[#c6f554] font-serif-italic">Genowl</span>
+          Issue a <span className="text-[#c6f554] font-serif-italic">Report</span> or Inquiry
         </h1>
         <p className="text-zinc-400 text-xs sm:text-sm md:text-base leading-relaxed">
-          Ready to build? Send us your requirements or reach out directly on our official channels.
-          All services are a flat rate of <span className="text-[#c6f554] font-semibold">$99</span> each.
+          Submit an official project brief, report a technical issue, or issue an inquiry. Every ticket is logged into our central cloud queue and forwarded directly to our Hostinger and Gmail engineering desks.
         </p>
       </div>
 
-      {/* Two Direct Contact Cards (Instagram & Gmail) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-12">
-        {/* Instagram Card */}
+      {/* Direct Contact Channels: Hostinger Mail, Operations Gmail & Instagram */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 mb-12">
+        {/* Hostinger Official Support Card */}
         <div
-          id="contact-instagram-card"
-          className="group relative p-6 sm:p-7 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-[#f7cc46]/50 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
+          id="contact-hostinger-card"
+          className="group relative p-5 sm:p-6 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-[#c6f554]/50 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#f7cc46]/[0.05] rounded-full blur-2xl pointer-events-none" />
-
+          <div className="absolute top-0 right-0 w-28 h-28 bg-[#c6f554]/[0.06] rounded-full blur-2xl pointer-events-none" />
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#1c180d] border border-[#f7cc46]/40 flex items-center justify-center text-[#f7cc46] shadow-[0_0_15px_rgba(247,204,70,0.25)]">
-                <Instagram className="w-6 h-6" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-[#142316] border border-[#c6f554]/40 flex items-center justify-center text-[#c6f554] shadow-[0_0_12px_rgba(198,245,84,0.25)]">
+                <Mail className="w-5 h-5" />
               </div>
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#f7cc46]/15 text-[#f7cc46] border border-[#f7cc46]/30">
-                Official Instagram
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#c6f554]/15 text-[#c6f554] border border-[#c6f554]/30">
+                Primary Hostinger Mail
               </span>
             </div>
 
-            <h3 className="text-lg font-bold text-white mb-1">Direct Message on Instagram</h3>
-            <p className="text-xs text-zinc-400 mb-4">
-              Connect with our creative team for quick updates, portfolio previews, and project chat.
+            <h3 className="text-sm font-bold text-white mb-1">Official Studio Support</h3>
+            <p className="text-[11px] text-zinc-400 mb-3">
+              Our official business mailbox for corporate inquiries, quotes, and reports.
             </p>
 
-            <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-4">
-              <span className="font-mono text-sm sm:text-base text-zinc-200 font-semibold select-all">
+            <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-3">
+              <span className="font-mono text-xs sm:text-sm text-zinc-200 font-semibold select-all truncate mr-2">
+                {hostingerEmail}
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyHostinger}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors shrink-0"
+                title="Copy Hostinger Mail"
+              >
+                {copiedHostinger ? <Check className="w-3.5 h-3.5 text-[#c6f554]" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
+              </button>
+            </div>
+          </div>
+
+          <a
+            href={`mailto:${hostingerEmail}?subject=Official%20Report%20/%20Inquiry%20for%20Genowl`}
+            className="w-full py-2 px-3 rounded-xl font-semibold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          >
+            <span>Send Hostinger Email</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+
+        {/* Operations Gmail Card */}
+        <div
+          id="contact-gmail-card"
+          className="group relative p-5 sm:p-6 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-[#f7cc46]/50 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-28 h-28 bg-[#f7cc46]/[0.05] rounded-full blur-2xl pointer-events-none" />
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-[#1c180d] border border-[#f7cc46]/40 flex items-center justify-center text-[#f7cc46] shadow-[0_0_12px_rgba(247,204,70,0.25)]">
+                <Mail className="w-5 h-5" />
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#f7cc46]/15 text-[#f7cc46] border border-[#f7cc46]/30">
+                Direct Operations Gmail
+              </span>
+            </div>
+
+            <h3 className="text-sm font-bold text-white mb-1">Engineering Operations</h3>
+            <p className="text-[11px] text-zinc-400 mb-3">
+              Direct inbox for technical dispatches, engineering briefs, and backup.
+            </p>
+
+            <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-3">
+              <span className="font-mono text-xs sm:text-sm text-zinc-200 font-semibold select-all truncate mr-2">
+                {gmailAccount}
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyGmail}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors shrink-0"
+                title="Copy Gmail Address"
+              >
+                {copiedGmail ? <Check className="w-3.5 h-3.5 text-[#c6f554]" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
+              </button>
+            </div>
+          </div>
+
+          <a
+            href={`mailto:${gmailAccount}?subject=Engineering%20Dispatch%20for%20Genowl`}
+            className="w-full py-2 px-3 rounded-xl font-semibold text-xs text-black bg-gradient-to-r from-[#f8d462] to-[#e4b52b] hover:brightness-105 shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          >
+            <span>Send Gmail Message</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+
+        {/* Instagram Card */}
+        <div
+          id="contact-instagram-card"
+          className="group relative p-5 sm:p-6 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-white/30 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-28 h-28 bg-white/[0.03] rounded-full blur-2xl pointer-events-none" />
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-[#141a15] border border-white/20 flex items-center justify-center text-zinc-200">
+                <Instagram className="w-5 h-5" />
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-zinc-300 border border-white/15">
+                Social Showcase
+              </span>
+            </div>
+
+            <h3 className="text-sm font-bold text-white mb-1">Direct Chat &amp; Previews</h3>
+            <p className="text-[11px] text-zinc-400 mb-3">
+              Connect with our design department on Instagram for previews and portfolio reels.
+            </p>
+
+            <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-3">
+              <span className="font-mono text-xs sm:text-sm text-zinc-200 font-semibold select-all">
                 @{instagramId}
               </span>
               <button
                 type="button"
                 onClick={handleCopyInsta}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
-                title="Copy Instagram ID"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors shrink-0"
+                title="Copy Instagram Handle"
               >
-                {copiedInsta ? <Check className="w-4 h-4 text-[#c6f554]" /> : <Copy className="w-4 h-4" />}
+                {copiedInsta ? <Check className="w-3.5 h-3.5 text-[#c6f554]" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
               </button>
             </div>
           </div>
@@ -185,105 +339,82 @@ export default function ContactPage({
             href={`https://instagram.com/${instagramId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full py-2.5 px-4 rounded-xl font-semibold text-xs sm:text-sm text-black bg-gradient-to-r from-[#f8d462] to-[#e4b52b] hover:brightness-105 shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="w-full py-2 px-3 rounded-xl font-semibold text-xs text-white bg-white/10 hover:bg-white/15 border border-white/15 shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
             <span>Open Instagram Profile</span>
-            <ArrowRight className="w-4 h-4" />
-          </a>
-        </div>
-
-        {/* Gmail Card */}
-        <div
-          id="contact-gmail-card"
-          className="group relative p-6 sm:p-7 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-[#c6f554]/50 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#c6f554]/[0.05] rounded-full blur-2xl pointer-events-none" />
-
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#142316] border border-[#c6f554]/40 flex items-center justify-center text-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.25)]">
-                <Mail className="w-6 h-6" />
-              </div>
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#c6f554]/15 text-[#c6f554] border border-[#c6f554]/30">
-                Official Gmail
-              </span>
-            </div>
-
-            <h3 className="text-lg font-bold text-white mb-1">Email Inquiries &amp; Briefs</h3>
-            <p className="text-xs text-zinc-400 mb-4">
-              Send your project specifications, attachments, or custom partnership inquiries directly to our inbox.
-            </p>
-
-            <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-4">
-              <span className="font-mono text-sm sm:text-base text-zinc-200 font-semibold select-all">
-                {gmailAccount}
-              </span>
-              <button
-                type="button"
-                onClick={handleCopyEmail}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
-                title="Copy Gmail Address"
-              >
-                {copiedEmail ? <Check className="w-4 h-4 text-[#c6f554]" /> : <Copy className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          <a
-            href={`mailto:${gmailAccount}?subject=Project%20Inquiry%20for%20Genowl`}
-            className="w-full py-2.5 px-4 rounded-xl font-semibold text-xs sm:text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
-          >
-            <span>Send Email via Gmail</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-3.5 h-3.5" />
           </a>
         </div>
       </div>
 
-      {/* Interactive Project Inquiry & Problem Reporting Form */}
-      <div className="rounded-3xl bg-[#0c130d]/90 border border-white/10 p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+      {/* Official Report Issuance Center Form */}
+      <div className="rounded-3xl bg-[#0c130d]/95 border border-white/10 p-6 sm:p-10 shadow-2xl relative overflow-hidden">
         <div className="max-w-2xl mx-auto">
-          {/* Mode Switcher Tabs */}
-          <div className="flex p-1 rounded-2xl bg-white/[0.04] border border-white/10 mb-8 max-w-md mx-auto">
+          {/* 3 Report Type Selector Tabs */}
+          <div className="flex p-1 rounded-2xl bg-white/[0.04] border border-white/10 mb-8 max-w-lg mx-auto">
             <button
               type="button"
               onClick={() => {
-                setContactMode('project');
-                setService('Web design');
+                setReportType('project');
+                setCategory('2D Custom Website ($500)');
               }}
-              className={`flex-1 py-2 px-3 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                contactMode === 'project'
+              className={`flex-1 py-2 px-2.5 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                reportType === 'project'
                   ? 'bg-[#c6f554] text-black shadow-md'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Project Order ($99)</span>
+              <span>Project Scope</span>
             </button>
+
             <button
               type="button"
               onClick={() => {
-                setContactMode('problem');
-                setService('Website Bug / UI Issue');
+                setReportType('problem');
+                setCategory('Website Bug / UI Issue');
               }}
-              className={`flex-1 py-2 px-3 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                contactMode === 'problem'
+              className={`flex-1 py-2 px-2.5 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                reportType === 'problem'
                   ? 'bg-[#f7cc46] text-black shadow-md'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
               <AlertCircle className="w-3.5 h-3.5" />
-              <span>Report a Problem / Support</span>
+              <span>Issue / Bug</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setReportType('inquiry');
+                setCategory('Studio Consultation');
+              }}
+              className={`flex-1 py-2 px-2.5 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                reportType === 'inquiry'
+                  ? 'bg-white text-black shadow-md'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Studio Inquiry</span>
             </button>
           </div>
 
           <div className="text-center mb-6">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-              {contactMode === 'project' ? 'Send a Direct Project Request' : 'Report a Problem or Issue'}
+              {reportType === 'project'
+                ? 'Issue a Project Brief & Specification Report'
+                : reportType === 'problem'
+                ? 'Issue an Official Problem or Bug Report'
+                : 'Issue a Studio Consultation & Inquiry Report'}
             </h2>
-            <p className="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto">
-              {contactMode === 'project'
-                ? 'Tell us what you want to build — we will review and confirm within 24 hours.'
-                : `Have an issue? We will forward your details directly to our operations desk at ${gmailAccount} with instant ticket tracking.`}
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto leading-relaxed">
+              {reportType === 'project'
+                ? 'Specify what you need engineered. Our architects review briefs and reply with timeline & architecture in 2-4 hours.'
+                : reportType === 'problem'
+                ? `Encountered an issue or glitch? Report it directly to our operations team with immediate priority logging.`
+                : 'Have a question regarding custom engineering, enterprise IP transfer, or partnership? Issue a formal inquiry ticket.'}
             </p>
           </div>
 
@@ -292,9 +423,9 @@ export default function ContactPage({
               <div className="w-14 h-14 rounded-2xl bg-[#c6f554]/15 border border-[#c6f554]/30 text-[#c6f554] flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(198,245,84,0.25)]">
                 <Lock className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-white">Log In Required to Submit</h3>
+              <h3 className="text-xl font-bold text-white">Log In Required to Issue Reports</h3>
               <p className="text-xs text-zinc-400 leading-relaxed">
-                To prevent anonymous spam, ensure ticket security, and track your inquiry under your account, please log in or sign up before submitting.
+                To bind every ticket to an authentic client identity, prevent spam, and enable permanent tracking in your Client Hub, please log in or sign up first.
               </p>
               <div className="pt-2">
                 <button
@@ -302,112 +433,153 @@ export default function ContactPage({
                   onClick={() => onOpenAuth?.('signin')}
                   className="w-full py-3 rounded-full text-xs font-bold text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.35)] cursor-pointer inline-flex items-center justify-center gap-2"
                 >
-                  <span>Log In / Sign Up to Continue</span>
+                  <span>Log In / Sign Up to Issue Report</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
           ) : submitted ? (
-            <div className="py-10 text-center space-y-4">
-              <div className="w-16 h-14 rounded-2xl bg-[#142016] border border-[#f7cc46]/50 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(247,204,70,0.35)] p-1">
-                <img src="/genowl-mail-logo.png" alt="Genowl Logo" className="w-11 h-9 object-contain" />
+            /* OFFICIAL REPORT CONFIRMATION CARD */
+            <div className="py-8 text-center space-y-5 animate-in fade-in zoom-in duration-300">
+              <div className="w-16 h-16 rounded-2xl bg-[#142016] border border-[#c6f554]/60 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(198,245,84,0.35)] p-1.5">
+                <img src="/genowl-mail-logo.png" alt="Genowl Logo" className="w-full h-full object-contain" />
               </div>
 
               <div>
-                <h3 className="text-2xl font-bold text-white">
-                  Thank you, {currentUser.name}!
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#c6f554]/15 text-[#c6f554] border border-[#c6f554]/30 inline-block mb-2">
+                  &check; Report Officially Registered
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-bold text-white">
+                  Thank You, {currentUser.name}!
                 </h3>
-                <p className="text-xs text-[#c6f554] font-medium mt-1">
-                  Your {contactMode === 'problem' ? 'problem report' : 'project inquiry'} has been logged &amp; forwarded.
+                <p className="text-xs text-zinc-400 mt-1 max-w-md mx-auto">
+                  Your official report has been logged to the cloud database and simultaneously dispatched to our Hostinger and Gmail operations desks.
                 </p>
-                <p className="text-xs text-zinc-400 font-mono mt-0.5">Ticket Reference: {ticketId}</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-left text-xs space-y-2 max-w-sm mx-auto">
-                <div className="flex justify-between text-zinc-300">
-                  <span className="text-zinc-500">Client:</span>
+              {/* Ticket Badge with 1-Click Copy */}
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/[0.04] border border-white/15 shadow-inner">
+                <div className="text-left">
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Tracking Ticket ID</div>
+                  <div className="font-mono text-base sm:text-lg font-bold text-[#c6f554]">#{ticketId}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyTicketId}
+                  className="p-2 rounded-xl text-zinc-300 hover:text-white bg-white/10 hover:bg-white/15 transition-all cursor-pointer flex items-center gap-1 text-xs font-medium"
+                >
+                  {copiedTicket ? <Check className="w-4 h-4 text-[#c6f554]" /> : <Copy className="w-4 h-4" />}
+                  <span>{copiedTicket ? 'Copied' : 'Copy'}</span>
+                </button>
+              </div>
+
+              {/* Structured Receipt Summary Card */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 text-left text-xs space-y-2.5 max-w-md mx-auto shadow-xl">
+                <div className="flex justify-between text-zinc-300 pb-2 border-b border-white/5">
+                  <span className="text-zinc-500">Reporter:</span>
                   <span className="font-semibold text-white">{currentUser.name}</span>
                 </div>
-                <div className="flex justify-between text-zinc-300">
-                  <span className="text-zinc-500">Category:</span>
-                  <span className="font-semibold text-white">{service}</span>
+                <div className="flex justify-between text-zinc-300 pb-2 border-b border-white/5">
+                  <span className="text-zinc-500">Verified Email:</span>
+                  <span className="font-mono text-zinc-200">{currentUser.email}</span>
                 </div>
                 {phone && (
-                  <div className="flex justify-between text-zinc-300">
+                  <div className="flex justify-between text-zinc-300 pb-2 border-b border-white/5">
                     <span className="text-zinc-500">Phone / WhatsApp:</span>
                     <span className="font-mono text-[#c6f554]">{phone}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-zinc-300">
-                  <span className="text-zinc-500">Forwarded To:</span>
-                  <span className="font-mono text-[#f7cc46]">{gmailAccount}</span>
+                <div className="flex justify-between text-zinc-300 pb-2 border-b border-white/5">
+                  <span className="text-zinc-500">Report Category:</span>
+                  <span className="font-semibold text-white">{category}</span>
+                </div>
+                <div className="flex justify-between text-zinc-300 pb-2 border-b border-white/5">
+                  <span className="text-zinc-500">Hostinger Mail:</span>
+                  <span className="font-mono text-[#c6f554] font-medium">{hostingerEmail}</span>
+                </div>
+                <div className="flex justify-between text-zinc-300 pb-2 border-b border-white/5">
+                  <span className="text-zinc-500">Operations Gmail:</span>
+                  <span className="font-mono text-[#f7cc46] font-medium">{gmailAccount}</span>
                 </div>
                 <div className="flex justify-between text-zinc-300">
-                  <span className="text-zinc-500">Receipt Sent To:</span>
-                  <span className="font-mono text-zinc-200">{currentUser.email}</span>
+                  <span className="text-zinc-500">Cloud Sync:</span>
+                  <span className="text-[#c6f554] font-semibold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Supabase PostgreSQL Logged
+                  </span>
                 </div>
               </div>
 
-              <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed">
-                A confirmation receipt with your ticket reference has been dispatched. Our team has received your problem brief and will reply to your Gmail shortly.
-              </p>
+              {/* Action Buttons: Native Mail App Backup and Reset */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 max-w-md mx-auto">
+                {mailtoBackupUrl && (
+                  <a
+                    href={mailtoBackupUrl}
+                    className="w-full sm:w-auto flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span>Open in Email App (Backup)</span>
+                  </a>
+                )}
 
-              <div className="pt-2">
                 <button
                   type="button"
                   onClick={() => {
                     setSubmitted(false);
-                    setMessage('');
-                    setPhone('');
+                    setDescription('');
+                    setReferenceUrl('');
                   }}
-                  className="px-5 py-2 rounded-full text-xs font-semibold text-zinc-300 bg-white/10 hover:bg-white/15 transition-colors cursor-pointer"
+                  className="w-full sm:w-auto py-2.5 px-4 rounded-xl text-xs font-semibold text-zinc-300 bg-white/10 hover:bg-white/15 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  Send Another Message
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Issue Another Report</span>
                 </button>
               </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+              {/* Row 1: Name and Email (read-only verified) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-zinc-300 mb-1.5 flex items-center justify-between">
-                    <span>Your Full Name</span>
-                    <span className="text-[10px] text-[#c6f554] font-semibold">Logged In</span>
+                    <span>Client / Reporter Name</span>
+                    <span className="text-[10px] text-[#c6f554] font-semibold">Active Session</span>
                   </label>
                   <input
-                    id="contact-name-input"
+                    id="report-name-input"
                     type="text"
-                    readOnly
-                    value={currentUser.name}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm cursor-not-allowed opacity-90 select-none"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm focus:outline-none focus:border-[#c6f554] transition-all"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium text-zinc-300 mb-1.5 flex items-center justify-between">
-                    <span>Your Gmail / Email</span>
-                    <span className="text-[10px] text-[#c6f554] font-semibold">Verified</span>
+                    <span>Verified Client Email</span>
+                    <span className="text-[10px] text-[#c6f554] font-semibold">Receipt Destination</span>
                   </label>
                   <input
-                    id="contact-email-input"
+                    id="report-email-input"
                     type="email"
                     readOnly
                     value={currentUser.email}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm cursor-not-allowed opacity-90 select-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm cursor-not-allowed opacity-90 select-none font-mono"
                   />
                 </div>
               </div>
 
-              {/* Phone / WhatsApp Number Input with format validation */}
+              {/* Row 2: Validated Phone & WhatsApp Number */}
               <div>
                 <label className="block text-xs font-medium text-zinc-300 mb-1.5 flex items-center justify-between">
-                  <span>Phone / WhatsApp Number (Required)</span>
+                  <span>Phone / WhatsApp Number (Required for Direct Contact)</span>
                   <span className="text-[10px] text-zinc-400">Include country code</span>
                 </label>
                 <div className="relative">
                   <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
                   <input
-                    id="contact-phone-input"
+                    id="report-phone-input"
                     type="tel"
                     required
                     placeholder="e.g. +91 98765 43210 or +1 (555) 012-3456"
@@ -427,93 +599,159 @@ export default function ContactPage({
                 )}
               </div>
 
+              {/* Row 3: Category Selector */}
               <div>
                 <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-                  {contactMode === 'project' ? 'Select Service Category' : 'Select Problem / Issue Type'}
+                  {reportType === 'project'
+                    ? 'Select Engineering Pillar / Scope'
+                    : reportType === 'problem'
+                    ? 'Select Problem / Issue Classification'
+                    : 'Select Inquiry Classification'}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {(contactMode === 'project'
-                    ? [
-                        'Web design',
-                        '2D Website ($500)',
-                        '3D WebGL World ($2,500)',
-                        'Video generation',
-                        'Personalized AI',
-                        'content creation',
-                      ]
-                    : [
-                        'Website Bug / UI Issue',
-                        'Account & Login Problem',
-                        'Payment / Checkout Issue',
-                        'Project Delay Question',
-                        'Deliverable Revision Request',
-                        'General Technical Help',
-                      ]
-                  ).map((s) => (
+                  {getCategoryOptions().map((opt) => (
                     <button
-                      key={s}
+                      key={opt}
                       type="button"
-                      onClick={() => setService(s)}
+                      onClick={() => setCategory(opt)}
                       className={`p-2.5 rounded-xl text-xs font-medium border text-center transition-all cursor-pointer ${
-                        service === s
-                          ? contactMode === 'project'
-                            ? 'bg-[#1b2b1d] border-[#c6f554] text-[#c6f554] shadow-[0_0_12px_rgba(198,245,84,0.2)]'
-                            : 'bg-[#221c0e] border-[#f7cc46] text-[#f7cc46] shadow-[0_0_12px_rgba(247,204,70,0.2)]'
+                        category === opt
+                          ? reportType === 'problem'
+                            ? 'bg-[#221c0e] border-[#f7cc46] text-[#f7cc46] shadow-[0_0_12px_rgba(247,204,70,0.2)]'
+                            : 'bg-[#1b2b1d] border-[#c6f554] text-[#c6f554] shadow-[0_0_12px_rgba(198,245,84,0.2)]'
                           : 'bg-white/[0.03] border-white/10 text-zinc-300 hover:border-white/20'
                       }`}
                     >
-                      <span className="block font-semibold">{s}</span>
+                      <span className="block font-semibold">{opt}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
+              {/* Row 4: Priority SLA & Optional Reference URL */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    Priority / SLA Requirement
+                  </label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setPriority('standard')}
+                      className={`py-2 px-1.5 rounded-xl text-[11px] font-medium border transition-all cursor-pointer text-center ${
+                        priority === 'standard'
+                          ? 'bg-[#1b2b1d] border-[#c6f554] text-[#c6f554]'
+                          : 'bg-white/[0.02] border-white/10 text-zinc-400'
+                      }`}
+                    >
+                      Standard (24h)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPriority('high')}
+                      className={`py-2 px-1.5 rounded-xl text-[11px] font-medium border transition-all cursor-pointer text-center ${
+                        priority === 'high'
+                          ? 'bg-[#221c0e] border-[#f7cc46] text-[#f7cc46]'
+                          : 'bg-white/[0.02] border-white/10 text-zinc-400'
+                      }`}
+                    >
+                      High (2-4h)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPriority('urgent')}
+                      className={`py-2 px-1.5 rounded-xl text-[11px] font-medium border transition-all cursor-pointer text-center ${
+                        priority === 'urgent'
+                          ? 'bg-rose-950/40 border-rose-500 text-rose-400'
+                          : 'bg-white/[0.02] border-white/10 text-zinc-400'
+                      }`}
+                    >
+                      Blocker / Urgent
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    Reference URL (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="e.g. Figma link, GitHub, reference site"
+                    value={referenceUrl}
+                    onChange={(e) => setReferenceUrl(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-[#c6f554] transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Row 5: Detailed Description / Brief */}
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-                  {contactMode === 'project'
-                    ? 'Tell Us What To Build (Project Details)'
-                    : 'Describe the Problem (What happened & what needs fixing)'}
+                <label className="block text-xs font-medium text-zinc-300 mb-1.5 flex items-center justify-between">
+                  <span>
+                    {reportType === 'project'
+                      ? 'Project Brief & Scope Specifications (Min. 10 chars)'
+                      : reportType === 'problem'
+                      ? 'Problem Report Details (What happened & expected behavior)'
+                      : 'Inquiry & Message Specifications'}
+                  </span>
+                  <span className="text-[10px] text-zinc-500">{description.length} chars</span>
                 </label>
                 <textarea
-                  id="contact-message-input"
+                  id="report-description-input"
                   required
                   rows={4}
                   placeholder={
-                    contactMode === 'project'
-                      ? 'Describe your goals, requirements, references, or specific features needed...'
-                      : 'Describe the exact issue you encountered, error message if any, or how we can assist you immediately...'
+                    reportType === 'project'
+                      ? 'Describe your project requirements, target audience, preferred style, pages needed, or references...'
+                      : reportType === 'problem'
+                      ? 'Describe the exact bug, page URL, error message or revision needed so our engineers can reproduce and fix it immediately...'
+                      : 'Describe your question or partnership proposal in detail...'
                   }
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-[#c6f554] focus:ring-1 focus:ring-[#c6f554] transition-all resize-y"
                 />
               </div>
 
-              {/* Delivery info notice */}
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 flex items-center justify-between text-[11px] text-zinc-400">
-                <span className="flex items-center gap-1.5">
+              {/* Transparent Delivery Dispatch Footer Notice */}
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-zinc-400">
+                <div className="flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5 text-[#c6f554]" />
-                  <span>Forwarding to: <strong className="text-white font-mono">{gmailAccount}</strong></span>
-                </span>
-                <span className="text-[#c6f554] font-medium">Receipt with Logo to your Gmail</span>
+                  <span>
+                    Dispatched to: <strong className="text-white font-mono">{hostingerEmail}</strong> &amp; <strong className="text-[#f7cc46] font-mono">{gmailAccount}</strong>
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-[#c6f554]">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Logged to Supabase Cloud</span>
+                </div>
               </div>
 
+              {/* Submit CTA */}
               <button
-                id="contact-submit-btn"
+                id="report-submit-btn"
                 type="submit"
                 disabled={isSending}
-                className={`w-full py-3 px-6 rounded-xl font-bold text-sm text-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  contactMode === 'project'
-                    ? 'bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.35)]'
-                    : 'bg-gradient-to-r from-[#f7cc46] to-[#ffe082] hover:brightness-105 shadow-[0_0_20px_rgba(247,204,70,0.35)]'
+                className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm text-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  reportType === 'problem'
+                    ? 'bg-gradient-to-r from-[#f7cc46] to-[#ffe082] hover:brightness-105 shadow-[0_0_20px_rgba(247,204,70,0.35)]'
+                    : 'bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.35)]'
                 }`}
               >
                 {isSending ? (
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <span>Issuing Official Report &amp; Registering Ticket...</span>
+                  </div>
                 ) : (
                   <>
                     <span>
-                      {contactMode === 'project' ? 'Submit Project Brief' : 'Dispatch Problem to Support Team'}
+                      {reportType === 'project'
+                        ? 'Issue Official Project Brief Report'
+                        : reportType === 'problem'
+                        ? 'Issue Official Problem Report to Support Desk'
+                        : 'Issue Official Studio Inquiry Ticket'}
                     </span>
                     <Send className="w-4 h-4" />
                   </>

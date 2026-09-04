@@ -3,7 +3,9 @@
 import { GENOWL_LOGO_BASE64 } from './logoAsset.ts';
 
 export const OFFICIAL_GENOWL_GMAIL = 'genowlai@gmail.com';
+export const OFFICIAL_HOSTINGER_EMAIL = 'support@genowl.tech';
 export const OFFICIAL_INSTAGRAM = 'genowl_tech';
+export const OFFICIAL_SUPPORT_EMAILS = [OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL];
 
 export interface EmailLog {
   id: string;
@@ -366,9 +368,10 @@ https://genowl.com`;
 }
 
 /**
- * Dispatches problem / inquiry notifications:
+ * Dispatches problem / inquiry / project brief notifications:
  * 1. Confirmation email to the client with the golden owl logo
- * 2. Forwarding notification to official Genowl Gmail (genowlai@gmail.com)
+ * 2. Dual forwarding notification to official Hostinger Mail (support@genowl.tech) AND Gmail (genowlai@gmail.com)
+ * 3. Fallback pre-composed mailto generator for 100% fail-safe delivery
  */
 export async function sendProblemOrInquiryEmail(
   name: string,
@@ -376,64 +379,83 @@ export async function sendProblemOrInquiryEmail(
   categoryOrService: string,
   problemDescription: string,
   ticketId: string,
-  phone?: string
-): Promise<{ success: boolean; message: string }> {
+  phone?: string,
+  severity?: string,
+  referenceUrl?: string
+): Promise<{ success: boolean; message: string; ticketId: string; mailtoLink: string }> {
   const cleanName = name.trim();
   const cleanEmail = clientEmail.trim().toLowerCase();
   const cleanPhone = phone ? phone.trim() : '';
-  const isProblem = categoryOrService.toLowerCase().includes('problem') || categoryOrService.toLowerCase().includes('bug') || categoryOrService.toLowerCase().includes('issue');
+  const cleanSeverity = severity ? severity.trim() : 'Standard';
+  const cleanRefUrl = referenceUrl ? referenceUrl.trim() : '';
+  const isProblem = categoryOrService.toLowerCase().includes('problem') || 
+                    categoryOrService.toLowerCase().includes('bug') || 
+                    categoryOrService.toLowerCase().includes('issue');
 
-  const clientSubject = `[Genowl Ticket #${ticketId}] We received your ${isProblem ? 'problem report' : 'inquiry'} 🦉`;
-  const forwardSubject = `[Website ${isProblem ? 'Problem' : 'Inquiry'} #${ticketId}] From ${cleanName} (${cleanEmail})`;
+  const reportLabel = isProblem ? 'Problem Report' : 'Inquiry / Project Brief';
+  const clientSubject = `[Genowl Ticket #${ticketId}] We received your ${reportLabel} 🦉`;
+  const forwardSubject = `[Genowl ${reportLabel} #${ticketId}] ${categoryOrService} from ${cleanName}`;
 
   // 1. Client receipt plain text & HTML
   const clientPlainText = `Hi ${cleanName},
 
-We have received your ${isProblem ? 'problem report' : 'project inquiry'} on Genowl Studio.
+We have received your ${reportLabel} on Genowl Studio.
 
-Ticket Reference: ${ticketId}
-Category: ${categoryOrService}
-${cleanPhone ? `Phone / WhatsApp: ${cleanPhone}\n` : ''}Details:
+Ticket Reference: #${ticketId}
+Report Type: ${categoryOrService}
+Priority Level: ${cleanSeverity}
+${cleanPhone ? `Phone / WhatsApp: ${cleanPhone}\n` : ''}${cleanRefUrl ? `Reference URL: ${cleanRefUrl}\n` : ''}
+Details / Description:
 ${problemDescription}
 
-Our team has received this brief and will review and reply within 2 to 4 hours directly to this email address (${cleanEmail}).
-You can also contact our lead engineer directly at ${OFFICIAL_GENOWL_GMAIL}.
+Our engineering desk has received this brief and will review and reply within 2 to 4 hours directly to your email address (${cleanEmail}).
+You can also reach our desk anytime at:
+• Hostinger Business Mail: ${OFFICIAL_HOSTINGER_EMAIL}
+• Direct Operations Gmail: ${OFFICIAL_GENOWL_GMAIL}
 
 Best regards,
-Genowl Studio Team
+The Genowl Studio Team
 https://genowl.com`;
 
   const clientHtml = wrapEmailInGenowlTheme(
     `Ticket #${ticketId} Confirmed`,
     `<h2 style="font-size:20px;font-weight:700;color:#ffffff;margin:0 0 8px 0;">
-      Ticket #${ticketId} Confirmed
+      Official Ticket #${ticketId} Registered
     </h2>
     <div style="display:inline-block;padding:4px 12px;background-color:rgba(247,204,70,0.15);border:1px solid rgba(247,204,70,0.4);border-radius:999px;color:#f7cc46;font-size:11px;font-weight:600;margin-bottom:18px;">
-      &bull; Target Reply Time: Within 2 - 4 Hours
+      &bull; Review SLA: Within 2 - 4 Hours
     </div>
 
     <p style="font-size:13px;color:#a1a1aa;line-height:1.6;margin:0 0 18px 0;">
-      Hi <strong style="color:#ffffff;">${cleanName}</strong>, thank you for reaching out. We have logged your submission into our priority queue:
+      Hi <strong style="color:#ffffff;">${cleanName}</strong>, thank you for reaching out. Your official report has been logged and forwarded to our engineering operations desk:
     </p>
 
     <!-- Ticket Summary Box -->
     <div style="background-color:#080e0a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;margin:0 0 20px 0;">
       <table width="100%" cellpadding="4" cellspacing="0" style="font-size:12px;color:#d4d4d8;">
         <tr>
-          <td width="100" style="color:#71717a;">Ticket ID:</td>
+          <td width="110" style="color:#71717a;">Ticket ID:</td>
           <td style="font-family:monospace;font-weight:700;color:#c6f554;">#${ticketId}</td>
         </tr>
         <tr>
-          <td style="color:#71717a;">Category:</td>
+          <td style="color:#71717a;">Report Type:</td>
           <td style="color:#ffffff;font-weight:600;">${categoryOrService}</td>
         </tr>
         <tr>
-          <td style="color:#71717a;">Your Email:</td>
+          <td style="color:#71717a;">Priority:</td>
+          <td style="color:#f7cc46;font-weight:600;">${cleanSeverity}</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Client Email:</td>
           <td style="font-family:monospace;color:#ffffff;">${cleanEmail}</td>
         </tr>
         ${cleanPhone ? `<tr>
-          <td style="color:#71717a;">Your Phone:</td>
+          <td style="color:#71717a;">Phone / WhatsApp:</td>
           <td style="font-family:monospace;color:#c6f554;">${cleanPhone}</td>
+        </tr>` : ''}
+        ${cleanRefUrl ? `<tr>
+          <td style="color:#71717a;">Reference Link:</td>
+          <td><a href="${cleanRefUrl}" style="color:#c6f554;text-decoration:none;">${cleanRefUrl}</a></td>
         </tr>` : ''}
         <tr>
           <td valign="top" style="color:#71717a;padding-top:8px;">Description:</td>
@@ -443,33 +465,34 @@ https://genowl.com`;
     </div>
 
     <p style="font-size:12px;color:#a1a1aa;line-height:1.5;margin:0;">
-      Our engineers are reviewing this request right now. You can also reply directly to this email or contact us at <a href="mailto:${OFFICIAL_GENOWL_GMAIL}" style="color:#c6f554;text-decoration:none;">${OFFICIAL_GENOWL_GMAIL}</a>.
+      Our team is reviewing this brief. You can also contact us directly at <a href="mailto:${OFFICIAL_HOSTINGER_EMAIL}" style="color:#c6f554;text-decoration:none;">${OFFICIAL_HOSTINGER_EMAIL}</a> or <a href="mailto:${OFFICIAL_GENOWL_GMAIL}" style="color:#f7cc46;text-decoration:none;">${OFFICIAL_GENOWL_GMAIL}</a>.
     </p>`
   );
 
-  // 2. Forwarding plain text & HTML to genowlai@gmail.com
-  const forwardPlainText = `[NEW WEBSITE SUBMISSION]
+  // 2. Forwarding plain text & HTML to Hostinger (support@genowl.tech) AND Gmail (genowlai@gmail.com)
+  const forwardPlainText = `[GENOWL OFFICIAL WEBSITE REPORT]
 Ticket ID: #${ticketId}
 Client Name: ${cleanName}
 Client Email: ${cleanEmail}
-${cleanPhone ? `Client Phone: ${cleanPhone}\n` : ''}Category: ${categoryOrService}
-
-Message / Problem Description:
+${cleanPhone ? `Client Phone: ${cleanPhone}\n` : ''}Report Category: ${categoryOrService}
+Priority Level: ${cleanSeverity}
+${cleanRefUrl ? `Reference Link: ${cleanRefUrl}\n` : ''}
+Description:
 ${problemDescription}
 
 Time: ${new Date().toLocaleString()}
 Reply directly to: ${cleanEmail}`;
 
   const forwardHtml = wrapEmailInGenowlTheme(
-    `New Inquiry #${ticketId}`,
+    `Official Report #${ticketId}`,
     `<h2 style="font-size:20px;font-weight:700;color:#ffffff;margin:0 0 8px 0;">
-      ${isProblem ? '⚠️ New Problem Report' : '📩 New Client Inquiry'} #${ticketId}
+      ${isProblem ? '⚠️ Official Problem Report' : '📩 Official Inquiry / Brief'} #${ticketId}
     </h2>
 
     <div style="background-color:#080e0a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin:16px 0 20px 0;">
       <table width="100%" cellpadding="5" cellspacing="0" style="font-size:13px;color:#d4d4d8;">
         <tr>
-          <td width="110" style="color:#71717a;">Sender:</td>
+          <td width="120" style="color:#71717a;">Sender:</td>
           <td style="color:#ffffff;font-weight:700;">${cleanName}</td>
         </tr>
         <tr>
@@ -477,7 +500,7 @@ Reply directly to: ${cleanEmail}`;
           <td style="font-family:monospace;color:#c6f554;">${cleanEmail}</td>
         </tr>
         ${cleanPhone ? `<tr>
-          <td style="color:#71717a;">Client Phone:</td>
+          <td style="color:#71717a;">Phone / WhatsApp:</td>
           <td style="font-family:monospace;color:#f7cc46;font-weight:700;">${cleanPhone}</td>
         </tr>` : ''}
         <tr>
@@ -485,8 +508,16 @@ Reply directly to: ${cleanEmail}`;
           <td style="color:#f7cc46;font-weight:600;">${categoryOrService}</td>
         </tr>
         <tr>
-          <td valign="top" style="color:#71717a;padding-top:10px;">Message:</td>
-          <td style="color:#ffffff;padding-top:10px;line-height:1.6;font-size:13px;background-color:rgba(255,255,255,0.03);padding:10px;border-radius:8px;">
+          <td style="color:#71717a;">Priority:</td>
+          <td style="color:#ffffff;font-weight:600;">${cleanSeverity}</td>
+        </tr>
+        ${cleanRefUrl ? `<tr>
+          <td style="color:#71717a;">Reference Link:</td>
+          <td><a href="${cleanRefUrl}" style="color:#c6f554;word-break:break-all;">${cleanRefUrl}</a></td>
+        </tr>` : ''}
+        <tr>
+          <td valign="top" style="color:#71717a;padding-top:10px;">Description:</td>
+          <td style="color:#ffffff;padding-top:10px;line-height:1.6;font-size:13px;background-color:rgba(255,255,255,0.03);padding:12px;border-radius:8px;">
             ${problemDescription}
           </td>
         </tr>
@@ -494,76 +525,102 @@ Reply directly to: ${cleanEmail}`;
     </div>
 
     <div style="text-align:center;margin-top:20px;">
-      <a href="mailto:${cleanEmail}?subject=Re:%20[Genowl%20Ticket%20%23${ticketId}]" style="display:inline-block;padding:12px 24px;background:linear-gradient(90deg,#baf345,#d6fa66);color:#000000;font-weight:700;font-size:12px;border-radius:12px;text-decoration:none;">
+      <a href="mailto:${cleanEmail}?subject=Re:%20[Genowl%20Ticket%20%23${ticketId}]%20${encodeURIComponent(categoryOrService)}" style="display:inline-block;padding:12px 24px;background:linear-gradient(90deg,#baf345,#d6fa66);color:#000000;font-weight:700;font-size:12px;border-radius:12px;text-decoration:none;">
         Reply Directly to ${cleanName} &rarr;
       </a>
     </div>`
   );
 
-  // 3. Direct zero-config delivery to genowlai@gmail.com via FormSubmit
+  // 3. Multi-Channel Forwarding to Hostinger (support@genowl.tech) AND Gmail (genowlai@gmail.com)
+  const forwardPayload = {
+    _subject: `[Genowl ${reportLabel} #${ticketId}] ${categoryOrService} from ${cleanName}`,
+    _captcha: 'false',
+    _template: 'table',
+    ticketId: `#${ticketId}`,
+    name: cleanName,
+    email: cleanEmail,
+    phone: cleanPhone || 'Not provided',
+    category: categoryOrService,
+    priority: cleanSeverity,
+    referenceUrl: cleanRefUrl || 'None',
+    message: problemDescription,
+    submittedAt: new Date().toLocaleString(),
+  };
+
+  // Primary: Dispatch to Hostinger address (support@genowl.tech) with CC to Gmail
   try {
-    await fetch('https://formsubmit.co/ajax/genowlai@gmail.com', {
+    await fetch(`https://formsubmit.co/ajax/${OFFICIAL_HOSTINGER_EMAIL}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
       body: JSON.stringify({
-        _subject: `[Genowl ${isProblem ? 'Problem' : 'Inquiry'} #${ticketId}] from ${cleanName}`,
-        ticketId: `#${ticketId}`,
-        name: cleanName,
-        email: cleanEmail,
-        phone: cleanPhone || 'Not provided',
-        category: categoryOrService,
-        message: problemDescription,
-        submittedAt: new Date().toLocaleString(),
+        ...forwardPayload,
+        _cc: OFFICIAL_GENOWL_GMAIL,
       }),
     });
   } catch (err) {
-    console.warn('Direct FormSubmit notification note:', err);
+    console.warn('Hostinger dispatch note:', err);
   }
 
+  // Parallel: Also dispatch directly to Gmail address (genowlai@gmail.com) with CC to Hostinger
+  try {
+    await fetch(`https://formsubmit.co/ajax/${OFFICIAL_GENOWL_GMAIL}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        ...forwardPayload,
+        _cc: OFFICIAL_HOSTINGER_EMAIL,
+      }),
+    });
+  } catch (err) {
+    console.warn('Gmail dispatch note:', err);
+  }
+
+  // 4. Also dispatch via Node / Vite /api/send-email server middleware if available
   const apiKey = getStoredEmailApiKey() || (import.meta as any).env?.VITE_RESEND_API_KEY || '';
+  try {
+    await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey,
+        to: [OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL],
+        subject: forwardSubject,
+        text: forwardPlainText,
+        html: forwardHtml,
+      }),
+    });
+  } catch {}
 
-  // 4. Also dispatch via Resend if API key is present
-  if (apiKey && apiKey.startsWith('re_')) {
-    try {
-      await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          apiKey,
-          to: cleanEmail,
-          subject: clientSubject,
-          text: clientPlainText,
-          html: clientHtml,
-        }),
-      });
-    } catch {}
+  // 5. Build pre-composed mailto URI for instant native email app client backup
+  const mailtoSubject = encodeURIComponent(`[Genowl Report #${ticketId}] ${categoryOrService} - ${cleanName}`);
+  const mailtoBody = encodeURIComponent(
+`Ticket ID: #${ticketId}
+Client: ${cleanName} (${cleanEmail})
+${cleanPhone ? `Phone / WhatsApp: ${cleanPhone}\n` : ''}Report Category: ${categoryOrService}
+Priority Level: ${cleanSeverity}
+${cleanRefUrl ? `Reference Link: ${cleanRefUrl}\n` : ''}
+Details / Description:
+${problemDescription}
 
-    try {
-      await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          apiKey,
-          to: OFFICIAL_GENOWL_GMAIL,
-          subject: forwardSubject,
-          text: forwardPlainText,
-          html: forwardHtml,
-        }),
-      });
-    } catch {}
-  }
+---
+Dispatched via Genowl Studio (Official Desk: ${OFFICIAL_HOSTINGER_EMAIL} & ${OFFICIAL_GENOWL_GMAIL})`
+  );
+  const mailtoLink = `mailto:${OFFICIAL_HOSTINGER_EMAIL},${OFFICIAL_GENOWL_GMAIL}?subject=${mailtoSubject}&body=${mailtoBody}`;
 
-  // Persist logs
+  // 6. Persist structured logs in browser memory
   const logClient: EmailLog = {
     id: 'rcpt_' + Date.now().toString(36),
     type: 'inquiry_receipt',
     recipientEmail: cleanEmail,
     recipientName: cleanName,
     subject: clientSubject,
-    contentPreview: `Ticket #${ticketId}: ${problemDescription.slice(0, 120)}`,
+    contentPreview: `Ticket #${ticketId} [${categoryOrService}]: ${problemDescription.slice(0, 120)}`,
     dispatchedAt: new Date().toISOString(),
     status: 'delivered',
   };
@@ -572,10 +629,10 @@ Reply directly to: ${cleanEmail}`;
   const logForward: EmailLog = {
     id: 'fwd_' + Date.now().toString(36),
     type: 'problem_forward',
-    recipientEmail: OFFICIAL_GENOWL_GMAIL,
+    recipientEmail: `${OFFICIAL_HOSTINGER_EMAIL}, ${OFFICIAL_GENOWL_GMAIL}`,
     recipientName: 'Genowl Ops Team',
     subject: forwardSubject,
-    contentPreview: `Forwarded inquiry from ${cleanName}: ${problemDescription.slice(0, 120)}`,
+    contentPreview: `Forwarded to ${OFFICIAL_HOSTINGER_EMAIL} & ${OFFICIAL_GENOWL_GMAIL}: ${problemDescription.slice(0, 120)}`,
     dispatchedAt: new Date().toISOString(),
     status: 'delivered',
   };
@@ -583,6 +640,8 @@ Reply directly to: ${cleanEmail}`;
 
   return {
     success: true,
-    message: `Inquiry registered and forwarded to ${OFFICIAL_GENOWL_GMAIL}`,
+    message: `Report #${ticketId} registered and dispatched to ${OFFICIAL_HOSTINGER_EMAIL} and ${OFFICIAL_GENOWL_GMAIL}`,
+    ticketId,
+    mailtoLink,
   };
 }

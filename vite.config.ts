@@ -35,7 +35,7 @@ function emailDispatchPlugin() {
                 },
                 body: JSON.stringify({
                   from: 'Genowl Studio <onboarding@resend.dev>',
-                  to: [payload.to],
+                  to: Array.isArray(payload.to) ? payload.to : [payload.to],
                   subject: payload.subject,
                   text: payload.text,
                   ...(payload.html ? { html: payload.html } : {}),

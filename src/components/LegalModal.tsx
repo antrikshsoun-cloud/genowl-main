@@ -195,7 +195,7 @@ export default function LegalModal({ isOpen, onClose, initialTab = 'terms' }: Le
               <div>
                 <h3 className="text-sm sm:text-base font-bold text-white mb-1.5">3. Cancellation Terms</h3>
                 <p>
-                  If a project has not yet begun production within 24 hours of submission, clients may request a full cancellation and refund by contacting <span className="text-[#c6f554] font-mono">genowlai@gmail.com</span>.
+                  If a project has not yet begun production within 24 hours of submission, clients may request a full cancellation and refund by contacting <span className="text-[#c6f554] font-mono">support@genowl.tech</span> or <span className="text-[#f7cc46] font-mono">genowlai@gmail.com</span>.
                 </p>
               </div>
             </>

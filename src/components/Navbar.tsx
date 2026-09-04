@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, Menu, X, Lock } from 'lucide-react';
+import { ArrowRight, Menu, X } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 
 import { UserProfile } from './AuthModal.tsx';
@@ -12,7 +12,6 @@ interface NavbarProps {
   onOpenAuth?: (mode: 'signin' | 'signup') => void;
   onSignOut?: () => void;
   onOpenProfile?: () => void;
-  onOpenAdmin?: () => void;
 }
 
 export default function Navbar({
@@ -23,7 +22,6 @@ export default function Navbar({
   onOpenAuth,
   onSignOut,
   onOpenProfile,
-  onOpenAdmin,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -132,18 +130,6 @@ export default function Navbar({
               </button>
             )}
 
-            {onOpenAdmin && (
-              <button
-                type="button"
-                onClick={onOpenAdmin}
-                title="Admin Command Center"
-                className="text-xs text-zinc-400 hover:text-[#f7cc46] flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-[#f7cc46]/30"
-              >
-                <Lock className="w-3 h-3 text-[#f7cc46]" />
-                <span className="font-medium">Admin</span>
-              </button>
-            )}
-
             <button
               id="nav-get-started-btn"
               type="button"
@@ -249,20 +235,6 @@ export default function Navbar({
                   className="w-full py-2 rounded-full text-xs font-semibold text-white bg-white/10 hover:bg-white/15 transition-all text-center cursor-pointer"
                 >
                   Log In / Sign In
-                </button>
-              )}
-
-              {onOpenAdmin && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenAdmin();
-                  }}
-                  className="w-full py-2 rounded-xl text-xs font-semibold text-zinc-300 hover:text-[#f7cc46] bg-white/5 border border-white/10 hover:border-[#f7cc46]/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Lock className="w-3.5 h-3.5 text-[#f7cc46]" />
-                  <span>Admin Command Center</span>
                 </button>
               )}
 

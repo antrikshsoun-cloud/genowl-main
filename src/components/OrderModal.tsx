@@ -447,8 +447,8 @@ export default function OrderModal({
               <span className="flex items-center gap-1 text-[#f7cc46]">
                 <Instagram className="w-3 h-3" /> @genowl_tech
               </span>
-              <span className="flex items-center gap-1 text-[#c6f554]">
-                <Mail className="w-3 h-3" /> genowlai@gmail.com
+              <span className="flex items-center gap-1 text-[#c6f554] font-mono text-[10px]">
+                <Mail className="w-3 h-3" /> support@genowl.tech
               </span>
             </div>
           </div>

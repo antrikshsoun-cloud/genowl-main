@@ -684,8 +684,19 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                       </p>
                     </div>
 
-                    <div className="px-3 py-1 rounded-full bg-[#c6f554]/10 border border-[#c6f554]/30 text-[#c6f554] text-xs font-semibold">
-                      {emails.length} Dispatched
+                    <div className="flex items-center gap-2">
+                      <a
+                        href="https://mail.hostinger.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 text-[#c6f554]" />
+                        <span>Open Hostinger Webmail</span>
+                      </a>
+                      <div className="px-3 py-1 rounded-full bg-[#c6f554]/10 border border-[#c6f554]/30 text-[#c6f554] text-xs font-semibold">
+                        {emails.length} Dispatched
+                      </div>
                     </div>
                   </div>
 
