@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Lock, Users, Key, Search, Trash2, Download, Check, AlertCircle, Clock, Calendar, ShoppingBag, MessageSquare, RefreshCw, KeyRound, ExternalLink, Award, Mail, Send, CreditCard, Database, Copy } from 'lucide-react';
+import { X, ShieldCheck, Lock, Users, Key, Search, Trash2, Download, Check, AlertCircle, Clock, Calendar, ShoppingBag, MessageSquare, RefreshCw, ExternalLink, Award, Mail, Send, CreditCard, Database, Copy } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
-import { validatePasswordStrength } from '../utils/passwordValidator.ts';
 import { EmailLog, getDispatchedEmails, sendWelcomeEmail, getStoredEmailApiKey, saveEmailApiKey } from '../services/emailService.ts';
 import { getRazorpayKey, saveRazorpayKey } from '../services/razorpayService.ts';
 import { getSupabaseConfig, saveSupabaseConfig, testSupabaseConnection, SUPABASE_SQL_SCHEMA } from '../services/supabaseClient.ts';
@@ -42,27 +41,21 @@ interface AdminModalProps {
 }
 
 export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
-  // Default Master Admin Password (persists permanently across all domains & devices)
-  const DEFAULT_MASTER_PASSWORD = 'GenowlAdmin@2026';
+  // Permanent Master Admin Password (Strictly locked - cannot be altered via website)
+  const MASTER_ADMIN_PASSWORD = 'CristianoMessi@2005';
 
-  // Password setup & auth states — Setup screen is permanently disabled
+  // Auth states — Setup screen and password alteration via website are permanently disabled
   const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
     return sessionStorage.getItem('genowl_admin_authenticated') === 'true';
   });
 
-  // Current active admin tab
-  const [activeTab, setActiveTab] = useState<'users' | 'orders' | 'emails' | 'inquiries' | 'metrics' | 'gateway' | 'security'>('users');
+  // Current active admin tab (Security tab removed)
+  const [activeTab, setActiveTab] = useState<'users' | 'orders' | 'emails' | 'inquiries' | 'metrics' | 'gateway'>('users');
   
   // Login fields
   const [enteredPassword, setEnteredPassword] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  // Update password fields
-  const [currentPasswordInput, setCurrentPasswordInput] = useState('');
-  const [newPasswordInput, setNewPasswordInput] = useState('');
-  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
-  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState<string | null>(null);
 
   // Editable Live Metrics state
   const [projectsCounter, setProjectsCounter] = useState<string>(() => {
@@ -184,65 +177,28 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
       setIsUnlocked(sessionStorage.getItem('genowl_admin_authenticated') === 'true');
       setAuthError(null);
       setSuccessMessage(null);
-      setPasswordChangeSuccess(null);
       refreshAllData();
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  // 1. Authenticate with Master Password (Permanent, works on all domains/devices)
+  // 1. Authenticate with Master Password (Locked strictly to CristianoMessi@2005)
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
 
-    const savedMaster = localStorage.getItem('genowl_admin_master_password') || DEFAULT_MASTER_PASSWORD;
-    if (
-      enteredPassword.trim() === savedMaster.trim() ||
-      enteredPassword.trim() === DEFAULT_MASTER_PASSWORD ||
-      enteredPassword.trim() === 'Genowl@2026' ||
-      enteredPassword.trim() === 'genowl2026'
-    ) {
+    if (enteredPassword.trim() === MASTER_ADMIN_PASSWORD) {
       sessionStorage.setItem('genowl_admin_authenticated', 'true');
+      try {
+        localStorage.removeItem('genowl_admin_master_password');
+      } catch {}
       setIsUnlocked(true);
       setEnteredPassword('');
       refreshAllData();
     } else {
       setAuthError('Incorrect Admin Password. Access denied.');
     }
-  };
-
-  // 2. Update Master Password (Inside Security tab)
-  const handleUpdatePassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError(null);
-    setPasswordChangeSuccess(null);
-
-    const savedMaster = localStorage.getItem('genowl_admin_master_password') || DEFAULT_MASTER_PASSWORD;
-    if (
-      currentPasswordInput.trim() !== savedMaster.trim() &&
-      currentPasswordInput.trim() !== DEFAULT_MASTER_PASSWORD
-    ) {
-      setAuthError('Current Master Password is incorrect.');
-      return;
-    }
-
-    const check = validatePasswordStrength(newPasswordInput);
-    if (!check.isValid) {
-      setAuthError(check.errors[0]);
-      return;
-    }
-
-    if (newPasswordInput !== newPasswordConfirm) {
-      setAuthError('New passwords do not match.');
-      return;
-    }
-
-    localStorage.setItem('genowl_admin_master_password', newPasswordInput);
-    setCurrentPasswordInput('');
-    setNewPasswordInput('');
-    setNewPasswordConfirm('');
-    setPasswordChangeSuccess('Master Admin Password updated and locked successfully!');
   };
 
   // 4. Logout of Admin Session
@@ -511,19 +467,6 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                   >
                     <CreditCard className="w-3.5 h-3.5" />
                     <span>Razorpay &amp; Supabase</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('security')}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-                      activeTab === 'security'
-                        ? 'bg-[#f7cc46] text-black shadow-md'
-                        : 'text-zinc-400 hover:text-white bg-white/5'
-                    }`}
-                  >
-                    <KeyRound className="w-3.5 h-3.5" />
-                    <span>Update Password</span>
                   </button>
                 </div>
 
@@ -1040,107 +983,6 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                       </div>
                     </form>
                   </div>
-                </div>
-              )}
-
-              {/* TAB 4: SECURITY / UPDATE MASTER PASSWORD */}
-              {activeTab === 'security' && (
-                <div className="max-w-md mx-auto py-4 space-y-4">
-                  <div className="text-center space-y-1">
-                    <h3 className="text-base font-bold text-white">Update Master Admin Password</h3>
-                    <p className="text-xs text-zinc-400">
-                      Configure your password to follow our enterprise password requirements.
-                    </p>
-                  </div>
-
-                  {passwordChangeSuccess && (
-                    <div className="p-3 rounded-xl bg-[#c6f554]/10 border border-[#c6f554]/30 text-xs text-[#c6f554] flex items-center gap-2">
-                      <Check className="w-4 h-4 shrink-0" />
-                      <span>{passwordChangeSuccess}</span>
-                    </div>
-                  )}
-
-                  {authError && (
-                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 shrink-0" />
-                      <span>{authError}</span>
-                    </div>
-                  )}
-
-                  <form onSubmit={handleUpdatePassword} className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-300 mb-1">Current Password</label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="••••••••"
-                        value={currentPasswordInput}
-                        onChange={(e) => setCurrentPasswordInput(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-[#f7cc46] transition-all"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-300 mb-1">New Password</label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="••••••••"
-                        value={newPasswordInput}
-                        onChange={(e) => setNewPasswordInput(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-[#f7cc46] transition-all"
-                      />
-                      <div className="mt-2 p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-1 text-[11px]">
-                        <div className="text-zinc-400 font-medium mb-1">Requirements Checklist:</div>
-                        {(() => {
-                          const rules = validatePasswordStrength(newPasswordInput).rules;
-                          return (
-                            <>
-                              <div className={`flex items-center gap-1.5 ${rules.minLength ? 'text-[#c6f554]' : 'text-zinc-500'}`}>
-                                <Check className={`w-3 h-3 ${rules.minLength ? 'opacity-100' : 'opacity-30'}`} />
-                                <span>At least 8 characters</span>
-                              </div>
-                              <div className={`flex items-center gap-1.5 ${rules.hasNumber ? 'text-[#c6f554]' : 'text-zinc-500'}`}>
-                                <Check className={`w-3 h-3 ${rules.hasNumber ? 'opacity-100' : 'opacity-30'}`} />
-                                <span>At least one numeric digit (0-9)</span>
-                              </div>
-                              <div className={`flex items-center gap-1.5 ${rules.hasSpecial ? 'text-[#c6f554]' : 'text-zinc-500'}`}>
-                                <Check className={`w-3 h-3 ${rules.hasSpecial ? 'opacity-100' : 'opacity-30'}`} />
-                                <span>At least one special character (!@#$%^&*)</span>
-                              </div>
-                              <div className={`flex items-center gap-1.5 ${rules.noRepeatMoreThanTwo ? 'text-[#c6f554]' : 'text-rose-400'}`}>
-                                <Check className={`w-3 h-3 ${rules.noRepeatMoreThanTwo ? 'opacity-100' : 'opacity-30'}`} />
-                                <span>No same number repeated &gt; 2 times (no 111)</span>
-                              </div>
-                              <div className={`flex items-center gap-1.5 ${rules.noSequentialMoreThanTwo ? 'text-[#c6f554]' : 'text-rose-400'}`}>
-                                <Check className={`w-3 h-3 ${rules.noSequentialMoreThanTwo ? 'opacity-100' : 'opacity-30'}`} />
-                                <span>No sequential numbers &gt; 2 (no 123, 321)</span>
-                              </div>
-                            </>
-                          );
-                        })()}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-300 mb-1">Confirm New Password</label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="••••••••"
-                        value={newPasswordConfirm}
-                        onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-[#f7cc46] transition-all"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#f7cc46] to-[#ffe082] hover:brightness-105 transition-all cursor-pointer"
-                    >
-                      Update Master Password
-                    </button>
-                  </form>
                 </div>
               )}
             </div>
