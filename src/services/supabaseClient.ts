@@ -68,10 +68,14 @@ CREATE TABLE IF NOT EXISTS public.genowl_inquiries (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
+  phone TEXT,
   service TEXT NOT NULL,
   message TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Ensure phone column exists if table was already created
+ALTER TABLE public.genowl_inquiries ADD COLUMN IF NOT EXISTS phone TEXT;
 
 -- Enable Row Level Security (RLS) & Public Policies
 ALTER TABLE public.genowl_users ENABLE ROW LEVEL SECURITY;
@@ -145,6 +149,7 @@ export async function syncInquiryToSupabase(inquiry: {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   service: string;
   message: string;
 }): Promise<boolean> {
@@ -165,6 +170,7 @@ export async function syncInquiryToSupabase(inquiry: {
         id: inquiry.id,
         name: inquiry.name,
         email: inquiry.email,
+        phone: inquiry.phone || null,
         service: inquiry.service,
         message: inquiry.message,
         created_at: new Date().toISOString(),

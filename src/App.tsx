@@ -198,6 +198,12 @@ export default function App() {
           <ContactPage
             initialService={selectedService}
             onNavigateServices={() => handleNavigate('services')}
+            currentUser={currentUser}
+            onOpenAuth={(mode) => {
+              setPendingService(null);
+              setAuthMode(mode);
+              setAuthModalOpen(true);
+            }}
           />
         </section>
 

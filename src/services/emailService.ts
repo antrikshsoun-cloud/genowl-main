@@ -375,10 +375,12 @@ export async function sendProblemOrInquiryEmail(
   clientEmail: string,
   categoryOrService: string,
   problemDescription: string,
-  ticketId: string
+  ticketId: string,
+  phone?: string
 ): Promise<{ success: boolean; message: string }> {
   const cleanName = name.trim();
   const cleanEmail = clientEmail.trim().toLowerCase();
+  const cleanPhone = phone ? phone.trim() : '';
   const isProblem = categoryOrService.toLowerCase().includes('problem') || categoryOrService.toLowerCase().includes('bug') || categoryOrService.toLowerCase().includes('issue');
 
   const clientSubject = `[Genowl Ticket #${ticketId}] We received your ${isProblem ? 'problem report' : 'inquiry'} 🦉`;
@@ -391,7 +393,7 @@ We have received your ${isProblem ? 'problem report' : 'project inquiry'} on Gen
 
 Ticket Reference: ${ticketId}
 Category: ${categoryOrService}
-Details:
+${cleanPhone ? `Phone / WhatsApp: ${cleanPhone}\n` : ''}Details:
 ${problemDescription}
 
 Our team has received this brief and will review and reply within 2 to 4 hours directly to this email address (${cleanEmail}).
@@ -429,6 +431,10 @@ https://genowl.com`;
           <td style="color:#71717a;">Your Email:</td>
           <td style="font-family:monospace;color:#ffffff;">${cleanEmail}</td>
         </tr>
+        ${cleanPhone ? `<tr>
+          <td style="color:#71717a;">Your Phone:</td>
+          <td style="font-family:monospace;color:#c6f554;">${cleanPhone}</td>
+        </tr>` : ''}
         <tr>
           <td valign="top" style="color:#71717a;padding-top:8px;">Description:</td>
           <td style="color:#e4e4e7;padding-top:8px;line-height:1.5;">${problemDescription}</td>
@@ -446,7 +452,7 @@ https://genowl.com`;
 Ticket ID: #${ticketId}
 Client Name: ${cleanName}
 Client Email: ${cleanEmail}
-Category: ${categoryOrService}
+${cleanPhone ? `Client Phone: ${cleanPhone}\n` : ''}Category: ${categoryOrService}
 
 Message / Problem Description:
 ${problemDescription}
@@ -470,6 +476,10 @@ Reply directly to: ${cleanEmail}`;
           <td style="color:#71717a;">Client Email:</td>
           <td style="font-family:monospace;color:#c6f554;">${cleanEmail}</td>
         </tr>
+        ${cleanPhone ? `<tr>
+          <td style="color:#71717a;">Client Phone:</td>
+          <td style="font-family:monospace;color:#f7cc46;font-weight:700;">${cleanPhone}</td>
+        </tr>` : ''}
         <tr>
           <td style="color:#71717a;">Category:</td>
           <td style="color:#f7cc46;font-weight:600;">${categoryOrService}</td>
@@ -490,9 +500,32 @@ Reply directly to: ${cleanEmail}`;
     </div>`
   );
 
+  // 3. Direct zero-config delivery to genowlai@gmail.com via FormSubmit
+  try {
+    await fetch('https://formsubmit.co/ajax/genowlai@gmail.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        _subject: `[Genowl ${isProblem ? 'Problem' : 'Inquiry'} #${ticketId}] from ${cleanName}`,
+        ticketId: `#${ticketId}`,
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone || 'Not provided',
+        category: categoryOrService,
+        message: problemDescription,
+        submittedAt: new Date().toLocaleString(),
+      }),
+    });
+  } catch (err) {
+    console.warn('Direct FormSubmit notification note:', err);
+  }
+
   const apiKey = getStoredEmailApiKey() || (import.meta as any).env?.VITE_RESEND_API_KEY || '';
 
-  // Dispatch to client receipt
+  // 4. Also dispatch via Resend if API key is present
   if (apiKey && apiKey.startsWith('re_')) {
     try {
       await fetch('/api/send-email', {
@@ -508,7 +541,6 @@ Reply directly to: ${cleanEmail}`;
       });
     } catch {}
 
-    // Forward to official site email (genowlai@gmail.com)
     try {
       await fetch('/api/send-email', {
         method: 'POST',

@@ -1,24 +1,41 @@
-import React, { useState } from 'react';
-import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, Clock, ShieldCheck, Sparkles, AlertCircle, HelpCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, Clock, ShieldCheck, Sparkles, AlertCircle, HelpCircle, Lock, Phone } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 import { sendProblemOrInquiryEmail, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM } from '../services/emailService.ts';
 import { syncInquiryToSupabase } from '../services/supabaseClient.ts';
+import { UserProfile } from './AuthModal.tsx';
 
 interface ContactPageProps {
   initialService?: string;
   onNavigateServices?: () => void;
+  currentUser?: UserProfile | null;
+  onOpenAuth?: (mode: 'signin' | 'signup') => void;
 }
 
-export default function ContactPage({ initialService = '', onNavigateServices }: ContactPageProps) {
+export default function ContactPage({
+  initialService = '',
+  onNavigateServices,
+  currentUser,
+  onOpenAuth,
+}: ContactPageProps) {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedInsta, setCopiedInsta] = useState(false);
   const [contactMode, setContactMode] = useState<'project' | 'problem'>('project');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState(currentUser?.name || '');
+  const [email, setEmail] = useState(currentUser?.email || '');
+  const [phone, setPhone] = useState('');
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [service, setService] = useState(initialService || 'Web design');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isSending, setIsSending] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) {
+      setName(currentUser.name);
+      setEmail(currentUser.email);
+    }
+  }, [currentUser]);
 
   const instagramId = OFFICIAL_INSTAGRAM;
   const gmailAccount = OFFICIAL_GENOWL_GMAIL;
@@ -39,19 +56,39 @@ export default function ContactPage({ initialService = '', onNavigateServices }:
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPhoneError(null);
+
+    // Strict check: User must be logged in before submitting any inquiry or problem report
+    if (!currentUser) {
+      onOpenAuth?.('signin');
+      return;
+    }
+
+    // Phone format validation (without glitches, supports international & standard digits)
+    const cleanPhone = phone.trim();
+    const digitsOnly = cleanPhone.replace(/[^0-9]/g, '');
+    if (!cleanPhone || digitsOnly.length < 7 || digitsOnly.length > 15) {
+      setPhoneError('Please enter a valid phone or WhatsApp number (7 to 15 digits, country code optional e.g. +91 9876543210).');
+      return;
+    }
+
     setIsSending(true);
 
     const isProblem = contactMode === 'problem';
     const id = (isProblem ? 'PRB-' : 'INQ-') + Math.floor(100000 + Math.random() * 900000);
     setTicketId(id);
 
+    const clientName = currentUser.name.trim();
+    const clientEmail = currentUser.email.trim();
+
     try {
       const raw = localStorage.getItem('genowl_client_inquiries');
       const list = raw ? JSON.parse(raw) : [];
       list.push({
         id,
-        name: name.trim(),
-        email: email.trim(),
+        name: clientName,
+        email: clientEmail,
+        phone: cleanPhone,
         service: isProblem ? `[Problem] ${service}` : service,
         message: message.trim(),
         createdAt: new Date().toISOString(),
@@ -59,11 +96,12 @@ export default function ContactPage({ initialService = '', onNavigateServices }:
       localStorage.setItem('genowl_client_inquiries', JSON.stringify(list));
     } catch {}
 
-    // Stream real-time inquiry to Supabase Cloud PostgreSQL
+    // Stream real-time inquiry to Supabase Cloud PostgreSQL with phone
     syncInquiryToSupabase({
       id,
-      name: name.trim(),
-      email: email.trim(),
+      name: clientName,
+      email: clientEmail,
+      phone: cleanPhone,
       service: isProblem ? `[Problem] ${service}` : service,
       message: message.trim(),
     }).catch(() => {});
@@ -71,11 +109,12 @@ export default function ContactPage({ initialService = '', onNavigateServices }:
     // Dispatch real email with golden owl logo to client and forward to genowlai@gmail.com
     try {
       await sendProblemOrInquiryEmail(
-        name.trim(),
-        email.trim(),
+        clientName,
+        clientEmail,
         isProblem ? `Problem Report: ${service}` : service,
         message.trim(),
-        id
+        id,
+        cleanPhone
       );
     } catch (err) {
       console.warn('Mail dispatch warning:', err);
@@ -248,35 +287,64 @@ export default function ContactPage({ initialService = '', onNavigateServices }:
             </p>
           </div>
 
-          {submitted ? (
+          {!currentUser ? (
+            <div className="py-12 px-6 sm:px-10 rounded-3xl bg-[#0e1610]/95 border border-white/10 text-center space-y-4 max-w-md mx-auto shadow-2xl">
+              <div className="w-14 h-14 rounded-2xl bg-[#c6f554]/15 border border-[#c6f554]/30 text-[#c6f554] flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(198,245,84,0.25)]">
+                <Lock className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-white">Log In Required to Submit</h3>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                To prevent anonymous spam, ensure ticket security, and track your inquiry under your account, please log in or sign up before submitting.
+              </p>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth?.('signin')}
+                  className="w-full py-3 rounded-full text-xs font-bold text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.35)] cursor-pointer inline-flex items-center justify-center gap-2"
+                >
+                  <span>Log In / Sign Up to Continue</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ) : submitted ? (
             <div className="py-10 text-center space-y-4">
               <div className="w-16 h-14 rounded-2xl bg-[#142016] border border-[#f7cc46]/50 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(247,204,70,0.35)] p-1">
                 <img src="/genowl-mail-logo.png" alt="Genowl Logo" className="w-11 h-9 object-contain" />
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-white">
-                  {contactMode === 'problem' ? 'Problem Report Logged & Forwarded!' : `Inquiry Received, ${name || 'there'}!`}
+                <h3 className="text-2xl font-bold text-white">
+                  Thank you, {currentUser.name}!
                 </h3>
-                <p className="text-xs text-[#c6f554] font-mono mt-0.5">Ticket Reference: {ticketId}</p>
+                <p className="text-xs text-[#c6f554] font-medium mt-1">
+                  Your {contactMode === 'problem' ? 'problem report' : 'project inquiry'} has been logged &amp; forwarded.
+                </p>
+                <p className="text-xs text-zinc-400 font-mono mt-0.5">Ticket Reference: {ticketId}</p>
               </div>
 
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-left text-xs space-y-2 max-w-sm mx-auto">
                 <div className="flex justify-between text-zinc-300">
+                  <span className="text-zinc-500">Client:</span>
+                  <span className="font-semibold text-white">{currentUser.name}</span>
+                </div>
+                <div className="flex justify-between text-zinc-300">
                   <span className="text-zinc-500">Category:</span>
                   <span className="font-semibold text-white">{service}</span>
                 </div>
-                <div className="flex justify-between text-zinc-300">
-                  <span className="text-zinc-500">Target Response:</span>
-                  <span className="font-medium text-[#c6f554]">Within 2 - 4 Hours</span>
-                </div>
+                {phone && (
+                  <div className="flex justify-between text-zinc-300">
+                    <span className="text-zinc-500">Phone / WhatsApp:</span>
+                    <span className="font-mono text-[#c6f554]">{phone}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-zinc-300">
                   <span className="text-zinc-500">Forwarded To:</span>
                   <span className="font-mono text-[#f7cc46]">{gmailAccount}</span>
                 </div>
                 <div className="flex justify-between text-zinc-300">
                   <span className="text-zinc-500">Receipt Sent To:</span>
-                  <span className="font-mono text-zinc-200">{email}</span>
+                  <span className="font-mono text-zinc-200">{currentUser.email}</span>
                 </div>
               </div>
 
@@ -290,6 +358,7 @@ export default function ContactPage({ initialService = '', onNavigateServices }:
                   onClick={() => {
                     setSubmitted(false);
                     setMessage('');
+                    setPhone('');
                   }}
                   className="px-5 py-2 rounded-full text-xs font-semibold text-zinc-300 bg-white/10 hover:bg-white/15 transition-colors cursor-pointer"
                 >
@@ -301,34 +370,61 @@ export default function ContactPage({ initialService = '', onNavigateServices }:
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-                    Your Full Name
+                  <label className="block text-xs font-medium text-zinc-300 mb-1.5 flex items-center justify-between">
+                    <span>Your Full Name</span>
+                    <span className="text-[10px] text-[#c6f554] font-semibold">Logged In</span>
                   </label>
                   <input
                     id="contact-name-input"
                     type="text"
-                    required
-                    placeholder="e.g. Antriksh Soun"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-[#c6f554] focus:ring-1 focus:ring-[#c6f554] transition-all"
+                    readOnly
+                    value={currentUser.name}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm cursor-not-allowed opacity-90 select-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-                    Your Gmail / Email (Where we reply)
+                  <label className="block text-xs font-medium text-zinc-300 mb-1.5 flex items-center justify-between">
+                    <span>Your Gmail / Email</span>
+                    <span className="text-[10px] text-[#c6f554] font-semibold">Verified</span>
                   </label>
                   <input
                     id="contact-email-input"
                     type="email"
-                    required
-                    placeholder="your.email@gmail.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-[#c6f554] focus:ring-1 focus:ring-[#c6f554] transition-all"
+                    readOnly
+                    value={currentUser.email}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm cursor-not-allowed opacity-90 select-none"
                   />
                 </div>
+              </div>
+
+              {/* Phone / WhatsApp Number Input with format validation */}
+              <div>
+                <label className="block text-xs font-medium text-zinc-300 mb-1.5 flex items-center justify-between">
+                  <span>Phone / WhatsApp Number (Required)</span>
+                  <span className="text-[10px] text-zinc-400">Include country code</span>
+                </label>
+                <div className="relative">
+                  <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+                  <input
+                    id="contact-phone-input"
+                    type="tel"
+                    required
+                    placeholder="e.g. +91 98765 43210 or +1 (555) 012-3456"
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      if (phoneError) setPhoneError(null);
+                    }}
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-[#c6f554] focus:ring-1 focus:ring-[#c6f554] transition-all"
+                  />
+                </div>
+                {phoneError && (
+                  <p className="mt-1.5 text-xs text-rose-400 flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{phoneError}</span>
+                  </p>
+                )}
               </div>
 
               <div>
