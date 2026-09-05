@@ -42,6 +42,33 @@ app.post('/api/send-email', async (req, res) => {
   }
 });
 
+// Google Apps Script Server Proxy (Zero CORS, 100% server-to-server delivery)
+app.post('/api/send-google-email', async (req, res) => {
+  try {
+    const { to, subject, html, text } = req.body;
+    const googleUrl =
+      process.env.VITE_GOOGLE_APPS_SCRIPT_URL ||
+      'https://script.google.com/macros/s/AKfycbwY6ycQQx1qV2C0dhNR686LeKWjGezYQ7kgSmUR2babI6dTIdmpK19etUdkBsSoqT-AfQ/exec';
+
+    const googleRes = await fetch(googleUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ to, subject, html, text }),
+    });
+
+    const resultText = await googleRes.text();
+    let parsed;
+    try {
+      parsed = JSON.parse(resultText);
+    } catch {
+      parsed = { status: 'success', raw: resultText };
+    }
+    res.json(parsed);
+  } catch (err) {
+    res.status(500).json({ status: 'error', error: err?.message || 'Server Google Mail error' });
+  }
+});
+
 // Serve compiled static assets from dist
 app.use(express.static(path.join(__dirname, 'dist')));
 

@@ -77,11 +77,26 @@ export async function sendViaGoogleAppsScript(
   text: string
 ): Promise<boolean> {
   const url = getGoogleScriptUrl();
+  const payload = JSON.stringify({ to, subject, html, text });
+
+  // 1. Primary Attempt: Call server proxy /api/send-google-email (Zero CORS, 100% server-to-server)
+  try {
+    const serverRes = await fetch('/api/send-google-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+    });
+    if (serverRes.ok) {
+      return true;
+    }
+  } catch {
+    // Server proxy not reachable or running in static preview, fallback to direct dispatch
+  }
+
+  // 2. Direct Browser Dispatch to Google Apps Script (mode: 'no-cors' with plain text)
   if (!url) return false;
 
   try {
-    const payload = JSON.stringify({ to, subject, html, text });
-    // 'no-cors' with 'text/plain' bypasses CORS preflight in browsers and sends straight to Google
     await fetch(url, {
       method: 'POST',
       mode: 'no-cors',
@@ -92,7 +107,7 @@ export async function sendViaGoogleAppsScript(
     });
     return true;
   } catch (err) {
-    console.warn('Google Apps Script dispatch error:', err);
+    console.warn('Google Apps Script direct dispatch error:', err);
     return false;
   }
 }
