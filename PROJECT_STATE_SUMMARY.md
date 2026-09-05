@@ -1,14 +1,20 @@
 # Genowl Studio — Project State & Conversation Checkpoint
 
-**Date:** September 5, 2026  
+**Date:** September 6, 2026  
 **Repository:** [github.com/antrikshsoun-cloud/genowl-main.git](https://github.com/antrikshsoun-cloud/genowl-main.git)  
-**Latest Git Commit:** `be779c0` (pushed to `origin/main`)  
+**Latest Git Commit:** `93c9e2c` (pushed to `origin/main`)  
 **Production Staging:** `springgreen-horse-473302.hostingersite.com`  
 **Master PDF Blueprint:** `c:\Users\Antriksh\Downloads\Genowl_Studio_Architectural_Blueprint.pdf`
 
 ---
 
 ## 1. Accomplished Features & System Architecture
+
+### Outbound Transactional Mailer (Google Apps Script — 100% Free Forever)
+- **Primary Sender:** All verification OTP security codes, official welcome letters, and inquiry tickets are dispatched directly from `genowlai@gmail.com`.
+- **Google Cloud Webhook:** `https://script.google.com/macros/s/AKfycbwY6ycQQx1qV2C0dhNR686LeKWjGezYQ7kgSmUR2babI6dTIdmpK19etUdkBsSoqT-AfQ/exec`.
+- **Zero Cost & No Subscriptions:** 500 free emails per day handled directly by Google's infrastructure with 100% genuine Gmail DKIM/SPF deliverability.
+- **Admin Email Panel:** Added real-time Google Cloud status indicator, editable webhook URL field, and 1-click **"Send Test Email"** button.
 
 ### Core Philosophy & Brand Identity
 - **Motto:** *"In today's world everybody knows that for almost every service possible there is an AI tool. But people don't have time to master every tool. All you have to do is buy our service and tell us what to build — the rest is on us."*
@@ -36,15 +42,12 @@
 - **Tracking Ticket Generation:** Automatically issues `#PRJ-XXXXXX`, `#PRB-XXXXXX`, or `#INQ-XXXXXX`.
 - **Pre-Filled Email App Backup:** Confirmation receipt features a 1-click button to open Gmail/Hostinger/Outlook with the pre-composed report.
 
-### 4-Tier Redundant Email Delivery Pipeline
-1. **Primary Hostinger Corporate Mail:** Dispatches to `support@genowl.tech` with CC to `genowlai@gmail.com`.
-2. **Operations Backup Gmail:** Parallel dispatch to `genowlai@gmail.com` with CC to `support@genowl.tech`.
-3. **Supabase Cloud PostgreSQL Database:** Real-time persistence to `genowl_inquiries` before email dispatch, ensuring zero lost leads.
-4. **Pre-Filled `mailto:` Backup:** Client-side 1-click fallback directly launches the user's native email software.
-
-### Automated Hostinger Deployment
-- **`package.json` Postinstall Hook:** Added `"postinstall": "vite build"` so Hostinger builds fresh `dist/` bundles automatically upon redeployment.
-- **Vite Build Verification:** Production build passes with 0 errors (`dist/` generated).
+### Redundant Delivery Pipeline
+1. **Google Apps Script Dispatch:** Instant transactional delivery from `genowlai@gmail.com`.
+2. **Primary Hostinger Corporate Mail:** Dispatches to `support@genowl.tech` with CC to `genowlai@gmail.com`.
+3. **Operations Backup Gmail:** Parallel dispatch to `genowlai@gmail.com` with CC to `support@genowl.tech`.
+4. **Supabase Cloud PostgreSQL Database:** Real-time persistence to `genowl_inquiries` before email dispatch, ensuring zero lost leads.
+5. **Pre-Filled `mailto:` Backup:** Client-side 1-click fallback directly launches the user's native email software.
 
 ---
 
@@ -53,9 +56,9 @@
 When you're ready to resume work, here is the exact roadmap:
 
 1. **Hostinger 1-Click Redeploy:**
-   - In Hostinger hPanel -> Websites -> `springgreen-horse-473302.hostingersite.com`, click **"Redeploy"** to push commit `be779c0` live to production.
-2. **FormSubmit One-Time Activation:**
-   - Open `support@genowl.tech` (via Hostinger Webmail at [mail.hostinger.com](https://mail.hostinger.com)) and `genowlai@gmail.com` to click "Activate Form" once.
+   - In Hostinger hPanel -> Websites -> `springgreen-horse-473302.hostingersite.com`, click **"Redeploy"** to push commit `93c9e2c` live to production.
+2. **Live Sign-Up Verification Test:**
+   - Register a new client account on the live website and watch the 6-digit OTP and Welcome message land directly in the client inbox from `genowlai@gmail.com`.
 3. **Razorpay Live Activation:**
    - Add your live Razorpay Key ID and Secret Key in the Admin Portal under the **"Razorpay & Supabase"** tab.
 4. **International Checkout (Stripe / PayPal):**
@@ -65,4 +68,5 @@ When you're ready to resume work, here is the exact roadmap:
 
 ---
 
-*All files, documentation, and source code are safely saved, built, committed, and pushed to GitHub main (`be779c0`). Everything is secured!*
+*All files, documentation, and source code are safely saved, built, committed, and pushed to GitHub main (`93c9e2c`). Everything is secured!*
+
