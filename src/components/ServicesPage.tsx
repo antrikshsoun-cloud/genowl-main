@@ -250,7 +250,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
               onClick={() => onSelectService(currentWebConfig.title)}
               className="w-full py-3.5 px-4 rounded-xl font-bold text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.35)] hover:shadow-[0_0_30px_rgba(198,245,84,0.6)] transition-all flex items-center justify-center gap-2 cursor-pointer group/btn"
             >
-              <span>Order {currentWebConfig.title} ({currentWebConfig.price})</span>
+              <span>Book Project &bull; {currentWebConfig.title} ({currentWebConfig.price})</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
             </button>
             <button
@@ -328,7 +328,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                   onClick={() => onSelectService(service.title)}
                   className="w-full py-3 px-4 rounded-xl font-semibold text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.3)] hover:shadow-[0_0_30px_rgba(198,245,84,0.5)] transition-all flex items-center justify-center gap-2 cursor-pointer group/btn"
                 >
-                  <span>Order {service.title} for {service.price}</span>
+                  <span>Book Project &bull; {service.title} ({service.price})</span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
                 </button>
               </div>
@@ -426,7 +426,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                   }}
                   className="w-full py-2.5 rounded-xl font-bold text-xs text-black bg-[#c6f554] hover:brightness-105 transition-all cursor-pointer"
                 >
-                  Choose 2D Website ($500)
+                  Book 2D Website ($500)
                 </button>
               </div>
 
@@ -468,7 +468,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                   }}
                   className="w-full py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.4)] transition-all cursor-pointer"
                 >
-                  Choose 3D Website ($2,500)
+                  Book 3D Website ($2,500)
                 </button>
               </div>
             </div>

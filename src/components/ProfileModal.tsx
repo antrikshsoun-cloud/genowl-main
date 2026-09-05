@@ -230,7 +230,7 @@ export default function ProfileModal({
                   </div>
                   <h3 className="text-sm font-bold text-white">No active orders right now</h3>
                   <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                    Start a new project deliverable for flat $99 and our engineering team will begin production.
+                    Reserve a dedicated engineering slot for your project. Our team will contact you within 30 minutes.
                   </p>
                   <button
                     type="button"
@@ -240,7 +240,7 @@ export default function ProfileModal({
                     }}
                     className="px-5 py-2 rounded-xl text-xs font-semibold text-black bg-[#c6f554] hover:brightness-105 transition-all inline-flex items-center gap-1.5 cursor-pointer"
                   >
-                    <span>Order a Service ($99)</span>
+                    <span>Book a Project</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -254,14 +254,18 @@ export default function ProfileModal({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs font-bold text-[#c6f554]">{ord.id}</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                            In Production
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                            ord.status === 'pending_slot_call'
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
+                              : 'bg-blue-500/15 text-blue-300 border-blue-500/30'
+                          }`}>
+                            {ord.status === 'pending_slot_call' ? '📞 Callback in 30m' : '⚡ In Production'}
                           </span>
                         </div>
                         <h4 className="text-sm font-bold text-white mt-1 capitalize">{ord.service}</h4>
                       </div>
                       <div className="text-right">
-                        <div className="text-xs font-mono font-bold text-white">$99.00 Flat</div>
+                        <div className="text-xs font-mono font-bold text-white">{ord.amount || 'Custom Scope'}</div>
                         <div className="text-[10px] text-zinc-400">{new Date(ord.createdAt).toLocaleDateString()}</div>
                       </div>
                     </div>
@@ -274,7 +278,7 @@ export default function ProfileModal({
                     <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-1">
                       <div className="flex items-center gap-1.5 text-[#c6f554]">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Estimated delivery: within 48 hours</span>
+                        <span>{ord.status === 'pending_slot_call' ? 'Slot booked • Callback within 30 min' : 'Estimated delivery: within 48–72 hours'}</span>
                       </div>
                       <span className="text-zinc-500">Speed: {ord.speed || 'Standard'}</span>
                     </div>
@@ -308,7 +312,7 @@ export default function ProfileModal({
                         </div>
                         <h4 className="text-sm font-bold text-white mt-1 capitalize">{ord.service}</h4>
                       </div>
-                      <span className="text-xs font-mono font-bold text-[#c6f554]">$99.00 Paid</span>
+                      <span className="text-xs font-mono font-bold text-[#c6f554]">{ord.amount || 'Custom Scope'} Delivered</span>
                     </div>
                     <div className="text-[11px] text-zinc-400">
                       Completed and delivered on {new Date(ord.createdAt).toLocaleDateString()}. Full commercial IP rights transferred to client.

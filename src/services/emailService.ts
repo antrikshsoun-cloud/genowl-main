@@ -767,3 +767,206 @@ export async function testGoogleAppsScriptDispatch(
     return { success: false, message: err?.message || 'Error executing test dispatch' };
   }
 }
+
+/**
+ * Dispatches Slot Booking notifications:
+ * 1. Immediate receipt to client confirming 30-minute callback window
+ * 2. Urgent dual notification to admins (genowlai@gmail.com & support@genowl.tech) with client Phone/WhatsApp and project brief
+ */
+export async function sendSlotBookingEmail(
+  name: string,
+  clientEmail: string,
+  phone: string,
+  service: string,
+  amount: string,
+  brief: string,
+  turnaround: string,
+  ticketId: string,
+  referenceUrl?: string
+): Promise<{ success: boolean; message: string; ticketId: string }> {
+  const cleanName = name.trim();
+  const cleanEmail = clientEmail.trim().toLowerCase();
+  const cleanPhone = phone.trim();
+  const cleanRefUrl = referenceUrl ? referenceUrl.trim() : '';
+
+  const clientSubject = `Genowl Studio: Slot Booking Received #${ticketId}`;
+  const adminSubject = `🚨 [NEW SLOT BOOKING #${ticketId}] ${service} from ${cleanName}`;
+
+  const clientPlainText = `Hi ${cleanName},
+
+Thank you for booking a project slot on Genowl Studio!
+
+Ticket Reference: #${ticketId}
+Service Selected: ${service} (${amount} Flat)
+Preferred Turnaround: ${turnaround}
+Contact Phone: ${cleanPhone}
+${cleanRefUrl ? `Reference Link: ${cleanRefUrl}\n` : ''}
+Project Brief:
+${brief}
+
+NOTICE: Our team will review your brief and contact you at your phone number (${cleanPhone}) within half an hour to finalize your slot schedule and discuss details.
+
+Best regards,
+The Genowl Studio Team
+Desk: ${OFFICIAL_GENOWL_GMAIL} | ${OFFICIAL_HOSTINGER_EMAIL}`;
+
+  const clientHtml = wrapEmailInGenowlTheme(
+    `Slot Booking #${ticketId} Confirmed`,
+    `<h2 style="font-size:20px;font-weight:700;color:#ffffff;margin:0 0 8px 0;">
+      Slot Booking Request Received!
+    </h2>
+    <div style="display:inline-block;padding:4px 12px;background-color:rgba(198,245,84,0.15);border:1px solid rgba(198,245,84,0.4);border-radius:999px;color:#c6f554;font-size:11px;font-weight:600;margin-bottom:18px;">
+      &bull; Team Contact SLA: Within 30 Minutes
+    </div>
+
+    <p style="font-size:13px;color:#a1a1aa;line-height:1.6;margin:0 0 18px 0;">
+      Hi <strong style="color:#ffffff;">${cleanName}</strong>, we have received your project brief. Our engineering lead will call / WhatsApp you at <strong style="color:#c6f554;">${cleanPhone}</strong> within 30 minutes to confirm your slot.
+    </p>
+
+    <div style="background-color:#080e0a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;margin:0 0 20px 0;">
+      <table width="100%" cellpadding="4" cellspacing="0" style="font-size:12px;color:#d4d4d8;">
+        <tr>
+          <td width="120" style="color:#71717a;">Ticket ID:</td>
+          <td style="font-family:monospace;font-weight:700;color:#c6f554;">#${ticketId}</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Service:</td>
+          <td style="color:#ffffff;font-weight:600;">${service} (${amount})</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Turnaround:</td>
+          <td style="color:#f7cc46;font-weight:600;">${turnaround}</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Contact Phone:</td>
+          <td style="font-family:monospace;color:#c6f554;">${cleanPhone}</td>
+        </tr>
+        ${cleanRefUrl ? `<tr>
+          <td style="color:#71717a;">Reference:</td>
+          <td><a href="${cleanRefUrl}" style="color:#c6f554;text-decoration:none;">${cleanRefUrl}</a></td>
+        </tr>` : ''}
+        <tr>
+          <td valign="top" style="color:#71717a;padding-top:8px;">Project Brief:</td>
+          <td style="color:#e4e4e7;padding-top:8px;line-height:1.5;">${brief}</td>
+        </tr>
+      </table>
+    </div>`
+  );
+
+  const adminPlainText = `🚨 [NEW CLIENT SLOT BOOKING REQUEST]
+Ticket ID: #${ticketId}
+Client Name: ${cleanName}
+Client Email: ${cleanEmail}
+Client Phone: ${cleanPhone}
+Service: ${service} (${amount})
+Preferred Turnaround: ${turnaround}
+${cleanRefUrl ? `Reference Link: ${cleanRefUrl}\n` : ''}
+Project Brief:
+${brief}
+
+ACTION REQUIRED: Contact this client at ${cleanPhone} within 30 minutes to confirm the booking!`;
+
+  const adminHtml = wrapEmailInGenowlTheme(
+    `New Slot Request #${ticketId}`,
+    `<h2 style="font-size:20px;font-weight:700;color:#f7cc46;margin:0 0 8px 0;">
+      🚨 Urgent: New Project Slot Request #${ticketId}
+    </h2>
+    <div style="display:inline-block;padding:4px 12px;background-color:rgba(247,204,70,0.15);border:1px solid rgba(247,204,70,0.4);border-radius:999px;color:#f7cc46;font-size:11px;font-weight:700;margin-bottom:18px;">
+      &bull; CALL CLIENT WITHIN 30 MINUTES
+    </div>
+
+    <div style="background-color:#080e0a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin:0 0 20px 0;">
+      <table width="100%" cellpadding="5" cellspacing="0" style="font-size:13px;color:#d4d4d8;">
+        <tr>
+          <td width="130" style="color:#71717a;">Client Name:</td>
+          <td style="color:#ffffff;font-weight:700;">${cleanName}</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Client Phone:</td>
+          <td>
+            <a href="tel:${cleanPhone}" style="font-family:monospace;color:#c6f554;font-size:15px;font-weight:800;text-decoration:none;">
+              📞 ${cleanPhone}
+            </a>
+            &nbsp;&bull;&nbsp;
+            <a href="https://wa.me/${cleanPhone.replace(/[^0-9]/g, '')}" target="_blank" style="color:#25D366;font-weight:700;text-decoration:none;font-size:12px;">
+              💬 Open WhatsApp
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Client Email:</td>
+          <td style="font-family:monospace;color:#ffffff;">${cleanEmail}</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Service:</td>
+          <td style="color:#f7cc46;font-weight:700;">${service} (${amount})</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Turnaround:</td>
+          <td style="color:#ffffff;font-weight:600;">${turnaround}</td>
+        </tr>
+        ${cleanRefUrl ? `<tr>
+          <td style="color:#71717a;">Reference Link:</td>
+          <td><a href="${cleanRefUrl}" style="color:#c6f554;word-break:break-all;">${cleanRefUrl}</a></td>
+        </tr>` : ''}
+        <tr>
+          <td valign="top" style="color:#71717a;padding-top:10px;">Brief / Scope:</td>
+          <td style="color:#ffffff;padding-top:10px;line-height:1.6;font-size:13px;background-color:rgba(255,255,255,0.03);padding:12px;border-radius:8px;">
+            ${brief}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <a href="tel:${cleanPhone}" style="display:inline-block;padding:12px 28px;background:linear-gradient(90deg,#baf345,#d6fa66);color:#000000;font-weight:800;font-size:13px;border-radius:12px;text-decoration:none;">
+        Call ${cleanName} (${cleanPhone}) Now &rarr;
+      </a>
+    </div>`
+  );
+
+  // 1. Dispatch directly via Google Apps Script (from genowlai@gmail.com)
+  sendViaGoogleAppsScript(cleanEmail, clientSubject, clientHtml, clientPlainText).catch(() => {});
+  sendViaGoogleAppsScript(OFFICIAL_GENOWL_GMAIL, adminSubject, adminHtml, adminPlainText).catch(() => {});
+  sendViaGoogleAppsScript(OFFICIAL_HOSTINGER_EMAIL, adminSubject, adminHtml, adminPlainText).catch(() => {});
+
+  // 2. FormSubmit parallel dispatch to ensure zero lost leads
+  try {
+    fetch(`https://formsubmit.co/ajax/${OFFICIAL_HOSTINGER_EMAIL}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        _subject: adminSubject,
+        _captcha: 'false',
+        _template: 'table',
+        ticketId: `#${ticketId}`,
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        service,
+        turnaround,
+        brief,
+        _cc: OFFICIAL_GENOWL_GMAIL,
+      }),
+    }).catch(() => {});
+  } catch {}
+
+  // 3. Save log in browser memory
+  const logEntry: EmailLog = {
+    id: 'slot_' + Date.now().toString(36),
+    type: 'inquiry_receipt',
+    recipientEmail: cleanEmail,
+    recipientName: cleanName,
+    subject: clientSubject,
+    contentPreview: `Slot #${ticketId} [${service}]: Phone ${cleanPhone} - ${brief.slice(0, 100)}`,
+    dispatchedAt: new Date().toISOString(),
+    status: 'delivered',
+  };
+  saveEmailLog(logEntry);
+
+  return {
+    success: true,
+    message: `Slot #${ticketId} booked! Our team will contact ${cleanName} within 30 minutes.`,
+    ticketId,
+  };
+}

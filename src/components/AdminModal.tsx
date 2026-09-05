@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Lock, Users, Key, Search, Trash2, Download, Check, AlertCircle, Clock, Calendar, ShoppingBag, MessageSquare, RefreshCw, ExternalLink, Award, Mail, Send, CreditCard, Database, Copy } from 'lucide-react';
+import { X, ShieldCheck, Lock, Users, Key, Search, Trash2, Download, Check, AlertCircle, Clock, Calendar, ShoppingBag, MessageSquare, RefreshCw, ExternalLink, Award, Mail, Send, CreditCard, Database, Copy, Phone } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 import {
   EmailLog,
@@ -29,10 +29,12 @@ export interface ClientOrder {
   service: string;
   name: string;
   email: string;
+  phone?: string;
   details: string;
   referenceUrl?: string;
   speed?: string;
   amount: string;
+  status?: string;
   createdAt: string;
 }
 
@@ -160,13 +162,18 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
   const [emails, setEmails] = useState<EmailLog[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Handle toggling order between in_progress and completed
+  // Handle toggling order between pending_slot_call, in_progress, and completed
   const handleToggleOrderStatus = (orderId: string) => {
     const updated = orders.map((o: any) => {
       if (o.id === orderId) {
+        let nextStatus = 'in_progress';
+        if (o.status === 'pending_slot_call') nextStatus = 'in_progress';
+        else if (o.status === 'in_progress') nextStatus = 'completed';
+        else nextStatus = 'pending_slot_call';
+
         return {
           ...o,
-          status: o.status === 'completed' ? 'in_progress' : 'completed',
+          status: nextStatus,
         };
       }
       return o;
@@ -593,7 +600,7 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                 <div className="space-y-4">
                   <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/30">
                     {filteredOrders.length === 0 ? (
-                      <div className="py-12 text-center text-zinc-500 text-xs">No client orders placed yet. Orders placed via the $99 checkout will appear here.</div>
+                      <div className="py-12 text-center text-zinc-500 text-xs">No client orders placed yet. Project slot reservations will appear here.</div>
                     ) : (
                       <table className="w-full text-left border-collapse text-xs">
                         <thead>
@@ -613,8 +620,25 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                               <td className="py-3 px-4 font-mono text-[#c6f554] font-bold">{ord.id}</td>
                               <td className="py-3 px-4 font-semibold text-white">{ord.service}</td>
                               <td className="py-3 px-4 text-zinc-300">
-                                <div>{ord.name}</div>
-                                <div className="text-[10px] text-zinc-500 font-mono">{ord.email}</div>
+                                <div className="font-semibold text-white">{ord.name}</div>
+                                <div className="text-[10px] text-zinc-400 font-mono">{ord.email}</div>
+                                {ord.phone && (
+                                  <div className="flex items-center gap-1.5 mt-1 font-mono text-[11px] text-emerald-400">
+                                    <Phone className="w-3 h-3 text-[#c6f554]" />
+                                    <a href={`tel:${ord.phone.replace(/[^0-9+]/g, '')}`} className="hover:underline font-semibold" title="Click to Call Client">
+                                      {ord.phone}
+                                    </a>
+                                    <a
+                                      href={`https://wa.me/${ord.phone.replace(/[^0-9]/g, '')}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="ml-1 px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 text-[9px] font-sans font-medium"
+                                      title="Open WhatsApp Chat"
+                                    >
+                                      WhatsApp
+                                    </a>
+                                  </div>
+                                )}
                               </td>
                               <td className="py-3 px-4 text-zinc-300 max-w-xs truncate" title={ord.details}>
                                 {ord.details}
@@ -624,14 +648,20 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                                 <button
                                   type="button"
                                   onClick={() => handleToggleOrderStatus(ord.id)}
-                                  className={`px-2 py-0.5 rounded-full text-[10px] font-semibold cursor-pointer border transition-all ${
+                                  className={`px-2.5 py-1 rounded-full text-[10px] font-semibold cursor-pointer border transition-all ${
                                     (ord as any).status === 'completed'
                                       ? 'bg-[#c6f554]/15 text-[#c6f554] border-[#c6f554]/30'
-                                      : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                                      : (ord as any).status === 'pending_slot_call'
+                                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
+                                      : 'bg-blue-500/15 text-blue-300 border-blue-500/30'
                                   }`}
-                                  title="Click to toggle status between In Production and Completed"
+                                  title="Click to cycle status: Call Client (30m) -> In Production -> Completed"
                                 >
-                                  {(ord as any).status === 'completed' ? '✓ Completed' : '⚡ In Production'}
+                                  {(ord as any).status === 'completed'
+                                    ? '✓ Completed'
+                                    : (ord as any).status === 'pending_slot_call'
+                                    ? '📞 Call Client (30m)'
+                                    : '⚡ In Production'}
                                 </button>
                               </td>
                               <td className="py-3 px-4 text-right">

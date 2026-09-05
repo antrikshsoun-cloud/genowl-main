@@ -2,7 +2,6 @@
 
 **Date:** September 6, 2026  
 **Repository:** [github.com/antrikshsoun-cloud/genowl-main.git](https://github.com/antrikshsoun-cloud/genowl-main.git)  
-**Latest Git Commit:** `93c9e2c` (pushed to `origin/main`)  
 **Production Staging:** `springgreen-horse-473302.hostingersite.com`  
 **Master PDF Blueprint:** `c:\Users\Antriksh\Downloads\Genowl_Studio_Architectural_Blueprint.pdf`
 
@@ -10,8 +9,27 @@
 
 ## 1. Accomplished Features & System Architecture
 
+### Frictionless "Book Project" & Slot Reservation System (Replaced Upfront Razorpay Gate)
+- **Zero Payment Wall Friction:** Replaced upfront payment hurdles with a frictionless **"Book Project"** slot reservation flow across Hero and Services.
+- **Strict Form Validation:** The **"Book a Slot"** button is strictly locked until all required fields are filled:
+  1. **Project Brief / Requirements** (Minimum 10 characters).
+  2. **Phone / WhatsApp Number** (Validated with international/national format, min 7 digits).
+  3. **Preferred Turnaround / Speed** (Standard 48–72h, Express 24–48h, or Rush).
+- **Immediate 30-Minute Callback Guarantee:**
+  - Upon submission, client immediately receives an on-screen confirmation modal with ticket `#SLOT-XXXXXX`.
+  - Prominently states: *"Our engineering team will contact you via your phone number within half an hour to finalize your slot schedule and kickoff production."*
+- **Instant Dual-Admin Dispatch:**
+  - Urgent priority email sent immediately to both `genowlai@gmail.com` and `support@genowl.tech` with direct 1-click **"Call Client"** (`tel:`) and **"WhatsApp Chat"** links.
+  - Client receives an official confirmation email with their reservation ticket and turnaround details.
+- **Supabase Cloud Database Persistence:**
+  - Booking records are inserted directly into `genowl_orders` table with columns: `id`, `user_id`, `service`, `name`, `email`, `phone`, `details`, `amount`, `speed`, `status` (`pending_slot_call`), `created_at`.
+- **Admin Portal & User Profile Integration:**
+  - Admin Portal Orders tab highlights pending slot callback orders with an alert badge and direct 1-click Phone/WhatsApp actions.
+  - Status cycles smoothly: `📞 Call Client (30m)` -> `⚡ In Production` -> `✓ Completed`.
+  - Client profile displays dynamic slot status: *"Slot booked • Callback within 30 min"*.
+
 ### Outbound Transactional Mailer (Google Apps Script — 100% Free Forever)
-- **Primary Sender:** All verification OTP security codes, official welcome letters, and inquiry tickets are dispatched directly from `genowlai@gmail.com`.
+- **Primary Sender:** All verification OTP security codes, official welcome letters, and slot booking notifications are dispatched directly from `genowlai@gmail.com`.
 - **Google Cloud Webhook:** `https://script.google.com/macros/s/AKfycbwY6ycQQx1qV2C0dhNR686LeKWjGezYQ7kgSmUR2babI6dTIdmpK19etUdkBsSoqT-AfQ/exec`.
 - **Zero Cost & No Subscriptions:** 500 free emails per day handled directly by Google's infrastructure with 100% genuine Gmail DKIM/SPF deliverability.
 - **Admin Email Panel:** Added real-time Google Cloud status indicator, editable webhook URL field, and 1-click **"Send Test Email"** button.

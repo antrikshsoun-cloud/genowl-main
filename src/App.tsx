@@ -234,15 +234,15 @@ export default function App() {
         onLoginSuccess={handleLoginSuccess}
         onOpenLegal={handleOpenLegal}
         initialMode={authMode}
-        customTitle={pendingService ? `Sign in to order ${pendingService}` : undefined}
+        customTitle={pendingService ? `Sign in to book ${pendingService}` : undefined}
         customSubtitle={
           pendingService
-            ? `Please sign up or sign in to proceed with your $99 ${pendingService} order.`
+            ? `Please sign up or sign in to book your ${pendingService} project slot.`
             : undefined
         }
       />
 
-      {/* Service Order & Checkout Modal ($99 flat fee) */}
+      {/* Service Order & Project Slot Reservation Modal */}
       <OrderModal
         isOpen={orderModalOpen}
         onClose={() => setOrderModalOpen(false)}

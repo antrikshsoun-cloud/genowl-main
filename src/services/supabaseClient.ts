@@ -53,15 +53,19 @@ CREATE TABLE IF NOT EXISTS public.genowl_orders (
   service TEXT NOT NULL,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
+  phone TEXT,
   details TEXT,
   reference_url TEXT,
   speed TEXT DEFAULT 'standard',
   amount TEXT NOT NULL,
-  status TEXT DEFAULT 'in_progress',
+  status TEXT DEFAULT 'pending_slot_call',
   payment_id TEXT,
-  payment_method TEXT DEFAULT 'Razorpay',
+  payment_method TEXT DEFAULT 'Direct Slot Booking',
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Ensure phone column exists if table was already created
+ALTER TABLE public.genowl_orders ADD COLUMN IF NOT EXISTS phone TEXT;
 
 -- 3. GENOWL CLIENT INQUIRIES TABLE
 CREATE TABLE IF NOT EXISTS public.genowl_inquiries (
@@ -95,6 +99,7 @@ export async function syncOrderToSupabase(order: {
   service: string;
   name: string;
   email: string;
+  phone?: string;
   details: string;
   referenceUrl?: string;
   speed?: string;
@@ -124,13 +129,14 @@ export async function syncOrderToSupabase(order: {
         service: order.service,
         name: order.name,
         email: order.email,
+        phone: order.phone || null,
         details: order.details,
         reference_url: order.referenceUrl || null,
         speed: order.speed || 'standard',
         amount: order.amount,
-        status: order.status || 'in_progress',
+        status: order.status || 'pending_slot_call',
         payment_id: order.paymentId || null,
-        payment_method: order.paymentMethod || 'Razorpay',
+        payment_method: order.paymentMethod || 'Direct Slot Booking',
         created_at: new Date().toISOString(),
       }),
     });

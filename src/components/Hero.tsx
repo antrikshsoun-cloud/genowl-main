@@ -47,7 +47,7 @@ export default function Hero({ onStartTrial }: HeroProps) {
         id="hero-subtitle"
         className="mt-5 text-sm sm:text-base md:text-lg text-zinc-400 max-w-xl mx-auto font-normal leading-relaxed"
       >
-        The all-in-one platform for teams who want clarity, speed, and sustainable growth.
+        High-converting 2D websites, cinema-grade 3D WebGL experiences, and custom AI production — engineered for visionary brands.
       </p>
 
       {/* CTA Button */}
@@ -56,9 +56,9 @@ export default function Hero({ onStartTrial }: HeroProps) {
           id="hero-cta-button"
           type="button"
           onClick={onStartTrial}
-          className="group relative px-7 py-3 rounded-full font-semibold text-sm sm:text-base text-black bg-gradient-to-b from-[#d8fb6a] to-[#bbf344] hover:from-[#e1fd7a] hover:to-[#c6f554] shadow-[0_0_35px_rgba(198,245,84,0.4)] hover:shadow-[0_0_50px_rgba(198,245,84,0.65)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center gap-2 cursor-pointer"
+          className="group relative px-8 py-3.5 rounded-full font-bold text-sm sm:text-base text-black bg-gradient-to-b from-[#d8fb6a] to-[#bbf344] hover:from-[#e1fd7a] hover:to-[#c6f554] shadow-[0_0_35px_rgba(198,245,84,0.4)] hover:shadow-[0_0_50px_rgba(198,245,84,0.65)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center gap-2 cursor-pointer"
         >
-          <span>Start Free Trial</span>
+          <span>Book Project</span>
           <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
         </button>
 
@@ -68,16 +68,16 @@ export default function Hero({ onStartTrial }: HeroProps) {
           className="flex flex-wrap items-center justify-center gap-x-6 sm:gap-x-8 gap-y-2 text-[11px] sm:text-xs text-zinc-400 mt-6"
         >
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-zinc-500" />
-            <span>No credit card</span>
+            <Clock className="w-3.5 h-3.5 text-[#c6f554]" />
+            <span>48–72h Turnaround</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-zinc-500" />
-            <span>6-day free trial</span>
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#f7cc46]" />
+            <span>100% Commercial IP</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Ban className="w-3.5 h-3.5 text-zinc-500" />
-            <span>Cancel anytime</span>
+            <span className="w-2 h-2 rounded-full bg-[#c6f554] animate-pulse" />
+            <span className="text-[#c6f554] font-medium">30-Min Call Confirmation</span>
           </div>
         </div>
       </div>
