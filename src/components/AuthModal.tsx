@@ -4,6 +4,7 @@ import OwlLogo from './OwlLogo.tsx';
 import { validatePasswordStrength } from '../utils/passwordValidator.ts';
 import { validateLegalEmail } from '../utils/emailValidator.ts';
 import { sendWelcomeEmail, sendVerificationCodeEmail } from '../services/emailService.ts';
+import { syncUserToSupabase } from '../services/supabaseClient.ts';
 
 export interface UserProfile {
   name: string;
@@ -139,6 +140,14 @@ export default function AuthModal({
       existingUser.lastLoginAt = new Date().toISOString();
       localStorage.setItem('genowl_registered_users', JSON.stringify(users));
 
+      // Sync user profile to Supabase cloud
+      syncUserToSupabase({
+        id: existingUser.id,
+        name: existingUser.name,
+        email: existingUser.email,
+        verified: true,
+      }).catch(() => {});
+
       // Refresh 7-day session
       saveSevenDaySession({ name: existingUser.name, email: existingUser.email });
 
@@ -181,6 +190,14 @@ export default function AuthModal({
 
     users.push(newUser);
     localStorage.setItem('genowl_registered_users', JSON.stringify(users));
+
+    // Sync new registered user to Supabase cloud
+    syncUserToSupabase({
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      verified: true,
+    }).catch(() => {});
 
     // Automatically send official Welcome Message to user's Gmail / email inbox
     sendWelcomeEmail(newUser.name, newUser.email).catch((err) => {

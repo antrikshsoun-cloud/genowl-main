@@ -12,12 +12,14 @@ const SUPABASE_ANON_KEY = 'genowl_supabase_anon_key';
 
 export function getSupabaseConfig(): SupabaseConfig {
   try {
-    const url = localStorage.getItem(SUPABASE_URL_KEY) || '';
-    const anonKey = localStorage.getItem(SUPABASE_ANON_KEY) || '';
+    const envUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
+    const envKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+    const url = localStorage.getItem(SUPABASE_URL_KEY) || envUrl;
+    const anonKey = localStorage.getItem(SUPABASE_ANON_KEY) || envKey;
     return {
-      url,
-      anonKey,
-      connected: Boolean(url && anonKey),
+      url: url.trim(),
+      anonKey: anonKey.trim(),
+      connected: Boolean(url.trim() && anonKey.trim()),
     };
   } catch {
     return { url: '', anonKey: '', connected: false };
@@ -110,7 +112,9 @@ export async function syncOrderToSupabase(order: {
 }): Promise<boolean> {
   const config = getSupabaseConfig();
   if (!config.connected) {
-    // If Supabase is not configured yet, silently return (falls back to localStorage)
+    console.warn(
+      '[Supabase Sync] Skipped: Supabase credentials are not configured yet. Please open the Studio Admin panel (Footer > Studio Admin > Supabase) and enter your Supabase Project URL & Anon Public Key, or set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
+    );
     return false;
   }
 
@@ -141,9 +145,16 @@ export async function syncOrderToSupabase(order: {
       }),
     });
 
-    return res.ok;
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error(`[Supabase Error ${res.status}] Failed to sync order ${order.id}:`, errText);
+      return false;
+    }
+
+    console.log(`[Supabase Success] Order ${order.id} synced successfully to genowl_orders!`);
+    return true;
   } catch (err) {
-    console.warn('Supabase order sync note:', err);
+    console.error('[Supabase Network Exception] Failed to sync order:', err);
     return false;
   }
 }
@@ -160,7 +171,10 @@ export async function syncInquiryToSupabase(inquiry: {
   message: string;
 }): Promise<boolean> {
   const config = getSupabaseConfig();
-  if (!config.connected) return false;
+  if (!config.connected) {
+    console.warn('[Supabase Sync] Skipped inquiry sync: Credentials not configured.');
+    return false;
+  }
 
   try {
     const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/genowl_inquiries`;
@@ -182,9 +196,17 @@ export async function syncInquiryToSupabase(inquiry: {
         created_at: new Date().toISOString(),
       }),
     });
-    return res.ok;
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error(`[Supabase Error ${res.status}] Failed to sync inquiry ${inquiry.id}:`, errText);
+      return false;
+    }
+
+    console.log(`[Supabase Success] Inquiry ${inquiry.id} synced successfully to genowl_inquiries!`);
+    return true;
   } catch (err) {
-    console.warn('Supabase inquiry sync note:', err);
+    console.error('[Supabase Network Exception] Failed to sync inquiry:', err);
     return false;
   }
 }
@@ -217,5 +239,54 @@ export async function testSupabaseConnection(url: string, anonKey: string): Prom
     }
   } catch (err: any) {
     return { success: false, message: err?.message || 'Network error connecting to Supabase.' };
+  }
+}
+
+/**
+ * Syncs a registered or logged-in user profile to Supabase cloud PostgreSQL
+ */
+export async function syncUserToSupabase(user: {
+  id: string;
+  name: string;
+  email: string;
+  verified?: boolean;
+}): Promise<boolean> {
+  const config = getSupabaseConfig();
+  if (!config.connected) {
+    console.warn('[Supabase Sync] Skipped user sync: Supabase credentials not configured.');
+    return false;
+  }
+
+  try {
+    const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/genowl_users`;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: config.anonKey,
+        Authorization: `Bearer ${config.anonKey}`,
+        Prefer: 'resolution=merge-duplicates',
+      },
+      body: JSON.stringify({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        verified: user.verified ?? true,
+        created_at: new Date().toISOString(),
+        last_login_at: new Date().toISOString(),
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error(`[Supabase Error ${res.status}] Failed to sync user ${user.email}:`, errText);
+      return false;
+    }
+
+    console.log(`[Supabase Success] User ${user.email} synced successfully to genowl_users!`);
+    return true;
+  } catch (err) {
+    console.error('[Supabase Network Exception] Failed to sync user:', err);
+    return false;
   }
 }
