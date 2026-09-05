@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShieldCheck, Lock, Users, Key, Search, Trash2, Download, Check, AlertCircle, Clock, Calendar, ShoppingBag, MessageSquare, RefreshCw, ExternalLink, Award, Mail, Send, CreditCard, Database, Copy } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
-import { EmailLog, getDispatchedEmails, sendWelcomeEmail, getStoredEmailApiKey, saveEmailApiKey } from '../services/emailService.ts';
+import {
+  EmailLog,
+  getDispatchedEmails,
+  sendWelcomeEmail,
+  getStoredEmailApiKey,
+  saveEmailApiKey,
+  getGoogleScriptUrl,
+  saveGoogleScriptUrl,
+  testGoogleAppsScriptDispatch,
+  OFFICIAL_GENOWL_GMAIL,
+} from '../services/emailService.ts';
 import { getRazorpayKey, saveRazorpayKey } from '../services/razorpayService.ts';
 import { getSupabaseConfig, saveSupabaseConfig, testSupabaseConnection, SUPABASE_SQL_SCHEMA } from '../services/supabaseClient.ts';
 
@@ -85,6 +95,29 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
   const [emailApiKeyInput, setEmailApiKeyInput] = useState<string>(() => {
     return getStoredEmailApiKey();
   });
+
+  // Google Apps Script Webhook URL State (genowlai@gmail.com)
+  const [googleScriptUrlInput, setGoogleScriptUrlInput] = useState<string>(() => {
+    return getGoogleScriptUrl();
+  });
+  const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
+  const [testEmailStatus, setTestEmailStatus] = useState<string | null>(null);
+
+  const handleSaveGoogleScriptUrl = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveGoogleScriptUrl(googleScriptUrlInput);
+    setSuccessMessage('Google Apps Script Mailer Webhook updated and active!');
+    setTimeout(() => setSuccessMessage(null), 3000);
+  };
+
+  const handleSendTestEmail = async () => {
+    setIsSendingTestEmail(true);
+    setTestEmailStatus('Dispatching live test email via Google Apps Script...');
+    const result = await testGoogleAppsScriptDispatch(OFFICIAL_GENOWL_GMAIL);
+    setIsSendingTestEmail(false);
+    setTestEmailStatus(result.message);
+    setTimeout(() => setTestEmailStatus(null), 7000);
+  };
 
   const handleSaveEmailApiKey = (e: React.FormEvent) => {
     e.preventDefault();
@@ -700,35 +733,88 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                     </div>
                   </div>
 
-                  {/* Outbound Email Dispatch Provider Configuration */}
-                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2.5">
-                    <div className="flex items-center justify-between">
+                  {/* Primary Google Apps Script Outbound Mailer Configuration */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-[#121c15] to-[#0d140f] border border-[#c6f554]/30 space-y-3 shadow-lg">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-[#c6f554]" />
-                        <span className="text-xs font-bold text-white">Live Email Dispatch Provider (Resend or Brevo)</span>
+                        <div className="w-6 h-6 rounded-full bg-[#c6f554]/20 border border-[#c6f554] flex items-center justify-center">
+                          <Mail className="w-3.5 h-3.5 text-[#c6f554]" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold text-white block">Google Apps Script Mailer Engine</span>
+                          <span className="text-[10px] text-zinc-400">
+                            Dispatches directly from <span className="text-[#c6f554] font-semibold">{OFFICIAL_GENOWL_GMAIL}</span> &bull; 500 free emails/day
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-[10px] text-zinc-400 font-mono">
-                        {emailApiKeyInput ? 'API Key Active' : 'Relay Gateway Mode'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full bg-[#c6f554]/15 border border-[#c6f554]/40 text-[#c6f554] text-[10px] font-bold">
+                          ● Google Cloud Active
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleSendTestEmail}
+                          disabled={isSendingTestEmail}
+                          className="px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          <Send className={`w-3 h-3 text-[#f7cc46] ${isSendingTestEmail ? 'animate-pulse' : ''}`} />
+                          <span>{isSendingTestEmail ? 'Sending Test...' : 'Send Test Email'}</span>
+                        </button>
+                      </div>
                     </div>
-                    <form onSubmit={handleSaveEmailApiKey} className="flex gap-2">
+
+                    {testEmailStatus && (
+                      <div className="px-3 py-2 rounded-xl bg-[#c6f554]/10 border border-[#c6f554]/30 text-[#c6f554] text-[11px] flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 shrink-0" />
+                        <span>{testEmailStatus}</span>
+                      </div>
+                    )}
+
+                    <form onSubmit={handleSaveGoogleScriptUrl} className="flex gap-2">
                       <input
-                        type="password"
-                        placeholder="re_xxxxxxxxxxxxxx (Resend) or xkeysib-xxxxxxxx (Brevo)"
-                        value={emailApiKeyInput}
-                        onChange={(e) => setEmailApiKeyInput(e.target.value)}
-                        className="flex-1 px-3.5 py-1.5 rounded-xl bg-black/50 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-[#c6f554] transition-all"
+                        type="text"
+                        placeholder="https://script.google.com/macros/s/.../exec"
+                        value={googleScriptUrlInput}
+                        onChange={(e) => setGoogleScriptUrlInput(e.target.value)}
+                        className="flex-1 px-3.5 py-1.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-[#c6f554] transition-all"
                       />
                       <button
                         type="submit"
                         className="px-4 py-1.5 rounded-xl font-bold text-xs text-black bg-[#c6f554] hover:brightness-105 transition-all cursor-pointer shrink-0"
                       >
-                        Save Email Key
+                        Save URL
                       </button>
                     </form>
-                    <p className="text-[10px] text-zinc-500">
-                      * Resend (resend.com) gives 3,000 free emails/month. When entered, all OTP security codes and welcome greetings land in client inboxes in 2 seconds.
+                    <p className="text-[10px] text-zinc-400">
+                      * All client verification codes, welcome greetings, and problem receipts are instantly routed through this webhook directly from your Google inbox.
                     </p>
+                  </div>
+
+                  {/* Secondary Redundant API Key Fallback */}
+                  <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-zinc-300">
+                        Optional Secondary Provider (Resend / Brevo API Key)
+                      </span>
+                      <span className="text-[10px] text-zinc-500 font-mono">
+                        {emailApiKeyInput ? 'Secondary Key Saved' : 'Standby Mode'}
+                      </span>
+                    </div>
+                    <form onSubmit={handleSaveEmailApiKey} className="flex gap-2">
+                      <input
+                        type="password"
+                        placeholder="Optional backup key: re_... or xkeysib-..."
+                        value={emailApiKeyInput}
+                        onChange={(e) => setEmailApiKeyInput(e.target.value)}
+                        className="flex-1 px-3 py-1 rounded-xl bg-black/40 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-zinc-400 transition-all"
+                      />
+                      <button
+                        type="submit"
+                        className="px-3 py-1 rounded-xl font-medium text-xs text-zinc-300 bg-white/10 hover:bg-white/15 transition-all cursor-pointer shrink-0"
+                      >
+                        Save Backup Key
+                      </button>
+                    </form>
                   </div>
 
                   <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/30">

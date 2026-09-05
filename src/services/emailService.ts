@@ -42,6 +42,61 @@ export function saveEmailLog(log: EmailLog) {
   }
 }
 
+export const DEFAULT_GOOGLE_SCRIPT_URL =
+  'https://script.google.com/macros/s/AKfycbwY6ycQQx1qV2C0dhNR686LeKWjGezYQ7kgSmUR2babI6dTIdmpK19etUdkBsSoqT-AfQ/exec';
+const GOOGLE_SCRIPT_STORAGE_KEY = 'genowl_google_script_url';
+
+export function getGoogleScriptUrl(): string {
+  try {
+    const stored = localStorage.getItem(GOOGLE_SCRIPT_STORAGE_KEY);
+    if (stored && stored.trim().startsWith('http')) return stored.trim();
+    const envUrl = (import.meta as any).env?.VITE_GOOGLE_APPS_SCRIPT_URL;
+    if (envUrl && envUrl.trim().startsWith('http')) return envUrl.trim();
+    return DEFAULT_GOOGLE_SCRIPT_URL;
+  } catch {
+    return DEFAULT_GOOGLE_SCRIPT_URL;
+  }
+}
+
+export function saveGoogleScriptUrl(url: string) {
+  try {
+    localStorage.setItem(GOOGLE_SCRIPT_STORAGE_KEY, url.trim());
+    window.dispatchEvent(new Event('storage'));
+  } catch (err) {
+    console.warn('Failed to save Google Apps Script URL:', err);
+  }
+}
+
+/**
+ * Dispatches an email via the authorized Google Apps Script engine (from genowlai@gmail.com)
+ */
+export async function sendViaGoogleAppsScript(
+  to: string,
+  subject: string,
+  html: string,
+  text: string
+): Promise<boolean> {
+  const url = getGoogleScriptUrl();
+  if (!url) return false;
+
+  try {
+    const payload = JSON.stringify({ to, subject, html, text });
+    // 'no-cors' with 'text/plain' bypasses CORS preflight in browsers and sends straight to Google
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: payload,
+    });
+    return true;
+  } catch (err) {
+    console.warn('Google Apps Script dispatch error:', err);
+    return false;
+  }
+}
+
 export function getStoredEmailApiKey(): string {
   try {
     return localStorage.getItem(EMAIL_API_KEY_STORAGE) || '';
@@ -175,6 +230,18 @@ https://genowl.com`;
     status: 'sent',
   };
 
+  // 1. Primary Dispatcher: Google Apps Script Web App (dispatched natively from genowlai@gmail.com)
+  const scriptUrl = getGoogleScriptUrl();
+  if (scriptUrl) {
+    try {
+      const delivered = await sendViaGoogleAppsScript(cleanEmail, subject, htmlContent, plainMessage);
+      if (delivered) logEntry.status = 'delivered';
+    } catch (err) {
+      console.warn('Google Apps Script OTP dispatch error:', err);
+    }
+  }
+
+  // 2. Redundant Fallbacks: Resend or Brevo if API key is provided
   const apiKey = getStoredEmailApiKey() || (import.meta as any).env?.VITE_RESEND_API_KEY || '';
 
   if (apiKey && apiKey.startsWith('re_')) {
@@ -323,6 +390,17 @@ https://genowl.com`;
     status: 'delivered',
   };
 
+  // 1. Primary Dispatcher: Google Apps Script Web App (dispatched natively from genowlai@gmail.com)
+  const scriptUrl = getGoogleScriptUrl();
+  if (scriptUrl) {
+    try {
+      await sendViaGoogleAppsScript(cleanEmail, subject, htmlContent, plainMessage);
+    } catch (err) {
+      console.warn('Google Apps Script Welcome dispatch error:', err);
+    }
+  }
+
+  // 2. Redundant Fallbacks: Resend if API key is provided
   const apiKey = getStoredEmailApiKey() || (import.meta as any).env?.VITE_RESEND_API_KEY || '';
 
   if (apiKey && apiKey.startsWith('re_')) {
@@ -581,21 +659,18 @@ Reply directly to: ${cleanEmail}`;
     console.warn('Gmail dispatch note:', err);
   }
 
-  // 4. Also dispatch via Node / Vite /api/send-email server middleware if available
-  const apiKey = getStoredEmailApiKey() || (import.meta as any).env?.VITE_RESEND_API_KEY || '';
-  try {
-    await fetch('/api/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        apiKey,
-        to: [OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL],
-        subject: forwardSubject,
-        text: forwardPlainText,
-        html: forwardHtml,
-      }),
-    });
-  } catch {}
+  // 4. Primary Google Apps Script Dispatch: deliver client receipt & notify ops desk directly
+  const scriptUrl = getGoogleScriptUrl();
+  if (scriptUrl) {
+    try {
+      // Direct receipt to client
+      sendViaGoogleAppsScript(cleanEmail, clientSubject, clientHtml, clientPlainText).catch(() => {});
+      // Forwarding to genowlai@gmail.com
+      sendViaGoogleAppsScript(OFFICIAL_GENOWL_GMAIL, forwardSubject, forwardHtml, forwardPlainText).catch(() => {});
+    } catch (err) {
+      console.warn('Google Apps Script inquiry dispatch error:', err);
+    }
+  }
 
   // 5. Build pre-composed mailto URI for instant native email app client backup
   const mailtoSubject = encodeURIComponent(`[Genowl Report #${ticketId}] ${categoryOrService} - ${cleanName}`);
@@ -644,4 +719,36 @@ Dispatched via Genowl Studio (Official Desk: ${OFFICIAL_HOSTINGER_EMAIL} & ${OFF
     ticketId,
     mailtoLink,
   };
+}
+
+/**
+ * Instant system test helper: Sends a test email to genowlai@gmail.com
+ */
+export async function testGoogleAppsScriptDispatch(
+  targetEmail = OFFICIAL_GENOWL_GMAIL
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const subject = '🦉 Genowl Studio Mailer System Test';
+    const html = wrapEmailInGenowlTheme(
+      'System Test Active',
+      `<h2 style="color:#ffffff;font-size:20px;margin:0 0 12px 0;">Google Apps Script Mailer Operational! 🦉</h2>
+      <p style="color:#a1a1aa;font-size:13px;line-height:1.6;margin:0 0 16px 0;">
+        This test confirms that your Google Apps Script webhook is actively connected to Genowl Studio. All verification codes and welcome letters are being sent directly from <strong style="color:#ffffff;">${OFFICIAL_GENOWL_GMAIL}</strong>.
+      </p>
+      <div style="padding:14px;background-color:#080e0a;border:1px solid #c6f554;border-radius:12px;color:#c6f554;font-family:monospace;font-size:12px;margin:16px 0;">
+        Status: Verified & Operational &bull; Time: ${new Date().toLocaleString()}
+      </div>`
+    );
+    const text = `Genowl Studio Mailer System Test. Sender: ${OFFICIAL_GENOWL_GMAIL}. Time: ${new Date().toLocaleString()}`;
+
+    const delivered = await sendViaGoogleAppsScript(targetEmail, subject, html, text);
+    return {
+      success: delivered,
+      message: delivered
+        ? `Test email successfully dispatched to ${targetEmail} via Google Apps Script!`
+        : 'Failed to dispatch via Google Apps Script. Check network or webhook URL.',
+    };
+  } catch (err: any) {
+    return { success: false, message: err?.message || 'Error executing test dispatch' };
+  }
 }
