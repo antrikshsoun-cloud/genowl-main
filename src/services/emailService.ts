@@ -147,8 +147,8 @@ function wrapEmailInGenowlTheme(title: string, bodyContent: string): string {
         <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width:540px;background-color:#0d140f;border:1px solid #1f2f22;border-radius:24px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.7);">
           <!-- Brand Header with Golden Owl Logo -->
           <tr>
-            <td align="center" style="padding:32px 24px 20px 24px;border-bottom:1px solid rgba(255,255,255,0.06);background:linear-gradient(180deg,#142016 0%,#0d140f 100%);">
-              <img src="${GENOWL_LOGO_BASE64}" alt="Genowl Logo" width="88" height="74" style="display:block;margin:0 auto 12px auto;border-radius:14px;box-shadow:0 0 20px rgba(247,204,70,0.35);" />
+            <td align="center" style="padding:28px 24px 18px 24px;border-bottom:1px solid rgba(255,255,255,0.06);background:linear-gradient(180deg,#142016 0%,#0d140f 100%);">
+              <img src="https://springgreen-horse-473302.hostingersite.com/genowl-mail-logo.png" alt="Genowl Logo" width="76" height="64" style="display:block;margin:0 auto 10px auto;border-radius:12px;" />
               <div style="font-size:14px;letter-spacing:0.25em;font-weight:800;color:#f7cc46;text-transform:uppercase;">GENOWL STUDIO</div>
               <div style="font-size:11px;color:#a1a1aa;margin-top:4px;letter-spacing:0.05em;">Digital Craft &amp; Software Production</div>
             </td>
@@ -169,8 +169,8 @@ function wrapEmailInGenowlTheme(title: string, bodyContent: string): string {
                 &nbsp;&bull;&nbsp;
                 Instagram: <a href="https://instagram.com/${OFFICIAL_INSTAGRAM}" style="color:#f7cc46;text-decoration:none;">@${OFFICIAL_INSTAGRAM}</a>
               </div>
-              <div style="font-size:10px;color:#52525b;">
-                &copy; ${new Date().getFullYear()} Genowl Technologies. All rights reserved.
+              <div style="font-size:10px;color:#52525b;line-height:1.5;">
+                &copy; ${new Date().getFullYear()} Genowl Technologies. This is an official transactional message sent to you regarding your account at genowl.tech.
               </div>
             </td>
           </tr>
@@ -192,7 +192,7 @@ export async function sendVerificationCodeEmail(
 ): Promise<{ success: boolean; message: string; log: EmailLog }> {
   const cleanEmail = email.trim().toLowerCase();
   const cleanName = name.trim();
-  const subject = `Your Genowl Security Verification Code: ${code} 🦉`;
+  const subject = `Genowl Studio: Your verification code is ${code}`;
 
   const plainMessage = `Hi ${cleanName},
 
@@ -336,7 +336,7 @@ export async function sendWelcomeEmail(
 ): Promise<{ success: boolean; message: string; log: EmailLog }> {
   const cleanEmail = email.trim().toLowerCase();
   const cleanName = name.trim();
-  const subject = 'Welcome to Genowl Studio — Your Client Account is Ready! 🦉';
+  const subject = 'Welcome to Genowl Studio: Your client account is active';
 
   const plainMessage = `Hi ${cleanName},
 
