@@ -11,22 +11,17 @@ export default function Hero({ onStartTrial }: HeroProps) {
       {/* Subtle green ambient light pool behind headline */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[480px] h-[300px] bg-[#c6f554]/[0.07] rounded-full blur-3xl pointer-events-none" />
 
-      {/* Announcement Pill Badge */}
-      <div className="inline-block mb-6 sm:mb-8">
-        <a
-          href="#whats-new"
-          id="hero-announcement-badge"
-          className="group inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#121c13]/90 border border-white/10 hover:border-[#c6f554]/30 shadow-lg backdrop-blur-md transition-all duration-200 cursor-pointer"
+      {/* Announcement & YZER AI Guide Highlight Badge */}
+      <div className="inline-flex flex-wrap items-center justify-center gap-2 mb-6 sm:mb-8">
+        <div
+          id="hero-yzer-badge"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#121c13]/90 border border-[#c6f554]/30 shadow-[0_0_20px_rgba(198,245,84,0.15)] backdrop-blur-md"
         >
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#c6f554]/15 text-[#c6f554] text-[11px] font-semibold tracking-wide">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#c6f554] shadow-[0_0_6px_#c6f554]" />
-            New
-          </span>
+          <span className="w-2 h-2 rounded-full bg-[#c6f554] animate-pulse" />
           <span className="text-xs text-zinc-300 font-normal">
-            Genowl 2.0 is now available
+            Meet <strong className="text-[#c6f554] font-semibold">YZER</strong> — Your Interactive AI Voice Guide • Tap the mic or ask <span className="text-white italic">"Give me a tour"</span>
           </span>
-          <ChevronRight className="w-3.5 h-3.5 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
-        </a>
+        </div>
       </div>
 
       {/* Hero Headline */}

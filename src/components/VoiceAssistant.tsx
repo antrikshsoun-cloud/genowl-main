@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2, UserCheck, LogIn } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2, UserCheck, LogIn, Play } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 
 interface VoiceAssistantProps {
@@ -14,8 +14,10 @@ interface VoiceAssistantProps {
 }
 
 // Phonetic text sanitizer to completely eliminate pronunciation flutter/stutter
+// and guarantee YZER is pronounced naturally as "Wiser"
 function sanitizeForSpeech(raw: string): string {
   return raw
+    .replace(/\bYZER\b/gi, 'Wiser')
     .replace(/\$2,500/g, 'twenty-five hundred dollars')
     .replace(/\$500/g, 'five hundred dollars')
     .replace(/\$99/g, 'ninety-nine dollars')
@@ -44,9 +46,10 @@ export default function VoiceAssistant({
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isTourActive, setIsTourActive] = useState(false);
   const [queryText, setQueryText] = useState('');
   const [assistantMessage, setAssistantMessage] = useState(
-    'Ask me anything about Genowl services, pricing, timeline, or say "Book a project"!'
+    'I am YZER, your Genowl AI guide. Ask me anything, or tap "Give me a tour"!'
   );
   const [isSupported, setIsSupported] = useState(true);
 
@@ -55,9 +58,10 @@ export default function VoiceAssistant({
   const isListeningRef = useRef(false);
   const silenceTimerRef = useRef<any>(null);
   const restartTimerRef = useRef<any>(null);
+  const tourTimerRef = useRef<any>(null);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
-  // Check device type for platform-tailored voice cadence
+  // Check device type
   const isMobile =
     typeof navigator !== 'undefined' &&
     /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -90,7 +94,7 @@ export default function VoiceAssistant({
     };
   }, []);
 
-  // Text-To-Speech with Phonetic Sanitizer and Platform-Calibrated Cadence
+  // Text-To-Speech with Phonetic Sanitizer and Soothing Tone
   const speak = (text: string) => {
     setAssistantMessage(text);
 
@@ -98,15 +102,15 @@ export default function VoiceAssistant({
     try {
       synthRef.current.cancel(); // Stop active speech immediately
 
-      // Sanitize raw text to prevent pronunciation fluttering
+      // Sanitize raw text to pronounce YZER as "Wiser" and eliminate flutter
       const cleanPronunciation = sanitizeForSpeech(text);
       const utterance = new SpeechSynthesisUtterance(cleanPronunciation);
 
-      // Soft, calm, and natural pacing (1.05x) with warm pitch (0.98)
+      // Relaxed, soothing cadence (1.05x) and warm pitch (0.98)
       utterance.rate = 1.05;
       utterance.pitch = 0.98;
 
-      // Select softest, highest fidelity natural studio voice
+      // Select soft natural studio voice
       const voices = voicesRef.current.length > 0 ? voicesRef.current : synthRef.current.getVoices();
       const naturalVoice =
         // Ultra-soft natural neural voices (Jenny, Aria, Sonia)
@@ -132,7 +136,7 @@ export default function VoiceAssistant({
     }
   };
 
-  // Factory to create a fresh, clean SpeechRecognition session (fixes PC hardware & TWS mic binding)
+  // Factory to create a fresh, clean SpeechRecognition session
   const createSpeechSession = () => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -146,7 +150,7 @@ export default function VoiceAssistant({
     recognition.onstart = () => {
       setIsListening(true);
       isListeningRef.current = true;
-      setAssistantMessage('Listening... Speak your question now.');
+      setAssistantMessage('YZER is listening... Speak your question now.');
     };
 
     recognition.onresult = (event: any) => {
@@ -173,7 +177,6 @@ export default function VoiceAssistant({
     recognition.onerror = (event: any) => {
       console.warn('[Voice Assistant] Recognition event:', event.error);
       if (event.error === 'no-speech') {
-        // Paused speech is normal; do not kill session
         return;
       }
       if (event.error === 'network') {
@@ -191,7 +194,6 @@ export default function VoiceAssistant({
     };
 
     recognition.onend = () => {
-      // If user still intends to listen, restart cleanly with a 200ms tick
       if (isListeningRef.current) {
         if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
         restartTimerRef.current = setTimeout(() => {
@@ -213,14 +215,14 @@ export default function VoiceAssistant({
     return recognition;
   };
 
-  // Start continuous listening natively (ZERO getUserMedia hardware lock)
+  // Start continuous listening natively
   const startListening = () => {
-    stopAll(); // Silence TTS before starting mic
+    stopAll();
 
     try {
       isListeningRef.current = true;
       setIsListening(true);
-      setAssistantMessage('Listening... Speak your question now.');
+      setAssistantMessage('YZER is listening... Speak your question now.');
 
       const session = createSpeechSession();
       activeRecognitionRef.current = session;
@@ -244,9 +246,11 @@ export default function VoiceAssistant({
   };
 
   const stopAll = () => {
+    if (tourTimerRef.current) clearTimeout(tourTimerRef.current);
     if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     if (synthRef.current) synthRef.current.cancel();
+    setIsTourActive(false);
     stopListening();
     setIsSpeaking(false);
   };
@@ -257,6 +261,45 @@ export default function VoiceAssistant({
     } else {
       startListening();
     }
+  };
+
+  // GUIDED WEBSITE TOUR: Walks the user step-by-step through the entire site
+  const startWebsiteTour = () => {
+    stopAll();
+    setIsTourActive(true);
+    setIsOpen(true);
+
+    // STEP 1: Home Page
+    onNavigate('home');
+    const step1 =
+      'We are Genowl, your all-in-one digital service partner. Here on our home page, you can experience our cinema-grade 3D scroll architecture and discover how we craft high-performance digital experiences without template bloat. Next, let us explore our services.';
+    speak(step1);
+
+    // STEP 2: Services Page (triggered after step 1 finishes)
+    tourTimerRef.current = setTimeout(() => {
+      onNavigate('services');
+      const step2 =
+        'Here in our services catalog, we offer three core solutions: high-converting 2D websites at $500, interactive 3D WebGL experiences at $2,500, and AI video and advertisement production for $99. Every service comes with full intellectual property transfer. Now let us look at our core philosophy.';
+      speak(step2);
+
+      // STEP 3: About Page
+      tourTimerRef.current = setTimeout(() => {
+        onNavigate('about');
+        const step3 =
+          'Here is our core philosophy: basically, we build for you. You do not have to waste your time building websites or advertisements; all you have to do is choose a service, the rest is on us. Finally, let us see how you can reach our team.';
+        speak(step3);
+
+        // STEP 4: Contact Desk
+        tourTimerRef.current = setTimeout(() => {
+          if (onOpenContact) onOpenContact();
+          else onNavigate('contact');
+          const step4 =
+            'And here is our direct contact desk where you can message our team, email support@genowl.tech, or reach out on X at @GENOWL_TECH. You can also book a consultation slot anytime. Tour complete! How can YZER build for you today?';
+          speak(step4);
+          setIsTourActive(false);
+        }, 14000);
+      }, 15000);
+    }, 14000);
   };
 
   // Comprehensive Genowl Knowledge Base & Natural Language Classifier
@@ -271,14 +314,57 @@ export default function VoiceAssistant({
       text.includes('mute') ||
       text.includes('shut up') ||
       text.includes('silence') ||
-      text.includes('pause')
+      text.includes('pause') ||
+      text.includes('cancel tour')
     ) {
       stopAll();
       setAssistantMessage('Silenced. Feel free to type or tap the mic anytime.');
       return;
     }
 
-    // 2. SIGN UP / REGISTER ACCOUNT FLOW
+    // 2. GUIDED WEBSITE TOUR COMMAND
+    if (
+      text.includes('tour') ||
+      text.includes('walk me through') ||
+      text.includes('show me around') ||
+      text.includes('guide me through') ||
+      text.includes('explain the website') ||
+      text.includes('give me a tour')
+    ) {
+      startWebsiteTour();
+      return;
+    }
+
+    // 3. WHAT SHOULD I DO AFTER SIGNING UP? (Direct, Actionable Advice)
+    if (
+      (text.includes('after') && (text.includes('sign') || text.includes('log') || text.includes('account') || text.includes('register'))) ||
+      text.includes('what should i do after signing up') ||
+      text.includes('what to do next') ||
+      text.includes('signed up now what') ||
+      (text.includes('what should i do') && (text.includes('signed up') || text.includes('registered')))
+    ) {
+      speak(
+        'Now that you have signed up, here is what you can do: First, head over to our services section and click "Book Project" on any service to reserve your consultation slot. Second, check your Client Profile at the top right to view your active bookings and track project scope. Our studio will connect with you within thirty minutes for your kickoff call!'
+      );
+      return;
+    }
+
+    // 4. ASSISTANT NAME & IDENTITY: YZER (Pronounced "Wiser")
+    if (
+      text.includes('who are you') ||
+      text.includes('what is your name') ||
+      text.includes('your name') ||
+      text.includes('yzer') ||
+      text.includes('what are you') ||
+      text.includes('who made you')
+    ) {
+      speak(
+        'I am YZER, your personal AI guide on Genowl. Just like Brave has Leo and Google has Gemini, I am here to guide you through our services, explain our pricing, walk you through the website, and help you book your project.'
+      );
+      return;
+    }
+
+    // 5. SIGN UP / REGISTER ACCOUNT FLOW
     if (
       text.includes('sign up') ||
       text.includes('signup') ||
@@ -301,7 +387,7 @@ export default function VoiceAssistant({
       }
     }
 
-    // 3. LOG IN / SIGN IN ACCOUNT FLOW
+    // 6. LOG IN / SIGN IN ACCOUNT FLOW
     if (
       text.includes('log in') ||
       text.includes('login') ||
@@ -320,7 +406,7 @@ export default function VoiceAssistant({
       }
     }
 
-    // 4. CLIENT PROFILE / MY PROJECTS / DASHBOARD
+    // 7. CLIENT PROFILE / MY PROJECTS / DASHBOARD
     if (
       text.includes('profile') ||
       text.includes('my account') ||
@@ -339,7 +425,7 @@ export default function VoiceAssistant({
       }
     }
 
-    // 5. GREETINGS (Hello, Hi, Hey, Namaste, Good morning)
+    // 8. GREETINGS (Hello, Hi, Hey, Namaste, Good morning)
     if (
       text === 'hello' ||
       text === 'hi' ||
@@ -355,12 +441,12 @@ export default function VoiceAssistant({
       text.includes("what's up")
     ) {
       speak(
-        'Hello! Welcome to Genowl. How can I assist you with our services, pricing, or booking today?'
+        'Hello! I am YZER. Welcome to Genowl. How can I assist you with our services, pricing, or booking today?'
       );
       return;
     }
 
-    // 6. ABOUT GENOWL (Exact Core Studio Statement requested)
+    // 9. ABOUT GENOWL (Exact Core Studio Statement requested)
     if (
       text.includes('about') ||
       text.includes('what is genowl') ||
@@ -368,7 +454,6 @@ export default function VoiceAssistant({
       text.includes('tell me about genowl') ||
       text.includes('what do you do') ||
       text.includes('what does genowl do') ||
-      text.includes('who are you') ||
       text.includes('what is this website') ||
       text.includes('what is this platform') ||
       text.includes('how does it work') ||
@@ -383,7 +468,7 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 7. BOOKING, ORDERING & SLOT RESERVATION
+    // 10. BOOKING, ORDERING & SLOT RESERVATION
     if (
       text.includes('book') ||
       text.includes('order') ||
@@ -407,7 +492,7 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 8. 3D WEBGL / INTERACTIVE WEBSITES
+    // 11. 3D WEBGL / INTERACTIVE WEBSITES
     if (
       text.includes('3d') ||
       text.includes('three.js') ||
@@ -424,7 +509,7 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 9. 2D WEBSITES / LANDING PAGES
+    // 12. 2D WEBSITES / LANDING PAGES
     if (
       text.includes('2d') ||
       text.includes('landing page') ||
@@ -439,7 +524,7 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 10. AI & VIDEO GENERATION / ADVERTISEMENTS
+    // 13. AI & VIDEO GENERATION / ADVERTISEMENTS
     if (
       text.includes('video') ||
       text.includes('advertisement') ||
@@ -456,7 +541,7 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 11. GENERAL PRICING & RATES
+    // 14. GENERAL PRICING & RATES
     if (
       text.includes('price') ||
       text.includes('pricing') ||
@@ -476,7 +561,7 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 12. ALL SERVICES OVERVIEW
+    // 15. ALL SERVICES OVERVIEW
     if (
       text.includes('service') ||
       text.includes('what can you build') ||
@@ -492,7 +577,7 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 13. TURNAROUND / TIMELINE / DELIVERY SPEED
+    // 16. TURNAROUND / TIMELINE / DELIVERY SPEED
     if (
       text.includes('time') ||
       text.includes('how long') ||
@@ -509,7 +594,7 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 14. REFUND, REVISIONS & GUARANTEE POLICY
+    // 17. REFUND, REVISIONS & GUARANTEE POLICY
     if (
       text.includes('refund') ||
       text.includes('guarantee') ||
@@ -529,7 +614,7 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 15. LEGAL CENTER (Terms, Privacy Policy)
+    // 18. LEGAL CENTER (Terms, Privacy Policy)
     if (text.includes('terms') || text.includes('condition')) {
       if (onOpenLegal) onOpenLegal('terms');
       speak('Opening our studio Terms and Conditions.');
@@ -541,14 +626,14 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 16. ADMIN PORTAL ACCESS
+    // 19. ADMIN PORTAL ACCESS
     if (text.includes('admin') || text.includes('database') || text.includes('master password')) {
       if (onOpenAdmin) onOpenAdmin();
       speak('Opening the Master Password protected Studio Admin Portal.');
       return;
     }
 
-    // 17. CONTACT, SUPPORT, EMAIL & SOCIALS
+    // 20. CONTACT, SUPPORT, EMAIL & SOCIALS
     if (
       text.includes('contact') ||
       text.includes('email') ||
@@ -566,51 +651,6 @@ export default function VoiceAssistant({
       else onNavigate('contact');
       speak(
         'You can reach our team directly at support@genowl.tech, or message us on official X at GENOWL_TECH. Scrolling to the contact desk now.'
-      );
-      return;
-    }
-
-    // 18. MOBILE RESPONSIVENESS
-    if (
-      text.includes('mobile') ||
-      text.includes('phone') ||
-      text.includes('responsive') ||
-      text.includes('tablet') ||
-      text.includes('cross platform')
-    ) {
-      speak(
-        'Yes, every digital product we create is 100% responsive and optimized for fluid 60 frames per second performance on phones, tablets, and desktops.'
-      );
-      return;
-    }
-
-    // 19. TECHNOLOGY STACK
-    if (
-      text.includes('tech') ||
-      text.includes('technology') ||
-      text.includes('framework') ||
-      text.includes('code') ||
-      text.includes('language') ||
-      text.includes('stack')
-    ) {
-      speak(
-        'We build using React, TypeScript, Tailwind CSS, Vite, and Three.js WebGL shaders to ensure maximum performance and clean architecture.'
-      );
-      return;
-    }
-
-    // 20. PORTFOLIO & PAST WORK
-    if (
-      text.includes('portfolio') ||
-      text.includes('example') ||
-      text.includes('sample') ||
-      text.includes('demo') ||
-      text.includes('work') ||
-      text.includes('past projects')
-    ) {
-      onNavigate('home');
-      speak(
-        'The Genowl website you are currently viewing is an interactive demonstration of our 3D scroll architecture and modern design capabilities.'
       );
       return;
     }
@@ -730,7 +770,7 @@ export default function VoiceAssistant({
 
     // 29. OUT-OF-SCOPE GUARDRAIL
     speak(
-      'I am Genowl’s AI guide, trained on our web services, 3D interactive engineering, video generation, and project booking. How can our team build for you today?'
+      'I am YZER, Genowl’s AI guide. I am trained on our web services, 3D interactive engineering, video generation, and project booking. How can our team build for you today?'
     );
   };
 
@@ -755,9 +795,9 @@ export default function VoiceAssistant({
               </div>
               <div>
                 <h4 className="text-xs font-bold text-white tracking-wide flex items-center gap-1.5">
-                  Genowl AI Voice Guide
+                  <span>YZER</span>
                   <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#c6f554]/20 text-[#c6f554] font-mono">
-                    {isMobile ? 'Mobile' : 'Desktop'}
+                    AI Guide
                   </span>
                 </h4>
                 <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
@@ -767,7 +807,13 @@ export default function VoiceAssistant({
                     }`}
                   />
                   <span>
-                    {isListening ? 'Listening actively...' : isSpeaking ? 'Speaking...' : 'Ready for voice or text'}
+                    {isListening
+                      ? 'YZER is listening...'
+                      : isSpeaking
+                      ? 'YZER is speaking...'
+                      : isTourActive
+                      ? 'Tour in progress...'
+                      : 'Ask YZER anything'}
                   </span>
                 </div>
               </div>
@@ -813,7 +859,7 @@ export default function VoiceAssistant({
               </div>
               <div className="flex items-center gap-1.5 text-[10px] text-[#c6f554] font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
-                <span>Listening for speech...</span>
+                <span>YZER is listening actively...</span>
               </div>
             </div>
           )}
@@ -841,7 +887,7 @@ export default function VoiceAssistant({
                 type="text"
                 value={queryText}
                 onChange={(e) => setQueryText(e.target.value)}
-                placeholder={isListening ? 'Listening to your voice...' : 'Speak or type any question...'}
+                placeholder={isListening ? 'YZER is listening...' : 'Ask YZER or type a question...'}
                 className={`w-full py-2.5 pl-3.5 pr-10 rounded-xl bg-[#131d14] border text-xs text-white placeholder-zinc-500 focus:outline-none transition-all ${
                   isListening
                     ? 'border-red-500/70 shadow-[0_0_15px_rgba(239,68,68,0.25)]'
@@ -864,7 +910,7 @@ export default function VoiceAssistant({
             <button
               type="button"
               onClick={toggleListening}
-              title={isListening ? 'Stop listening' : 'Start speaking'}
+              title={isListening ? 'Stop listening' : 'Start speaking with YZER'}
               className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
                 isListening
                   ? 'bg-red-500 text-white border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse'
@@ -878,7 +924,7 @@ export default function VoiceAssistant({
             <button
               type="submit"
               disabled={!queryText.trim()}
-              title="Submit command"
+              title="Submit command to YZER"
               className="p-2.5 rounded-xl bg-gradient-to-r from-[#baf345] to-[#d6fa66] text-black font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105 transition-all cursor-pointer shadow-[0_0_12px_rgba(198,245,84,0.25)] flex items-center justify-center"
             >
               <Send className="w-4 h-4" />
@@ -889,10 +935,10 @@ export default function VoiceAssistant({
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="text-[10px] text-zinc-400">Quick:</span>
             {[
-              { label: currentUser ? 'My Profile' : 'Sign Up', cmd: currentUser ? 'open my profile' : 'help me sign up' },
+              { label: 'Give me a tour 🚀', cmd: 'give me a tour about the website' },
+              { label: 'After Sign Up?', cmd: 'what should I do after signing up?' },
               { label: 'About Genowl', cmd: 'tell me about genowl' },
               { label: 'Pricing ($500 / $99)', cmd: 'show services and pricing' },
-              { label: '3D WebGL ($2,500)', cmd: 'tell me about 3D WebGL website' },
               { label: 'Book Project', cmd: 'book a project' },
             ].map((chip) => (
               <button
@@ -902,7 +948,11 @@ export default function VoiceAssistant({
                   setQueryText(chip.cmd);
                   handleExecuteQuery(chip.cmd);
                 }}
-                className="px-2 py-1 rounded-lg text-[10px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-[#c6f554] border border-white/10 transition-all cursor-pointer"
+                className={`px-2 py-1 rounded-lg text-[10px] font-medium transition-all cursor-pointer border ${
+                  chip.label.includes('tour')
+                    ? 'bg-[#c6f554]/15 hover:bg-[#c6f554]/25 text-[#c6f554] border-[#c6f554]/40 font-semibold'
+                    : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-[#c6f554] border-white/10'
+                }`}
               >
                 {chip.label}
               </button>
@@ -917,7 +967,7 @@ export default function VoiceAssistant({
         onClick={() => {
           setIsOpen(!isOpen);
           if (!isOpen && !isSpeaking) {
-            speak('Welcome to Genowl. How can I guide you today?');
+            speak('Welcome to Genowl. I am YZER. How can I guide you today?');
           }
         }}
         id="voice-assistant-badge"
@@ -935,7 +985,7 @@ export default function VoiceAssistant({
         </div>
 
         <span className="text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors">
-          AI Voice Guide
+          Ask YZER
         </span>
 
         <div className="w-5 h-5 rounded-full bg-[#1b2b1d] border border-[#c6f554]/30 flex items-center justify-center text-[#c6f554]">
