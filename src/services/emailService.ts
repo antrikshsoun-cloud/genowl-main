@@ -79,22 +79,28 @@ export async function sendViaHostingerDomain(
   html: string,
   text: string
 ): Promise<boolean> {
-  try {
-    const res = await fetch('/api/send_email.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to, subject, html, text }),
-    });
+  const candidateEndpoints = ['/dist/api/send_email.php', '/api/send_email.php'];
 
-    if (res.ok) {
-      const data = await res.json();
-      return Boolean(data && data.success);
+  for (const endpoint of candidateEndpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, html, text }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success) {
+          return true;
+        }
+      }
+    } catch {
+      // Try next endpoint
     }
-    return false;
-  } catch (err) {
-    console.warn('[Genowl Mail] Hostinger direct dispatch error:', err);
-    return false;
   }
+
+  return false;
 }
 
 /**
