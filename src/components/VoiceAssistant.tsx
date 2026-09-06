@@ -102,8 +102,8 @@ export default function VoiceAssistant({
       const cleanPronunciation = sanitizeForSpeech(text);
       const utterance = new SpeechSynthesisUtterance(cleanPronunciation);
 
-      // On PC, Windows voices run slower by default, so we boost to 1.3x; on Mobile we use 1.15x
-      utterance.rate = isMobile ? 1.15 : 1.3;
+      // Uniform 1.15x natural cadence across both PC and mobile
+      utterance.rate = 1.15;
       utterance.pitch = 1.0;
 
       // Select highest fidelity natural studio voice
@@ -174,6 +174,12 @@ export default function VoiceAssistant({
       console.warn('[Voice Assistant] Recognition event:', event.error);
       if (event.error === 'no-speech') {
         // Paused speech is normal; do not kill session
+        return;
+      }
+      if (event.error === 'network') {
+        isListeningRef.current = false;
+        setIsListening(false);
+        setAssistantMessage('Cloud speech connection was blocked. If using Brave browser or an ad-blocker, please disable shields for mic access or type your question in the bar below!');
         return;
       }
       if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
