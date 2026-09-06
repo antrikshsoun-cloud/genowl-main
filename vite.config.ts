@@ -74,6 +74,7 @@ export default defineConfig(() => {
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
     build: {
+      emptyOutDir: false,
       rollupOptions: {
         input: path.resolve(__dirname, 'vite.html'),
         output: {
