@@ -1,0 +1,46 @@
+import fs from 'fs';
+
+const css = fs.readFileSync('dist/assets/bundle.css', 'utf8');
+const js = fs.readFileSync('dist/assets/bundle.js', 'utf8');
+
+const html = `<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Genowl - Intelligence that grows with you</title>
+    <meta name="description" content="High-converting 2D websites, cinema-grade 3D WebGL experiences, and custom AI production — engineered for visionary brands." />
+    <meta property="og:title" content="Genowl - Intelligence that grows with you" />
+    <meta property="og:description" content="High-converting 2D websites, cinema-grade 3D WebGL experiences, and custom AI production." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://genowl.tech/" />
+    <link rel="icon" type="image/png" href="/dist/genowl-mail-logo.png" />
+    <link rel="shortcut icon" type="image/x-icon" href="/dist/favicon.ico" />
+    <link rel="apple-touch-icon" href="/dist/genowl-mail-logo.png" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Genowl",
+      "url": "https://genowl.tech/",
+      "logo": "https://genowl.tech/dist/genowl-mail-logo.png"
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+${css}
+    </style>
+  </head>
+  <body class="bg-[#070908] text-white antialiased selection:bg-[#c6f554]/30 selection:text-[#c6f554]">
+    <div id="root"></div>
+    <script type="module">
+${js}
+    </script>
+  </body>
+</html>`;
+
+fs.writeFileSync('index.html', html, 'utf8');
+console.log('Standalone index.html successfully generated! Total size:', html.length, 'bytes');
