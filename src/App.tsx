@@ -229,6 +229,15 @@ export default function App() {
           onNavigate={handleNavigate}
           onOpenOrder={handleOpenOrder}
           onOpenContact={() => handleNavigate('contact')}
+          currentUser={currentUser}
+          onOpenAuth={(mode) => {
+            setPendingService(null);
+            setAuthMode(mode);
+            setAuthModalOpen(true);
+          }}
+          onOpenProfile={() => setProfileModalOpen(true)}
+          onOpenLegal={handleOpenLegal}
+          onOpenAdmin={() => setAdminModalOpen(true)}
         />
       </main>
 

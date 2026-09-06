@@ -1,14 +1,46 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2 } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2, UserCheck, LogIn } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 
 interface VoiceAssistantProps {
   onNavigate: (page: string) => void;
   onOpenOrder: (serviceName?: string) => void;
   onOpenContact?: () => void;
+  currentUser?: { name?: string; email?: string } | null;
+  onOpenAuth?: (mode: 'signin' | 'signup') => void;
+  onOpenProfile?: () => void;
+  onOpenLegal?: (tab: 'terms' | 'privacy' | 'refund') => void;
+  onOpenAdmin?: () => void;
 }
 
-export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact }: VoiceAssistantProps) {
+// Phonetic text sanitizer to completely eliminate pronunciation flutter/stutter
+function sanitizeForSpeech(raw: string): string {
+  return raw
+    .replace(/\$2,500/g, 'twenty-five hundred dollars')
+    .replace(/\$500/g, 'five hundred dollars')
+    .replace(/\$99/g, 'ninety-nine dollars')
+    .replace(/\$([0-9]+)/g, '$1 dollars')
+    .replace(/60\s*fps/gi, 'sixty frames per second')
+    .replace(/2D/gi, 'two D')
+    .replace(/3D/gi, 'three D')
+    .replace(/100%\s*IP/gi, 'one hundred percent intellectual property')
+    .replace(/100%/gi, 'one hundred percent')
+    .replace(/WebGL/gi, 'web G L')
+    .replace(/UI\/UX/gi, 'U I and U X')
+    .replace(/support@genowl\.tech/gi, 'support at genowl dot tech')
+    .replace(/@GENOWL_TECH/gi, 'GENOWL TECH on X');
+}
+
+export default function VoiceAssistant({
+  onNavigate,
+  onOpenOrder,
+  onOpenContact,
+  currentUser,
+  onOpenAuth,
+  onOpenProfile,
+  onOpenLegal,
+  onOpenAdmin,
+}: VoiceAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -18,15 +50,19 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
   );
   const [isSupported, setIsSupported] = useState(true);
 
-  const recognitionRef = useRef<any>(null);
+  const activeRecognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const isListeningRef = useRef(false);
   const silenceTimerRef = useRef<any>(null);
   const restartTimerRef = useRef<any>(null);
-
-  // Cache available voices
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
+  // Check device type for platform-tailored voice cadence
+  const isMobile =
+    typeof navigator !== 'undefined' &&
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  // Initialize Speech Synthesis & preload natural voices
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const updateVoices = () => {
@@ -44,110 +80,42 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       const SpeechRecognition =
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = navigator.language || 'en-US';
-
-        recognition.onstart = () => {
-          setIsListening(true);
-          isListeningRef.current = true;
-          setAssistantMessage('Listening... Speak your question now.');
-        };
-
-        recognition.onresult = (event: any) => {
-          let fullTranscript = '';
-          for (let i = 0; i < event.results.length; ++i) {
-            fullTranscript += event.results[i][0].transcript;
-          }
-
-          const liveText = fullTranscript.trim();
-          if (liveText) {
-            // Live type into input bar in real time
-            setQueryText(liveText);
-
-            // Auto-execute after 1.2s pause
-            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-            silenceTimerRef.current = setTimeout(() => {
-              if (liveText) {
-                handleExecuteQuery(liveText);
-                stopListening();
-              }
-            }, 1200);
-          }
-        };
-
-        recognition.onerror = (event: any) => {
-          console.warn('[Voice Assistant] Speech recognition event:', event.error);
-          if (event.error === 'no-speech') {
-            // Normal pause in speaking, do not cancel
-            return;
-          }
-          if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-            isListeningRef.current = false;
-            setIsListening(false);
-            setAssistantMessage('Microphone access is blocked in your browser. Please click the lock icon in your address bar and Allow Microphone, or type below!');
-            return;
-          }
-        };
-
-        recognition.onend = () => {
-          // Asynchronous restart with 250ms tick to keep listening alive cleanly on both PC & Mobile
-          if (isListeningRef.current) {
-            if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
-            restartTimerRef.current = setTimeout(() => {
-              if (isListeningRef.current && recognitionRef.current) {
-                try {
-                  recognitionRef.current.start();
-                } catch (err) {
-                  // Silently ignore if already active
-                }
-              }
-            }, 250);
-          } else {
-            setIsListening(false);
-          }
-        };
-
-        recognitionRef.current = recognition;
-      } else {
+      if (!SpeechRecognition) {
         setIsSupported(false);
       }
     }
 
     return () => {
-      isListeningRef.current = false;
-      if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      if (synthRef.current) synthRef.current.cancel();
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch {}
-      }
+      stopAll();
     };
   }, []);
 
-  // Text-To-Speech with Crisp Natural Voice & Professional Speed
+  // Text-To-Speech with Phonetic Sanitizer and Platform-Calibrated Cadence
   const speak = (text: string) => {
     setAssistantMessage(text);
 
     if (!synthRef.current) return;
     try {
-      synthRef.current.cancel(); // Cancel any existing audio immediately
+      synthRef.current.cancel(); // Stop active speech immediately
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.15; // Crisp, energetic, professional pace
+      // Sanitize raw text to prevent pronunciation fluttering
+      const cleanPronunciation = sanitizeForSpeech(text);
+      const utterance = new SpeechSynthesisUtterance(cleanPronunciation);
+
+      // On PC, Windows voices run slower by default, so we boost to 1.3x; on Mobile we use 1.15x
+      utterance.rate = isMobile ? 1.15 : 1.3;
       utterance.pitch = 1.0;
 
-      // Select natural studio voice
+      // Select highest fidelity natural studio voice
       const voices = voicesRef.current.length > 0 ? voicesRef.current : synthRef.current.getVoices();
-      
       const naturalVoice =
+        // Edge / Windows Online Neural voices
         voices.find((v) => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Online'))) ||
+        // Google High Quality voices (Chrome)
         voices.find((v) => v.name.includes('Google US English') || v.name.includes('Google UK English Female')) ||
+        // Apple High Quality voices (Safari / Mac / iOS)
         voices.find((v) => v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Serena')) ||
+        // Filter out legacy robotic voices like Microsoft David Desktop
         voices.find((v) => v.lang.startsWith('en') && !v.name.includes('Desktop')) ||
         voices.find((v) => v.lang.startsWith('en'));
 
@@ -164,43 +132,95 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     }
   };
 
-  const stopAll = () => {
-    if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
-    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-    if (synthRef.current) synthRef.current.cancel();
-    stopListening();
-    setIsSpeaking(false);
-  };
+  // Factory to create a fresh, clean SpeechRecognition session (fixes PC hardware & TWS mic binding)
+  const createSpeechSession = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) return null;
 
-  // Start continuous listening with zero hardware stream conflict
-  const startListening = async () => {
-    stopAll(); // Silence TTS before starting mic
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = navigator.language || 'en-US';
 
-    // Request permissions if needed, but immediately stop stream so SpeechRecognition gets exclusive hardware access!
-    try {
-      if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach((track) => track.stop());
+    recognition.onstart = () => {
+      setIsListening(true);
+      isListeningRef.current = true;
+      setAssistantMessage('Listening... Speak your question now.');
+    };
+
+    recognition.onresult = (event: any) => {
+      let accumulated = '';
+      for (let i = 0; i < event.results.length; ++i) {
+        accumulated += event.results[i][0].transcript;
       }
-    } catch (err: any) {
-      console.warn('[Voice Assistant] Permission check:', err);
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setAssistantMessage('Microphone access is blocked in your browser. Click the lock icon in your address bar to Allow Microphone!');
-        setIsListening(false);
-        isListeningRef.current = false;
+
+      const spoken = accumulated.trim();
+      if (spoken) {
+        setQueryText(spoken);
+
+        // Auto execute after natural pause
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = setTimeout(() => {
+          if (spoken) {
+            handleExecuteQuery(spoken);
+            stopListening();
+          }
+        }, 1200);
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.warn('[Voice Assistant] Recognition event:', event.error);
+      if (event.error === 'no-speech') {
+        // Paused speech is normal; do not kill session
         return;
       }
-    }
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        isListeningRef.current = false;
+        setIsListening(false);
+        setAssistantMessage('Microphone access was blocked. Please click the lock/tune icon in your address bar and choose "Allow Microphone", or type below!');
+        return;
+      }
+    };
 
-    if (!recognitionRef.current) return;
+    recognition.onend = () => {
+      // If user still intends to listen, restart cleanly with a 200ms tick
+      if (isListeningRef.current) {
+        if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+        restartTimerRef.current = setTimeout(() => {
+          if (isListeningRef.current) {
+            try {
+              const freshSession = createSpeechSession();
+              activeRecognitionRef.current = freshSession;
+              freshSession?.start();
+            } catch (err) {
+              console.warn('[Voice Assistant] Restart catch:', err);
+            }
+          }
+        }, 200);
+      } else {
+        setIsListening(false);
+      }
+    };
+
+    return recognition;
+  };
+
+  // Start continuous listening natively (ZERO getUserMedia hardware lock)
+  const startListening = () => {
+    stopAll(); // Silence TTS before starting mic
 
     try {
       isListeningRef.current = true;
       setIsListening(true);
-      setAssistantMessage('Listening... Speak clearly now.');
-      recognitionRef.current.start();
+      setAssistantMessage('Listening... Speak your question now.');
+
+      const session = createSpeechSession();
+      activeRecognitionRef.current = session;
+      session?.start();
     } catch (e: any) {
-      console.warn('[Voice Assistant] Recognition start:', e?.message);
+      console.warn('[Voice Assistant] Start exception:', e?.message);
     }
   };
 
@@ -209,11 +229,20 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     setIsListening(false);
     if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-    if (recognitionRef.current) {
+    if (activeRecognitionRef.current) {
       try {
-        recognitionRef.current.stop();
+        activeRecognitionRef.current.stop();
       } catch {}
+      activeRecognitionRef.current = null;
     }
+  };
+
+  const stopAll = () => {
+    if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    if (synthRef.current) synthRef.current.cancel();
+    stopListening();
+    setIsSpeaking(false);
   };
 
   const toggleListening = () => {
@@ -243,7 +272,68 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 2. Greetings (Hello, Hi, Hey, Good Morning, Namaste)
+    // 2. SIGN UP / REGISTER ACCOUNT FLOW
+    if (
+      text.includes('sign up') ||
+      text.includes('signup') ||
+      text.includes('register') ||
+      text.includes('create account') ||
+      text.includes('new account') ||
+      text.includes('join')
+    ) {
+      if (currentUser) {
+        speak(
+          `You are already signed in as ${currentUser.name || currentUser.email}. You can check your active projects in your profile hub.`
+        );
+        return;
+      } else {
+        if (onOpenAuth) onOpenAuth('signup');
+        speak(
+          'Opening the sign up portal for you now. Please enter your name, email, and password to register your account.'
+        );
+        return;
+      }
+    }
+
+    // 3. LOG IN / SIGN IN ACCOUNT FLOW
+    if (
+      text.includes('log in') ||
+      text.includes('login') ||
+      text.includes('sign in') ||
+      text.includes('signin')
+    ) {
+      if (currentUser) {
+        speak(
+          `You are already logged in as ${currentUser.name || currentUser.email}.`
+        );
+        return;
+      } else {
+        if (onOpenAuth) onOpenAuth('signin');
+        speak('Opening the sign in window. Enter your email and password to log in.');
+        return;
+      }
+    }
+
+    // 4. CLIENT PROFILE / MY PROJECTS / DASHBOARD
+    if (
+      text.includes('profile') ||
+      text.includes('my account') ||
+      text.includes('my project') ||
+      text.includes('dashboard') ||
+      text.includes('booking records')
+    ) {
+      if (currentUser) {
+        if (onOpenProfile) onOpenProfile();
+        speak('Opening your client profile hub where you can view your active bookings and project scope.');
+        return;
+      } else {
+        if (onOpenAuth) onOpenAuth('signin');
+        speak('Please sign in first to access your client profile.');
+        return;
+      }
+    }
+
+    // 5. GREETINGS (Hello, Hi, Hey, Namaste, Good morning)
     if (
       text === 'hello' ||
       text === 'hi' ||
@@ -264,7 +354,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 3. ABOUT GENOWL (Exact Core Studio Statement requested)
+    // 6. ABOUT GENOWL (Exact Core Studio Statement requested)
     if (
       text.includes('about') ||
       text.includes('what is genowl') ||
@@ -287,7 +377,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 4. Booking, Ordering & Slot Reservation
+    // 7. BOOKING, ORDERING & SLOT RESERVATION
     if (
       text.includes('book') ||
       text.includes('order') ||
@@ -311,7 +401,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 5. 3D WebGL / Interactive Specific
+    // 8. 3D WEBGL / INTERACTIVE WEBSITES
     if (
       text.includes('3d') ||
       text.includes('three.js') ||
@@ -328,7 +418,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 6. 2D Websites / Landing Pages Specific
+    // 9. 2D WEBSITES / LANDING PAGES
     if (
       text.includes('2d') ||
       text.includes('landing page') ||
@@ -343,7 +433,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 7. AI & Video Generation / Commercials / Advertisements
+    // 10. AI & VIDEO GENERATION / ADVERTISEMENTS
     if (
       text.includes('video') ||
       text.includes('advertisement') ||
@@ -360,7 +450,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 8. General Pricing & Rates
+    // 11. GENERAL PRICING & RATES
     if (
       text.includes('price') ||
       text.includes('pricing') ||
@@ -380,7 +470,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 9. All Services Overview
+    // 12. ALL SERVICES OVERVIEW
     if (
       text.includes('service') ||
       text.includes('what can you build') ||
@@ -396,7 +486,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 10. Turnaround / Delivery Timeline / Delivery Speed
+    // 13. TURNAROUND / TIMELINE / DELIVERY SPEED
     if (
       text.includes('time') ||
       text.includes('how long') ||
@@ -413,7 +503,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 11. Refund, Revisions & Guarantee Policy
+    // 14. REFUND, REVISIONS & GUARANTEE POLICY
     if (
       text.includes('refund') ||
       text.includes('guarantee') ||
@@ -424,13 +514,35 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       text.includes('policy') ||
       text.includes('safe')
     ) {
+      if (text.includes('show') || text.includes('page') || text.includes('open')) {
+        if (onOpenLegal) onOpenLegal('refund');
+      }
       speak(
         'We provide a 100% money-back refund guarantee before milestone development begins, plus unlimited revisions during the initial wireframing and design phase.'
       );
       return;
     }
 
-    // 12. Contact, Support, Email & Socials
+    // 15. LEGAL CENTER (Terms, Privacy Policy)
+    if (text.includes('terms') || text.includes('condition')) {
+      if (onOpenLegal) onOpenLegal('terms');
+      speak('Opening our studio Terms and Conditions.');
+      return;
+    }
+    if (text.includes('privacy')) {
+      if (onOpenLegal) onOpenLegal('privacy');
+      speak('Opening our Privacy Policy.');
+      return;
+    }
+
+    // 16. ADMIN PORTAL ACCESS
+    if (text.includes('admin') || text.includes('database') || text.includes('master password')) {
+      if (onOpenAdmin) onOpenAdmin();
+      speak('Opening the Master Password protected Studio Admin Portal.');
+      return;
+    }
+
+    // 17. CONTACT, SUPPORT, EMAIL & SOCIALS
     if (
       text.includes('contact') ||
       text.includes('email') ||
@@ -452,7 +564,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 13. Mobile Responsiveness / Cross-device
+    // 18. MOBILE RESPONSIVENESS
     if (
       text.includes('mobile') ||
       text.includes('phone') ||
@@ -466,7 +578,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 14. Technology Stack / Code Quality
+    // 19. TECHNOLOGY STACK
     if (
       text.includes('tech') ||
       text.includes('technology') ||
@@ -481,7 +593,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 15. Portfolio, Examples & Past Work
+    // 20. PORTFOLIO & PAST WORK
     if (
       text.includes('portfolio') ||
       text.includes('example') ||
@@ -497,7 +609,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 16. Navigation Shortcuts
+    // 21. NAVIGATION SHORTCUTS
     if (text.includes('home') || text.includes('top') || text.includes('start over')) {
       onNavigate('home');
       speak('Navigating to the top home section.');
@@ -515,7 +627,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 17. OUT-OF-SCOPE GUARDRAIL
+    // 22. OUT-OF-SCOPE GUARDRAIL
     speak(
       'I am Genowl’s AI guide, trained on our web services, 3D interactive engineering, video generation, and project booking. How can our team build for you today?'
     );
@@ -543,7 +655,9 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
               <div>
                 <h4 className="text-xs font-bold text-white tracking-wide flex items-center gap-1.5">
                   Genowl AI Voice Guide
-                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#c6f554]/20 text-[#c6f554] font-mono">Neural</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#c6f554]/20 text-[#c6f554] font-mono">
+                    {isMobile ? 'Mobile' : 'Desktop'}
+                  </span>
                 </h4>
                 <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
                   <span
@@ -552,7 +666,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
                     }`}
                   />
                   <span>
-                    {isListening ? 'Listening (speak now)...' : isSpeaking ? 'Speaking...' : 'Ready for voice or text'}
+                    {isListening ? 'Listening actively...' : isSpeaking ? 'Speaking...' : 'Ready for voice or text'}
                   </span>
                 </div>
               </div>
@@ -589,16 +703,16 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
             </p>
           </div>
 
-          {/* ACTIVE MIC STATUS BAR (Universal for Mobile and PC) */}
+          {/* ACTIVE MIC STATUS BAR */}
           {isListening && (
-            <div className="p-2 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between gap-2">
+            <div className="p-2 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between gap-2 animate-in fade-in duration-200">
               <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
                 <Mic className="w-3 h-3 text-red-400 animate-pulse" />
-                <span>Mic Status:</span>
+                <span>Microphone:</span>
               </div>
               <div className="flex items-center gap-1.5 text-[10px] text-[#c6f554] font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
-                <span>Listening actively...</span>
+                <span>Listening for speech...</span>
               </div>
             </div>
           )}
@@ -674,6 +788,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="text-[10px] text-zinc-400">Quick:</span>
             {[
+              { label: currentUser ? 'My Profile' : 'Sign Up', cmd: currentUser ? 'open my profile' : 'help me sign up' },
               { label: 'About Genowl', cmd: 'tell me about genowl' },
               { label: 'Pricing ($500 / $99)', cmd: 'show services and pricing' },
               { label: '3D WebGL ($2,500)', cmd: 'tell me about 3D WebGL website' },
