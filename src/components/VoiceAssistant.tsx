@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, X, Sparkles, ChevronRight, MessageSquare, Compass, ArrowRight } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2 } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 
 interface VoiceAssistantProps {
@@ -12,12 +12,16 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [assistantMessage, setAssistantMessage] = useState('Tap the mic or ask: "Show services", "How does it work?", or "Book a project".');
+  const [queryText, setQueryText] = useState('');
+  const [assistantMessage, setAssistantMessage] = useState(
+    'Ask me anything about Genowl services, pricing, timeline, or say "Book a project"!'
+  );
   const [isSupported, setIsSupported] = useState(true);
 
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
+  const isListeningRef = useRef(false);
+  const silenceTimerRef = useRef<any>(null);
 
   // Initialize Speech Recognition & Synthesis
   useEffect(() => {
@@ -27,31 +31,71 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
 
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
+        recognition.continuous = true; // Stay active while user is speaking
+        recognition.interimResults = true; // Stream words in real time
         recognition.lang = 'en-US';
 
         recognition.onstart = () => {
           setIsListening(true);
-          setTranscript('Listening to your voice...');
+          isListeningRef.current = true;
         };
 
         recognition.onresult = (event: any) => {
-          const speechText = event.results[0][0].transcript.toLowerCase();
-          setTranscript(`"${speechText}"`);
-          handleCommand(speechText);
+          let interimTranscript = '';
+          let finalTranscript = '';
+
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+
+          const liveText = finalTranscript || interimTranscript;
+          if (liveText.trim()) {
+            // Live type into the bar in real time!
+            setQueryText(liveText.trim());
+
+            // Reset silence timer to auto-execute when the user finishes speaking
+            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+            silenceTimerRef.current = setTimeout(() => {
+              if (liveText.trim()) {
+                handleExecuteQuery(liveText.trim());
+                stopListening();
+              }
+            }, 1400); // 1.4s pause triggers automatic execution
+          }
         };
 
         recognition.onerror = (event: any) => {
-          console.warn('[Voice Assistant] Error:', event.error);
-          setIsListening(false);
+          console.warn('[Voice Assistant] Speech error:', event.error);
           if (event.error === 'not-allowed') {
-            setAssistantMessage('Microphone access denied. You can still tap the suggestion chips below!');
+            setAssistantMessage('Microphone permission was not granted. You can type your question in the bar below!');
+            setIsListening(false);
+            isListeningRef.current = false;
+          } else if (event.error === 'no-speech') {
+            // Don't kill listening immediately if user paused briefly
+          } else {
+            setIsListening(false);
+            isListeningRef.current = false;
           }
         };
 
         recognition.onend = () => {
-          setIsListening(false);
+          // If user still intended to listen, attempt smooth keepalive
+          if (isListeningRef.current) {
+            try {
+              recognition.start();
+            } catch {
+              setIsListening(false);
+              isListeningRef.current = false;
+            }
+          } else {
+            setIsListening(false);
+            isListeningRef.current = false;
+          }
         };
 
         recognitionRef.current = recognition;
@@ -65,9 +109,8 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     }
 
     return () => {
-      if (synthRef.current) {
-        synthRef.current.cancel();
-      }
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      if (synthRef.current) synthRef.current.cancel();
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
@@ -76,142 +119,277 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     };
   }, []);
 
-  // Text-To-Speech Output
+  // Text-To-Speech
   const speak = (text: string) => {
-    if (!synthRef.current) return;
-    synthRef.current.cancel(); // cancel any active speech
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-
-    // Pick best available English voice
-    const voices = synthRef.current.getVoices();
-    const naturalVoice =
-      voices.find((v) => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha'))) ||
-      voices.find((v) => v.lang.startsWith('en'));
-
-    if (naturalVoice) utterance.voice = naturalVoice;
-
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
     setAssistantMessage(text);
-    synthRef.current.speak(utterance);
+
+    if (!synthRef.current) return;
+    try {
+      synthRef.current.cancel(); // Stop any previous speech immediately
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+
+      const voices = synthRef.current.getVoices();
+      const naturalVoice =
+        voices.find((v) => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha'))) ||
+        voices.find((v) => v.lang.startsWith('en'));
+
+      if (naturalVoice) utterance.voice = naturalVoice;
+
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+
+      synthRef.current.speak(utterance);
+    } catch (e) {
+      console.warn('Speech synthesis error:', e);
+      setIsSpeaking(false);
+    }
   };
 
-  // Stop speaking & listening
+  // Stop everything
   const stopAll = () => {
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     if (synthRef.current) synthRef.current.cancel();
+    stopListening();
+    setIsSpeaking(false);
+  };
+
+  // Start continuous listening
+  const startListening = () => {
+    stopAll(); // Silence TTS before starting mic so there's no feedback
+    if (!recognitionRef.current) return;
+
+    try {
+      isListeningRef.current = true;
+      setIsListening(true);
+      setAssistantMessage('Listening... Speak your question or navigation command.');
+      recognitionRef.current.start();
+    } catch (e) {
+      console.warn('Recognition start caught error:', e);
+    }
+  };
+
+  // Stop listening
+  const stopListening = () => {
+    isListeningRef.current = false;
+    setIsListening(false);
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
       } catch {}
     }
-    setIsSpeaking(false);
-    setIsListening(false);
   };
 
-  // Process voice & tap commands
-  const handleCommand = (cmd: string) => {
-    const text = cmd.toLowerCase();
-
-    // 1. Stop / Mute Command
-    if (text.includes('stop') || text.includes('quiet') || text.includes('mute') || text.includes('shut up') || text.includes('silence')) {
-      stopAll();
-      setAssistantMessage('Silenced. Tap mic whenever you need me!');
-      return;
-    }
-
-    // 2. Pricing & Services
-    if (text.includes('service') || text.includes('pricing') || text.includes('cost') || text.includes('price') || text.includes('plan') || text.includes('package')) {
-      onNavigate('services');
-      speak(
-        'Here are our services. We build high-converting 2D websites for $500, cinema-grade 3D WebGL for $2,500, and $99 packages for video and AI, all with 100% IP transfer.'
-      );
-      return;
-    }
-
-    // 3. 3D Website specific
-    if (text.includes('3d')) {
-      onNavigate('services');
-      speak('Our 3D WebGL websites are $2,500 with custom shaders, 60 FPS physics, and scroll animations.');
-      return;
-    }
-
-    // 4. 2D Website specific
-    if (text.includes('2d')) {
-      onNavigate('services');
-      speak('Our 2D websites start at $500 with mobile optimization and 48 to 72-hour turnaround.');
-      return;
-    }
-
-    // 5. Booking / Order Project
-    if (text.includes('book') || text.includes('order') || text.includes('buy') || text.includes('start') || text.includes('hire')) {
-      if (text.includes('3d')) {
-        onOpenOrder('3D Website');
-      } else {
-        onOpenOrder('2D Website');
-      }
-      speak('Opening your project reservation desk. We confirm project slots with a 30-minute callback.');
-      return;
-    }
-
-    // 6. About & Philosophy / How It Works
-    if (text.includes('about') || text.includes('how it work') || text.includes('who are you') || text.includes('philosophy')) {
-      onNavigate('about');
-      speak(
-        'Our philosophy is simple: you pick your service, tell us what to build, and our studio handles the rest in 48 to 72 hours.'
-      );
-      return;
-    }
-
-    // 7. Contact / Email / Report
-    if (text.includes('contact') || text.includes('support') || text.includes('email') || text.includes('report') || text.includes('reach') || text.includes('phone')) {
-      if (onOpenContact) onOpenContact();
-      else onNavigate('contact');
-      speak('Navigating to our direct studio desk. You can reach us at support@genowl.tech or message us here.');
-      return;
-    }
-
-    // 8. Home
-    if (text.includes('home') || text.includes('top') || text.includes('beginning')) {
-      onNavigate('home');
-      speak('Taking you back to the home page.');
-      return;
-    }
-
-    // Default Fallback
-    speak('I am here to help you navigate Genowl. Try saying: "Show services", "Tell me about pricing", or "Book a project".');
-  };
-
-  // Start Voice Recognition
   const toggleListening = () => {
     if (isListening) {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch {}
-      }
-      setIsListening(false);
+      stopListening();
     } else {
-      stopAll();
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.start();
-        } catch (e) {
-          console.warn(e);
-        }
-      }
+      startListening();
     }
+  };
+
+  // Core Genowl Knowledge Base & Intent Classifier
+  const handleExecuteQuery = (rawInput: string) => {
+    const text = rawInput.trim().toLowerCase();
+    if (!text) return;
+
+    // 1. Audio Silence / Stop Command
+    if (
+      text.includes('stop') ||
+      text.includes('quiet') ||
+      text.includes('mute') ||
+      text.includes('shut up') ||
+      text.includes('silence') ||
+      text.includes('pause')
+    ) {
+      stopAll();
+      setAssistantMessage('Silenced. Feel free to type or tap the mic anytime.');
+      return;
+    }
+
+    // 2. Booking / Ordering / Hire Studio
+    if (
+      text.includes('book') ||
+      text.includes('order') ||
+      text.includes('buy') ||
+      text.includes('hire') ||
+      text.includes('start project') ||
+      text.includes('reserve') ||
+      text.includes('consultation')
+    ) {
+      let chosenService = '2D Website';
+      if (text.includes('3d') || text.includes('webgl') || text.includes('interactive')) {
+        chosenService = '3D Website';
+      } else if (text.includes('ai') || text.includes('video')) {
+        chosenService = 'AI Video & Prompts';
+      }
+      onOpenOrder(chosenService);
+      speak(`Opening the project reservation desk for ${chosenService}. We will confirm your slot and scope with a 30-minute consultation.`);
+      return;
+    }
+
+    // 3. Pricing Specific Inquiries
+    if (
+      text.includes('price') ||
+      text.includes('pricing') ||
+      text.includes('cost') ||
+      text.includes('fee') ||
+      text.includes('package') ||
+      text.includes('rate') ||
+      text.includes('how much')
+    ) {
+      onNavigate('services');
+      if (text.includes('2d')) {
+        speak('Our 2D Websites start at $500 with mobile responsiveness, SEO, and a 3 to 5 day delivery timeline.');
+      } else if (text.includes('3d') || text.includes('webgl')) {
+        speak('Our 3D Interactive WebGL websites start at $2,500, featuring 60 frames per second physics, custom shaders, and interactive scroll dynamics.');
+      } else if (text.includes('ai') || text.includes('video')) {
+        speak('Our AI and Video Production package is just $99, providing custom 4K renders and commercial video assets.');
+      } else {
+        speak(
+          'Genowl offers transparent pricing: $500 for high-converting 2D Websites, $2,500 for Cinema-grade 3D WebGL, and $99 for AI Video generation. All packages come with 100% intellectual property transfer.'
+        );
+      }
+      return;
+    }
+
+    // 4. Services Overview
+    if (
+      text.includes('service') ||
+      text.includes('what do you do') ||
+      text.includes('what can you build') ||
+      text.includes('features') ||
+      text.includes('portfolio') ||
+      text.includes('offer')
+    ) {
+      onNavigate('services');
+      speak(
+        'We craft high-performance digital experiences: 2D modern responsive websites, interactive 3D WebGL experiences, and tailored AI video production. Scrolling to our services now.'
+      );
+      return;
+    }
+
+    // 5. 3D WebGL Specific
+    if (text.includes('3d') || text.includes('three.js') || text.includes('webgl') || text.includes('shader')) {
+      onNavigate('services');
+      speak(
+        'Our 3D WebGL experiences feature silky-smooth 60 frames per second animations, custom canvas shaders, and interactive models starting at $2,500.'
+      );
+      return;
+    }
+
+    // 6. 2D Website Specific
+    if (text.includes('2d') || text.includes('landing page') || text.includes('react')) {
+      onNavigate('services');
+      speak(
+        'Our 2D websites start at $500. They are built with React and Tailwind, load instantly, and have a 3 to 5-day turnaround.'
+      );
+      return;
+    }
+
+    // 7. About Genowl / Philosophy / Studio Details
+    if (
+      text.includes('about') ||
+      text.includes('who are you') ||
+      text.includes('who is genowl') ||
+      text.includes('philosophy') ||
+      text.includes('how it works') ||
+      text.includes('location') ||
+      text.includes('where are you')
+    ) {
+      onNavigate('about');
+      speak(
+        'Genowl is a modern creative engineering studio founded in New Delhi, India. Our philosophy is simple: zero template bloat, cinema-grade visuals, and 100% full intellectual property transfer to our clients.'
+      );
+      return;
+    }
+
+    // 8. Contact & Social Channels
+    if (
+      text.includes('contact') ||
+      text.includes('email') ||
+      text.includes('support') ||
+      text.includes('phone') ||
+      text.includes('reach') ||
+      text.includes('twitter') ||
+      text.includes('instagram') ||
+      text.includes('x.com') ||
+      text.includes('message')
+    ) {
+      if (onOpenContact) onOpenContact();
+      else onNavigate('contact');
+      speak(
+        'You can reach our studio directly at support@genowl.tech, or on official X at GENOWL_TECH. Scrolling to the contact desk.'
+      );
+      return;
+    }
+
+    // 9. Timeline / Delivery Speed
+    if (text.includes('time') || text.includes('how long') || text.includes('delivery') || text.includes('turnaround') || text.includes('days')) {
+      speak(
+        'Our turnaround is ultra-fast: 3 to 5 days for 2D Websites, 7 to 14 days for 3D WebGL projects, and 24 to 48 hours for AI video deliverables.'
+      );
+      return;
+    }
+
+    // 10. Refund & Guarantee Policy
+    if (text.includes('refund') || text.includes('guarantee') || text.includes('money back') || text.includes('cancel')) {
+      speak(
+        'We offer a 100% money-back refund guarantee before milestone production begins, plus unlimited revisions during the initial wireframe phase.'
+      );
+      return;
+    }
+
+    // 11. Navigation: Go to Top / Home
+    if (text.includes('home') || text.includes('top') || text.includes('header') || text.includes('start over')) {
+      onNavigate('home');
+      speak('Navigating back to the top home section.');
+      return;
+    }
+
+    // 12. Navigation: Go to Services
+    if (text.includes('show services') || text.includes('go to services') || text.includes('scroll to services')) {
+      onNavigate('services');
+      speak('Here is our full services catalogue.');
+      return;
+    }
+
+    // 13. Navigation: Go to About
+    if (text.includes('go to about') || text.includes('show about') || text.includes('scroll to about')) {
+      onNavigate('about');
+      speak('Here is the Genowl studio story and our core philosophy.');
+      return;
+    }
+
+    // 14. Navigation: Go to Contact
+    if (text.includes('go to contact') || text.includes('show contact') || text.includes('scroll to contact')) {
+      if (onOpenContact) onOpenContact();
+      else onNavigate('contact');
+      speak('Here is the direct contact and project inquiry desk.');
+      return;
+    }
+
+    // 15. OUT-OF-SCOPE GUARDRAIL (Strictly website-focused)
+    speak(
+      'I am Genowl’s AI guide, trained exclusively on our web engineering services, 3D interactive design, pricing ($500 2D / $2,500 3D / $99 AI), and project bookings. Would you like to check our pricing, book a consultation, or explore our services?'
+    );
+  };
+
+  const handleInputSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!queryText.trim()) return;
+    stopListening();
+    handleExecuteQuery(queryText);
   };
 
   return (
     <div id="genowl-voice-assistant" className="fixed bottom-20 right-3.5 sm:bottom-6 sm:right-6 z-40 select-none">
-      {/* EXPANDED CONTROL DIALOG */}
+      {/* EXPANDED INTERACTIVE CONTROL DIALOG */}
       {isOpen && (
-        <div className="mb-3 w-[320px] sm:w-[360px] p-4 rounded-3xl bg-[#0c130e]/95 border border-[#c6f554]/30 backdrop-blur-2xl shadow-[0_12px_45px_rgba(0,0,0,0.85)] flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
+        <div className="mb-3 w-[330px] sm:w-[380px] p-4 rounded-3xl bg-[#0c130e]/95 border border-[#c6f554]/30 backdrop-blur-2xl shadow-[0_16px_50px_rgba(0,0,0,0.9)] flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
           
           {/* Header Row */}
           <div className="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
@@ -220,10 +398,19 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
                 <OwlLogo className="w-4 h-4 text-[#f7cc46]" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-white tracking-wide">Genowl AI Voice Guide</h4>
-                <div className="flex items-center gap-1.5 text-[9px] text-zinc-400">
-                  <span className={`w-1.5 h-1.5 rounded-full ${isListening ? 'bg-red-400 animate-ping' : isSpeaking ? 'bg-[#c6f554] animate-pulse' : 'bg-[#c6f554]'}`} />
-                  <span>{isListening ? 'Listening...' : isSpeaking ? 'Speaking...' : 'Ready for commands'}</span>
+                <h4 className="text-xs font-bold text-white tracking-wide flex items-center gap-1.5">
+                  Genowl AI Voice Guide
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#c6f554]/20 text-[#c6f554] font-mono">2.0</span>
+                </h4>
+                <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isListening ? 'bg-red-400 animate-ping' : isSpeaking ? 'bg-[#c6f554] animate-pulse' : 'bg-[#c6f554]'
+                    }`}
+                  />
+                  <span>
+                    {isListening ? 'Listening (speak now)...' : isSpeaking ? 'Speaking...' : 'Ready for voice or text'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -233,7 +420,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
                 <button
                   type="button"
                   onClick={stopAll}
-                  title="Silence audio"
+                  title="Silence voice"
                   className="p-1 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-all cursor-pointer"
                 >
                   <VolumeX className="w-3.5 h-3.5 text-zinc-300" />
@@ -252,73 +439,95 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
             </div>
           </div>
 
-          {/* Transcript / Subtitle Box */}
-          <div className="p-3 rounded-2xl bg-[#121c13] border border-white/[0.08] min-h-[64px] flex flex-col justify-center">
-            {transcript && (
-              <div className="text-[11px] font-mono text-[#c6f554] mb-1 truncate">
-                You: {transcript}
-              </div>
-            )}
-            <p className="text-xs text-zinc-200 leading-relaxed">
+          {/* AI Response Subtitle & Live Status */}
+          <div className="p-3 rounded-2xl bg-[#121c13] border border-white/[0.08] min-h-[60px] flex flex-col justify-center">
+            <p className="text-xs text-zinc-200 leading-relaxed font-normal">
               {assistantMessage}
             </p>
           </div>
 
-          {/* Equalizer Sound Wave Animation when speaking/listening */}
+          {/* Equalizer Sound Wave Animation */}
           {(isListening || isSpeaking) && (
             <div className="flex items-center justify-center gap-1 py-1">
-              {[40, 70, 100, 60, 90, 50, 80, 45].map((h, i) => (
+              {[35, 65, 95, 55, 85, 45, 75, 40].map((h, i) => (
                 <span
                   key={i}
-                  className="w-1 rounded-full bg-[#c6f554] animate-pulse"
+                  className={`w-1 rounded-full ${isListening ? 'bg-red-400' : 'bg-[#c6f554]'} animate-pulse`}
                   style={{
                     height: `${isListening || isSpeaking ? h * 0.22 : 4}px`,
-                    animationDuration: `${0.4 + i * 0.1}s`,
+                    animationDuration: `${0.35 + i * 0.08}s`,
                   }}
                 />
               ))}
             </div>
           )}
 
-          {/* Mic Action Bar */}
-          <div className="flex items-center gap-2 pt-1">
+          {/* REAL-TIME TYPING & COMMAND INPUT BAR */}
+          <form onSubmit={handleInputSubmit} className="relative flex items-center gap-1.5 pt-1">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={queryText}
+                onChange={(e) => setQueryText(e.target.value)}
+                placeholder={isListening ? 'Listening to you speak...' : 'Speak or type a question...'}
+                className={`w-full py-2.5 pl-3.5 pr-10 rounded-xl bg-[#131d14] border text-xs text-white placeholder-zinc-500 focus:outline-none transition-all ${
+                  isListening
+                    ? 'border-red-500/70 shadow-[0_0_15px_rgba(239,68,68,0.25)]'
+                    : 'border-white/15 focus:border-[#c6f554]/60'
+                }`}
+              />
+
+              {queryText && (
+                <button
+                  type="button"
+                  onClick={() => setQueryText('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white text-xs cursor-pointer"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Mic Toggle Button */}
             <button
               type="button"
               onClick={toggleListening}
-              className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              title={isListening ? 'Stop listening' : 'Start speaking'}
+              className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
                 isListening
-                  ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse'
-                  : 'bg-gradient-to-r from-[#baf345] to-[#d6fa66] text-black shadow-[0_0_15px_rgba(198,245,84,0.3)] hover:brightness-105'
+                  ? 'bg-red-500 text-white border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse'
+                  : 'bg-white/[0.06] hover:bg-white/10 text-[#c6f554] border-white/15 hover:border-[#c6f554]/50'
               }`}
             >
-              {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-              <span>{isListening ? 'Stop Listening' : 'Tap to Speak'}</span>
+              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
             </button>
 
+            {/* Submit Arrow Button */}
             <button
-              type="button"
-              onClick={() => handleCommand('pricing')}
-              className="py-2.5 px-3 rounded-xl bg-white/[0.06] hover:bg-white/10 border border-white/10 text-xs text-zinc-300 hover:text-white font-medium transition-all cursor-pointer"
+              type="submit"
+              disabled={!queryText.trim()}
+              title="Submit command"
+              className="p-2.5 rounded-xl bg-gradient-to-r from-[#baf345] to-[#d6fa66] text-black font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105 transition-all cursor-pointer shadow-[0_0_12px_rgba(198,245,84,0.25)] flex items-center justify-center"
             >
-              Services
+              <Send className="w-4 h-4" />
             </button>
-          </div>
+          </form>
 
-          {/* Quick Command Chips */}
+          {/* Quick Instant Suggestion Chips */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="text-[10px] text-zinc-400">Quick:</span>
             {[
               { label: 'Pricing ($500 / $99)', cmd: 'show services and pricing' },
-              { label: 'How it works', cmd: 'how does it work' },
+              { label: '3D WebGL ($2,500)', cmd: 'tell me about 3D WebGL website' },
               { label: 'Book Project', cmd: 'book a project' },
-              { label: 'Contact', cmd: 'contact support' },
+              { label: 'Studio Contact', cmd: 'how can I contact the studio' },
             ].map((chip) => (
               <button
                 key={chip.label}
                 type="button"
                 onClick={() => {
-                  setTranscript(`"${chip.cmd}"`);
-                  handleCommand(chip.cmd);
+                  setQueryText(chip.cmd);
+                  handleExecuteQuery(chip.cmd);
                 }}
                 className="px-2 py-1 rounded-lg text-[10px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-[#c6f554] border border-white/10 transition-all cursor-pointer"
               >
