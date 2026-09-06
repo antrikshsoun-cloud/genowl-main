@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, LogOut, ShoppingBag, Clock, CheckCircle2, ArrowRight, ShieldCheck, Mail, FileText, Sparkles, AlertCircle } from 'lucide-react';
+import { X, User, LogOut, ShoppingBag, Clock, CheckCircle2, ArrowRight, ShieldCheck, Mail, FileText, Sparkles, AlertCircle, Camera } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 import { UserProfile } from './AuthModal.tsx';
 import { ClientOrder } from './AdminModal.tsx';
@@ -49,7 +49,49 @@ export default function ProfileModal({
     }
   }, [isOpen, currentUser]);
 
-  if (!isOpen || !currentUser) return null;
+  if (!isOpen) return null;
+
+  if (!currentUser) {
+    return (
+      <div
+        id="profile-modal-backdrop"
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md transition-opacity"
+        onClick={onClose}
+      >
+        <div
+          id="profile-modal-dialog"
+          className="relative w-full max-w-md rounded-3xl bg-[#0c120e] border border-white/15 p-6 sm:p-8 shadow-2xl overflow-hidden text-center space-y-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-full text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <div className="w-14 h-14 rounded-2xl bg-[#c6f554]/15 border border-[#c6f554]/40 text-[#c6f554] flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(198,245,84,0.25)]">
+            <User className="w-7 h-7" />
+          </div>
+          <h3 className="text-xl font-bold text-white">Log In to View Profile</h3>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            Please log in or create an account to view your project slots, active orders, and booking records.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              onOpenOrder('2D Website');
+            }}
+            className="w-full py-3 rounded-xl text-xs font-bold text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.35)] cursor-pointer flex items-center justify-center gap-2"
+          >
+            <span>Log In / Sign Up</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Derive real photo from unavatar / Google lookup, custom upload, or initial
   const avatarSrc =

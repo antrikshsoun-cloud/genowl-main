@@ -93,7 +93,7 @@ export default function AuthModal({
       // 1. SIGN UP
       if (existingUser) {
         setIsLoading(false);
-        setErrorMessage('An account with this email already exists. Please sign in instead.');
+        setErrorMessage('An account with this Email ID already exists. Please Log In instead.');
         return;
       }
 
@@ -126,7 +126,7 @@ export default function AuthModal({
       // 2. SIGN IN
       if (!existingUser) {
         setIsLoading(false);
-        setErrorMessage('No account found with this email. Please Sign Up first to create your account.');
+        setErrorMessage('No account found with this Email ID. Please Sign Up first to create your account.');
         return;
       }
 
@@ -367,7 +367,7 @@ export default function AuthModal({
           /* STEP 1: INITIAL SIGN UP / SIGN IN FORM */
           <div>
             {/* Mode Switch Tabs */}
-            <div className="flex p-1 rounded-xl bg-white/[0.04] border border-white/10 mb-5">
+            <div className="flex p-1 rounded-2xl bg-white/[0.04] border border-white/10 mb-6">
               <button
                 type="button"
                 onClick={() => {
@@ -380,7 +380,7 @@ export default function AuthModal({
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                Sign Up (First Time)
+                Sign Up
               </button>
               <button
                 type="button"
@@ -394,18 +394,18 @@ export default function AuthModal({
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                Sign In
+                Log In
               </button>
             </div>
 
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-              {customTitle || (mode === 'signup' ? 'Create your legal account' : 'Sign in to Genowl')}
+              {customTitle || (mode === 'signup' ? 'Create your account' : 'Log In to Genowl')}
             </h2>
             <p className="text-xs text-zinc-400 mt-1 mb-5 leading-relaxed">
               {customSubtitle ||
                 (mode === 'signup'
-                  ? 'Real email verification is required. Stay logged in for 7 days.'
-                  : 'Welcome back. Enter your credentials to access your workspace.')}
+                  ? 'Enter your details and Email ID to get started. Stay logged in for 7 days.'
+                  : 'Welcome back! Enter your Email ID and password to access your workspace.')}
             </p>
 
             {/* Error Banner */}
@@ -414,7 +414,7 @@ export default function AuthModal({
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
                 <div>
                   {errorMessage}
-                  {errorMessage.includes('Sign In instead') && (
+                  {errorMessage.includes('Log In instead') && (
                     <button
                       type="button"
                       onClick={() => {
@@ -423,7 +423,7 @@ export default function AuthModal({
                       }}
                       className="block mt-1 text-[#c6f554] underline font-medium cursor-pointer"
                     >
-                      Switch to Sign In →
+                      Switch to Log In →
                     </button>
                   )}
                   {errorMessage.includes('Sign Up first') && (
@@ -462,7 +462,7 @@ export default function AuthModal({
               )}
 
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1">Real Email Address</label>
+                <label className="block text-xs font-medium text-zinc-300 mb-1">Email ID</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
                   <input
@@ -476,7 +476,7 @@ export default function AuthModal({
                 </div>
                 {mode === 'signup' && (
                   <p className="text-[10px] text-zinc-500 mt-1">
-                    * Fake domains (asdf.com, test.com, tempmail) are strictly rejected.
+                    * A 6-digit verification code will be sent to this Email ID.
                   </p>
                 )}
               </div>
@@ -556,7 +556,7 @@ export default function AuthModal({
                   <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    <span>{mode === 'signup' ? 'Verify Email & Continue' : 'Sign In to Genowl'}</span>
+                    <span>{mode === 'signup' ? 'Verify Email & Continue' : 'Log In to Genowl'}</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -567,7 +567,7 @@ export default function AuthModal({
             <div className="mt-4 pt-3 text-center text-xs text-zinc-400">
               {mode === 'signup' ? (
                 <span>
-                  Already signed up before?{' '}
+                  Already have an account?{' '}
                   <button
                     type="button"
                     onClick={() => {
@@ -576,7 +576,7 @@ export default function AuthModal({
                     }}
                     className="text-[#c6f554] font-medium hover:underline ml-1 cursor-pointer"
                   >
-                    Sign In here
+                    Log In here
                   </button>
                 </span>
               ) : (

@@ -234,7 +234,7 @@ export default function Navbar({
                   }}
                   className="w-full py-2 rounded-full text-xs font-semibold text-white bg-white/10 hover:bg-white/15 transition-all text-center cursor-pointer"
                 >
-                  Log In / Sign In
+                  Log In
                 </button>
               )}
 
