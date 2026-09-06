@@ -20,6 +20,7 @@ import OwlLogo from './OwlLogo.tsx';
 import { UserProfile } from './AuthModal.tsx';
 import { sendSlotBookingEmail } from '../services/emailService.ts';
 import { syncOrderToSupabase } from '../services/supabaseClient.ts';
+import { submitBookingToHostinger } from '../services/hostingerDbService.ts';
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -146,6 +147,17 @@ export default function OrderModal({
     // 2. Sync to Supabase Cloud PostgreSQL
     syncOrderToSupabase(newOrder).catch((err) => {
       console.warn('Supabase cloud sync background note:', err);
+    });
+
+    // 3. Sync to Hostinger LiteSpeed MySQL Database
+    submitBookingToHostinger({
+      name: newOrder.name,
+      email: newOrder.email,
+      service_type: newOrder.service,
+      budget: newOrder.amount,
+      project_scope: `Phone: ${newOrder.phone} | Speed: ${newOrder.speed} | Details: ${newOrder.details} | Ref: ${newOrder.referenceUrl}`,
+    }).catch((err) => {
+      console.warn('Hostinger DB sync note:', err);
     });
 
     // 3. Dispatch automated confirmation to client & urgent lead alert to admins

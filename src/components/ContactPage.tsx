@@ -3,6 +3,7 @@ import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, ShieldCh
 import { sendProblemOrInquiryEmail, OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM, OFFICIAL_X, OFFICIAL_X_URL } from '../services/emailService.ts';
 import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
 import { syncInquiryToSupabase } from '../services/supabaseClient.ts';
+import { submitContactToHostinger } from '../services/hostingerDbService.ts';
 import { UserProfile } from './AuthModal.tsx';
 
 interface ContactPageProps {
@@ -174,6 +175,14 @@ export default function ContactPage({
       phone: cleanPhone,
       service: `[${reportType.toUpperCase()}] ${category}`,
       message: `${priorityLabel} | ${referenceUrl ? `Ref: ${referenceUrl.trim()} | ` : ''}${description.trim()}`,
+    }).catch(() => {});
+
+    // Save directly to Hostinger MySQL Database
+    submitContactToHostinger({
+      name: clientName,
+      email: clientEmail,
+      subject: `[${reportType.toUpperCase()}] ${category} (${priorityLabel})`,
+      message: `Phone: ${cleanPhone} | ${referenceUrl ? `Ref: ${referenceUrl.trim()} | ` : ''}${description.trim()}`,
     }).catch(() => {});
 
     // Dispatch real email with golden owl logo to client, forward to Hostinger (support@genowl.tech) AND Gmail (genowlai@gmail.com)
