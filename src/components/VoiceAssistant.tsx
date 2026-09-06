@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2 } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2, AlertCircle } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 
 interface VoiceAssistantProps {
@@ -17,6 +17,8 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     'Ask me anything about Genowl services, pricing, timeline, or say "Book a project"!'
   );
   const [isSupported, setIsSupported] = useState(true);
+  const [micVolume, setMicVolume] = useState<number>(0); // Live PC mic sound level (0 to 100)
+  const [hasDetectedAudio, setHasDetectedAudio] = useState(false);
 
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
@@ -24,16 +26,36 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
   const silenceTimerRef = useRef<any>(null);
   const restartTimerRef = useRef<any>(null);
 
-  // Initialize Speech Recognition & Synthesis
+  // AudioContext & Analyser for real-time PC mic hardware volume tracking
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+
+  // Cache available voices
+  const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const updateVoices = () => {
+        if ('speechSynthesis' in window) {
+          voicesRef.current = window.speechSynthesis.getVoices();
+        }
+      };
+
+      if ('speechSynthesis' in window) {
+        synthRef.current = window.speechSynthesis;
+        updateVoices();
+        window.speechSynthesis.onvoiceschanged = updateVoices;
+      }
+
       const SpeechRecognition =
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
-        recognition.continuous = true; // Stay active while user is speaking
-        recognition.interimResults = true; // Stream words in real time
+        recognition.continuous = true;
+        recognition.interimResults = true;
         recognition.lang = 'en-US';
 
         recognition.onstart = () => {
@@ -56,38 +78,36 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
 
           const liveText = finalTranscript || interimTranscript;
           if (liveText.trim()) {
-            // Live type into the bar in real time!
+            setHasDetectedAudio(true);
             setQueryText(liveText.trim());
 
-            // Reset silence timer to auto-execute after user finishes utterance
+            // Auto-execute after 1.3s pause
             if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
             silenceTimerRef.current = setTimeout(() => {
               if (liveText.trim()) {
                 handleExecuteQuery(liveText.trim());
                 stopListening();
               }
-            }, 1400); // 1.4s pause triggers automatic execution
+            }, 1300);
           }
         };
 
         recognition.onerror = (event: any) => {
-          console.warn('[Voice Assistant] Speech error:', event.error);
+          console.warn('[Voice Assistant] Speech recognition event:', event.error);
           if (event.error === 'no-speech') {
-            // Normal silence pause on PC: do NOT kill listening session!
+            // Normal pause in speaking, do not cancel
             return;
           }
           if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
             isListeningRef.current = false;
             setIsListening(false);
-            setAssistantMessage('Microphone access is blocked in your browser. Please click the lock icon in your address bar and Allow Microphone, or type below!');
+            setAssistantMessage('Microphone access is blocked in your browser. Please click the lock/tune icon in your address bar and Allow Microphone, or type below!');
             return;
           }
-          // For transient network/audio-capture glitches, let onend handle graceful restart
         };
 
         recognition.onend = () => {
-          // Robust PC Chrome keepalive: DO NOT call recognition.start() synchronously inside onend
-          // Calling synchronously in onend throws InvalidStateError on Desktop Chrome!
+          // Asynchronous restart with 250ms tick to prevent Desktop Chrome InvalidStateError
           if (isListeningRef.current) {
             if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
             restartTimerRef.current = setTimeout(() => {
@@ -95,10 +115,10 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
                 try {
                   recognitionRef.current.start();
                 } catch (err) {
-                  // Silently ignore if already starting or active
+                  // Silently ignore if already active
                 }
               }
-            }, 250); // 250ms tick allows browser audio thread to reset cleanly
+            }, 250);
           } else {
             setIsListening(false);
           }
@@ -108,14 +128,11 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       } else {
         setIsSupported(false);
       }
-
-      if ('speechSynthesis' in window) {
-        synthRef.current = window.speechSynthesis;
-      }
     }
 
     return () => {
       isListeningRef.current = false;
+      stopAudioMonitoring();
       if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       if (synthRef.current) synthRef.current.cancel();
@@ -127,20 +144,98 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     };
   }, []);
 
-  // Text-To-Speech
+  // Hardware Audio Metering (Monitors physical PC mic volume)
+  const startAudioMonitoring = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        micStreamRef.current = stream;
+
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        const audioCtx = new AudioContextClass();
+        audioContextRef.current = audioCtx;
+
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        analyserRef.current = analyser;
+
+        const source = audioCtx.createMediaStreamSource(stream);
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        const checkVolume = () => {
+          if (!isListeningRef.current) return;
+          analyser.getByteFrequencyData(dataArray);
+
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            sum += dataArray[i];
+          }
+          const avg = sum / dataArray.length;
+          const normalized = Math.min(100, Math.round((avg / 128) * 100));
+          setMicVolume(normalized);
+
+          if (normalized > 12) {
+            setHasDetectedAudio(true);
+          }
+
+          animFrameRef.current = requestAnimationFrame(checkVolume);
+        };
+
+        checkVolume();
+        return true;
+      }
+    } catch (err: any) {
+      console.warn('[Voice Assistant] Audio monitoring error:', err);
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setAssistantMessage('Microphone access was denied. Please allow microphone permissions in your browser URL bar.');
+      }
+      return false;
+    }
+    return false;
+  };
+
+  const stopAudioMonitoring = () => {
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((track) => track.stop());
+      micStreamRef.current = null;
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      try {
+        audioContextRef.current.close();
+      } catch {}
+      audioContextRef.current = null;
+    }
+    setMicVolume(0);
+  };
+
+  // Text-To-Speech with Crisp Natural Voice & Professional Speed
   const speak = (text: string) => {
     setAssistantMessage(text);
 
     if (!synthRef.current) return;
     try {
-      synthRef.current.cancel(); // Stop any previous speech immediately
+      synthRef.current.cancel(); // Cancel any existing audio immediately
+
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
+      // Increased speed for energetic, crisp, and professional cadence (no slow robotic drag)
+      utterance.rate = 1.15;
       utterance.pitch = 1.0;
 
-      const voices = synthRef.current.getVoices();
+      // Select the most soothing, high-fidelity natural voice
+      const voices = voicesRef.current.length > 0 ? voicesRef.current : synthRef.current.getVoices();
+      
       const naturalVoice =
-        voices.find((v) => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha'))) ||
+        // Edge / Windows Online Natural Neural voices (studio voice actor quality)
+        voices.find((v) => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Online'))) ||
+        // Google High Quality voices (Chrome)
+        voices.find((v) => v.name.includes('Google US English') || v.name.includes('Google UK English Female')) ||
+        // Apple High Quality voices (Safari / Mac)
+        voices.find((v) => v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Serena')) ||
+        // Filter out legacy robotic voices like Microsoft David Desktop
+        voices.find((v) => v.lang.startsWith('en') && !v.name.includes('Desktop')) ||
         voices.find((v) => v.lang.startsWith('en'));
 
       if (naturalVoice) utterance.voice = naturalVoice;
@@ -156,7 +251,6 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     }
   };
 
-  // Stop everything
   const stopAll = () => {
     if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
@@ -165,44 +259,27 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     setIsSpeaking(false);
   };
 
-  // Start continuous listening (with explicit PC microphone permission check)
   const startListening = async () => {
-    stopAll(); // Silence TTS before starting mic so there is zero audio feedback
+    stopAll(); // Silence TTS before starting mic
 
-    // Request PC microphone stream explicitly to unlock Windows/Chrome audio capture
-    try {
-      if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Release stream tracks immediately so WebSpeechRecognition has exclusive audio hardware access
-        stream.getTracks().forEach((track) => track.stop());
-      }
-    } catch (err: any) {
-      console.warn('[Voice Assistant] PC Mic access check:', err);
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setAssistantMessage('Microphone access is blocked in your browser. Click the lock icon in your address bar to Allow Microphone!');
-        setIsListening(false);
-        isListeningRef.current = false;
-        return;
-      }
-    }
-
+    const hardwareGranted = await startAudioMonitoring();
     if (!recognitionRef.current) return;
 
     try {
       isListeningRef.current = true;
       setIsListening(true);
-      setAssistantMessage('Listening on PC mic... Speak your question or say "Hello"!');
+      setHasDetectedAudio(false);
+      setAssistantMessage('Listening... Speak clearly into your PC mic.');
       recognitionRef.current.start();
     } catch (e: any) {
-      // If recognition is already running, avoid throwing
-      console.warn('[Voice Assistant] Start notice:', e?.message);
+      console.warn('[Voice Assistant] Recognition start:', e?.message);
     }
   };
 
-  // Stop listening
   const stopListening = () => {
     isListeningRef.current = false;
     setIsListening(false);
+    stopAudioMonitoring();
     if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     if (recognitionRef.current) {
@@ -220,7 +297,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     }
   };
 
-  // Core Genowl Knowledge Base & Intent Classifier
+  // Comprehensive Genowl Knowledge Base & Natural Language Classifier
   const handleExecuteQuery = (rawInput: string) => {
     const text = rawInput.trim().toLowerCase();
     if (!text) return;
@@ -239,7 +316,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       return;
     }
 
-    // 2. Greetings (Hello / Hi / Hey / Good Morning)
+    // 2. Greetings (Hello, Hi, Hey, Good Morning, Namaste)
     if (
       text === 'hello' ||
       text === 'hi' ||
@@ -250,29 +327,40 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       text.includes('how are you') ||
       text.includes('good morning') ||
       text.includes('good afternoon') ||
-      text.includes('good evening')
+      text.includes('good evening') ||
+      text.includes('namaste') ||
+      text.includes("what's up")
     ) {
       speak(
-        'Hello! Welcome to Genowl. I am your AI assistant. I can explain our 2D websites ($500), 3D interactive WebGL experiences ($2,500), AI video production ($99), or book a project consultation for you. What would you like to build?'
+        'Hello! Welcome to Genowl. How can I assist you with our services, pricing, or booking today?'
       );
       return;
     }
 
-    // 3. Who are you / Assistant Identity
+    // 3. ABOUT GENOWL (Exact Core Studio Statement requested)
     if (
+      text.includes('about') ||
+      text.includes('what is genowl') ||
+      text.includes('who is genowl') ||
+      text.includes('tell me about genowl') ||
+      text.includes('what do you do') ||
+      text.includes('what does genowl do') ||
       text.includes('who are you') ||
-      text.includes('what are you') ||
-      text.includes('what is your name') ||
-      text.includes('what can you do') ||
-      text.includes('help me')
+      text.includes('what is this website') ||
+      text.includes('what is this platform') ||
+      text.includes('how does it work') ||
+      text.includes('how it works') ||
+      text.includes('philosophy') ||
+      text.includes('why genowl')
     ) {
+      onNavigate('about');
       speak(
-        'I am the Genowl AI Guide. You can speak to me or type to navigate sections, learn about our 2D and 3D WebGL services, get exact pricing, or reserve a direct consultation slot.'
+        'Genowl is a platform that provides you multiple services according to your requirements, basically we build for you. You don’t have to waste your time in building a website or an advertisement, video generation, our team handles it for you. All you have to do is choose a service, rest is on us.'
       );
       return;
     }
 
-    // 4. Booking / Ordering / Hire Studio
+    // 4. Booking, Ordering & Slot Reservation
     if (
       text.includes('book') ||
       text.includes('order') ||
@@ -280,20 +368,72 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       text.includes('hire') ||
       text.includes('start project') ||
       text.includes('reserve') ||
-      text.includes('consultation')
+      text.includes('consultation') ||
+      text.includes('get started') ||
+      text.includes('deal') ||
+      text.includes('contract')
     ) {
       let chosenService = '2D Website';
       if (text.includes('3d') || text.includes('webgl') || text.includes('interactive')) {
         chosenService = '3D Website';
-      } else if (text.includes('ai') || text.includes('video')) {
+      } else if (text.includes('ai') || text.includes('video') || text.includes('ad') || text.includes('commercial')) {
         chosenService = 'AI Video & Prompts';
       }
       onOpenOrder(chosenService);
-      speak(`Opening the project reservation desk for ${chosenService}. We will confirm your slot and scope with a 30-minute consultation.`);
+      speak(`Opening your project reservation desk for ${chosenService}. Choose your preferred date, and our team will confirm your slot.`);
       return;
     }
 
-    // 5. Pricing Specific Inquiries
+    // 5. 3D WebGL / Interactive Specific
+    if (
+      text.includes('3d') ||
+      text.includes('three.js') ||
+      text.includes('threejs') ||
+      text.includes('webgl') ||
+      text.includes('shader') ||
+      text.includes('canvas animation') ||
+      text.includes('interactive website')
+    ) {
+      onNavigate('services');
+      speak(
+        'Our 3D Interactive WebGL websites start at $2,500. They feature silky-smooth 60 frames per second physics, custom canvas shaders, interactive models, and 100% intellectual property transfer.'
+      );
+      return;
+    }
+
+    // 6. 2D Websites / Landing Pages Specific
+    if (
+      text.includes('2d') ||
+      text.includes('landing page') ||
+      text.includes('standard website') ||
+      text.includes('basic website') ||
+      text.includes('react')
+    ) {
+      onNavigate('services');
+      speak(
+        'Our 2D Websites start at $500. Built with React and modern responsive architecture, they feature ultra-fast load times, SEO optimization, and a 3 to 5-day turnaround.'
+      );
+      return;
+    }
+
+    // 7. AI & Video Generation / Commercials / Advertisements
+    if (
+      text.includes('video') ||
+      text.includes('advertisement') ||
+      text.includes('ad') ||
+      text.includes('commercial') ||
+      text.includes('promo') ||
+      text.includes('ai generation') ||
+      text.includes('prompt')
+    ) {
+      onNavigate('services');
+      speak(
+        'Our AI and Video Production package is just $99. We craft tailored marketing visuals, 4K promotional renders, and video advertisements ready for your campaigns.'
+      );
+      return;
+    }
+
+    // 8. General Pricing & Rates
     if (
       text.includes('price') ||
       text.includes('pricing') ||
@@ -301,141 +441,156 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       text.includes('fee') ||
       text.includes('package') ||
       text.includes('rate') ||
-      text.includes('how much')
+      text.includes('how much') ||
+      text.includes('cheap') ||
+      text.includes('affordable') ||
+      text.includes('expensive')
     ) {
       onNavigate('services');
-      if (text.includes('2d')) {
-        speak('Our 2D Websites start at $500 with mobile responsiveness, SEO, and a 3 to 5 day delivery timeline.');
-      } else if (text.includes('3d') || text.includes('webgl')) {
-        speak('Our 3D Interactive WebGL websites start at $2,500, featuring 60 frames per second physics, custom shaders, and interactive scroll dynamics.');
-      } else if (text.includes('ai') || text.includes('video')) {
-        speak('Our AI and Video Production package is just $99, providing custom 4K renders and commercial video assets.');
-      } else {
-        speak(
-          'Genowl offers transparent pricing: $500 for high-converting 2D Websites, $2,500 for Cinema-grade 3D WebGL, and $99 for AI Video generation. All packages come with 100% intellectual property transfer.'
-        );
-      }
+      speak(
+        'Genowl pricing is completely transparent: $500 for high-converting 2D Websites, $2,500 for Cinema-grade 3D WebGL, and $99 for AI Video generation. All services include full code and IP transfer.'
+      );
       return;
     }
 
-    // 6. Services Overview
+    // 9. All Services Overview
     if (
       text.includes('service') ||
-      text.includes('what do you do') ||
       text.includes('what can you build') ||
+      text.includes('what do you offer') ||
       text.includes('features') ||
-      text.includes('portfolio') ||
-      text.includes('offer')
+      text.includes('catalog') ||
+      text.includes('options')
     ) {
       onNavigate('services');
       speak(
-        'We craft high-performance digital experiences: 2D modern responsive websites, interactive 3D WebGL experiences, and tailored AI video production. Scrolling to our services now.'
+        'We offer three primary services: 2D modern websites for $500, interactive 3D WebGL websites for $2,500, and AI video and advertisement generation for $99. Scrolling to the services catalog now.'
       );
       return;
     }
 
-    // 7. 3D WebGL Specific
-    if (text.includes('3d') || text.includes('three.js') || text.includes('webgl') || text.includes('shader')) {
-      onNavigate('services');
-      speak(
-        'Our 3D WebGL experiences feature silky-smooth 60 frames per second animations, custom canvas shaders, and interactive models starting at $2,500.'
-      );
-      return;
-    }
-
-    // 8. 2D Website Specific
-    if (text.includes('2d') || text.includes('landing page') || text.includes('react')) {
-      onNavigate('services');
-      speak(
-        'Our 2D websites start at $500. They are built with React and Tailwind, load instantly, and have a 3 to 5-day turnaround.'
-      );
-      return;
-    }
-
-    // 9. About Genowl / Philosophy / Studio Details
+    // 10. Turnaround / Delivery Timeline / Delivery Speed
     if (
-      text.includes('about') ||
-      text.includes('who is genowl') ||
-      text.includes('philosophy') ||
-      text.includes('how it works') ||
-      text.includes('location') ||
-      text.includes('where are you')
+      text.includes('time') ||
+      text.includes('how long') ||
+      text.includes('delivery') ||
+      text.includes('turnaround') ||
+      text.includes('days') ||
+      text.includes('fast') ||
+      text.includes('urgent') ||
+      text.includes('speed')
     ) {
-      onNavigate('about');
       speak(
-        'Genowl is a modern creative engineering studio founded in New Delhi, India. Our philosophy is simple: zero template bloat, cinema-grade visuals, and 100% full intellectual property transfer to our clients.'
+        'Our turnaround is fast: 3 to 5 days for 2D Websites, 7 to 14 days for 3D WebGL interactive builds, and 24 to 48 hours for AI video advertisements.'
       );
       return;
     }
 
-    // 10. Contact & Social Channels
+    // 11. Refund, Revisions & Guarantee Policy
+    if (
+      text.includes('refund') ||
+      text.includes('guarantee') ||
+      text.includes('money back') ||
+      text.includes('cancel') ||
+      text.includes('revision') ||
+      text.includes('modify') ||
+      text.includes('policy') ||
+      text.includes('safe')
+    ) {
+      speak(
+        'We provide a 100% money-back refund guarantee before milestone development begins, plus unlimited revisions during the initial wireframing and design phase.'
+      );
+      return;
+    }
+
+    // 12. Contact, Support, Email & Socials
     if (
       text.includes('contact') ||
       text.includes('email') ||
       text.includes('support') ||
       text.includes('phone') ||
+      text.includes('talk to human') ||
       text.includes('reach') ||
       text.includes('twitter') ||
       text.includes('instagram') ||
       text.includes('x.com') ||
-      text.includes('message')
+      text.includes('message') ||
+      text.includes('help desk')
     ) {
       if (onOpenContact) onOpenContact();
       else onNavigate('contact');
       speak(
-        'You can reach our studio directly at support@genowl.tech, or on official X at GENOWL_TECH. Scrolling to the contact desk.'
+        'You can reach our team directly at support@genowl.tech, or message us on official X at GENOWL_TECH. Scrolling to the contact desk now.'
       );
       return;
     }
 
-    // 11. Timeline / Delivery Speed
-    if (text.includes('time') || text.includes('how long') || text.includes('delivery') || text.includes('turnaround') || text.includes('days')) {
+    // 13. Mobile Responsiveness / Cross-device
+    if (
+      text.includes('mobile') ||
+      text.includes('phone') ||
+      text.includes('responsive') ||
+      text.includes('tablet') ||
+      text.includes('cross platform')
+    ) {
       speak(
-        'Our turnaround is ultra-fast: 3 to 5 days for 2D Websites, 7 to 14 days for 3D WebGL projects, and 24 to 48 hours for AI video deliverables.'
+        'Yes, every digital product we create is 100% responsive and optimized for fluid 60 frames per second performance on phones, tablets, and desktops.'
       );
       return;
     }
 
-    // 12. Refund & Guarantee Policy
-    if (text.includes('refund') || text.includes('guarantee') || text.includes('money back') || text.includes('cancel')) {
+    // 14. Technology Stack / Code Quality
+    if (
+      text.includes('tech') ||
+      text.includes('technology') ||
+      text.includes('framework') ||
+      text.includes('code') ||
+      text.includes('language') ||
+      text.includes('stack')
+    ) {
       speak(
-        'We offer a 100% money-back refund guarantee before milestone production begins, plus unlimited revisions during the initial wireframe phase.'
+        'We build using React, TypeScript, Tailwind CSS, Vite, and Three.js WebGL shaders to ensure maximum performance and clean architecture.'
       );
       return;
     }
 
-    // 13. Navigation: Go to Top / Home
-    if (text.includes('home') || text.includes('top') || text.includes('header') || text.includes('start over')) {
+    // 15. Portfolio, Examples & Past Work
+    if (
+      text.includes('portfolio') ||
+      text.includes('example') ||
+      text.includes('sample') ||
+      text.includes('demo') ||
+      text.includes('work') ||
+      text.includes('past projects')
+    ) {
       onNavigate('home');
-      speak('Navigating back to the top home section.');
+      speak(
+        'The Genowl website you are currently viewing is an interactive demonstration of our 3D scroll architecture and modern design capabilities.'
+      );
       return;
     }
 
-    // 14. Navigation: Go to Services
-    if (text.includes('show services') || text.includes('go to services') || text.includes('scroll to services')) {
+    // 16. Navigation Shortcuts
+    if (text.includes('home') || text.includes('top') || text.includes('start over')) {
+      onNavigate('home');
+      speak('Navigating to the top home section.');
+      return;
+    }
+    if (text.includes('services') || text.includes('catalog')) {
       onNavigate('services');
-      speak('Here is our full services catalogue.');
+      speak('Here are our services.');
       return;
     }
-
-    // 15. Navigation: Go to About
-    if (text.includes('go to about') || text.includes('show about') || text.includes('scroll to about')) {
-      onNavigate('about');
-      speak('Here is the Genowl studio story and our core philosophy.');
-      return;
-    }
-
-    // 16. Navigation: Go to Contact
-    if (text.includes('go to contact') || text.includes('show contact') || text.includes('scroll to contact')) {
+    if (text.includes('contact') || text.includes('desk')) {
       if (onOpenContact) onOpenContact();
       else onNavigate('contact');
-      speak('Here is the direct contact and project inquiry desk.');
+      speak('Here is our direct contact desk.');
       return;
     }
 
-    // 17. OUT-OF-SCOPE GUARDRAIL (Strictly website-focused)
+    // 17. OUT-OF-SCOPE GUARDRAIL
     speak(
-      'I am Genowl’s AI guide, trained exclusively on our web engineering services, 3D interactive design, pricing ($500 2D / $2,500 3D / $99 AI), and project bookings. Would you like to check our pricing, book a consultation, or explore our services?'
+      'I am Genowl’s AI guide, trained on our web services, 3D interactive engineering, video generation, and project booking. How can our team build for you today?'
     );
   };
 
@@ -461,7 +616,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
               <div>
                 <h4 className="text-xs font-bold text-white tracking-wide flex items-center gap-1.5">
                   Genowl AI Voice Guide
-                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#c6f554]/20 text-[#c6f554] font-mono">2.0</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#c6f554]/20 text-[#c6f554] font-mono">Neural</span>
                 </h4>
                 <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
                   <span
@@ -470,7 +625,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
                     }`}
                   />
                   <span>
-                    {isListening ? 'Listening (speak now)...' : isSpeaking ? 'Speaking...' : 'Ready for voice or text'}
+                    {isListening ? 'Listening on PC mic...' : isSpeaking ? 'Speaking...' : 'Ready for voice or text'}
                   </span>
                 </div>
               </div>
@@ -507,6 +662,23 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
             </p>
           </div>
 
+          {/* REAL-TIME PC HARDWARE MIC LEVEL GAUGE */}
+          {isListening && (
+            <div className="p-2 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
+                <Mic className="w-3 h-3 text-red-400 animate-pulse" />
+                <span>PC Mic Level:</span>
+              </div>
+              <div className="flex-1 flex items-center gap-0.5 h-3 bg-white/5 rounded-full px-1 overflow-hidden">
+                <div
+                  className="h-1.5 rounded-full bg-gradient-to-r from-[#c6f554] to-red-400 transition-all duration-75"
+                  style={{ width: `${Math.max(8, micVolume)}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-mono text-[#c6f554]">{micVolume}%</span>
+            </div>
+          )}
+
           {/* Equalizer Sound Wave Animation */}
           {(isListening || isSpeaking) && (
             <div className="flex items-center justify-center gap-1 py-1">
@@ -515,7 +687,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
                   key={i}
                   className={`w-1 rounded-full ${isListening ? 'bg-red-400' : 'bg-[#c6f554]'} animate-pulse`}
                   style={{
-                    height: `${isListening || isSpeaking ? h * 0.22 : 4}px`,
+                    height: `${isListening ? Math.max(4, (micVolume / 100) * 24) : isSpeaking ? h * 0.22 : 4}px`,
                     animationDuration: `${0.35 + i * 0.08}s`,
                   }}
                 />
@@ -530,7 +702,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
                 type="text"
                 value={queryText}
                 onChange={(e) => setQueryText(e.target.value)}
-                placeholder={isListening ? 'Listening on PC mic... Speak now' : 'Speak or type a question...'}
+                placeholder={isListening ? 'Listening to your voice...' : 'Speak or type any question...'}
                 className={`w-full py-2.5 pl-3.5 pr-10 rounded-xl bg-[#131d14] border text-xs text-white placeholder-zinc-500 focus:outline-none transition-all ${
                   isListening
                     ? 'border-red-500/70 shadow-[0_0_15px_rgba(239,68,68,0.25)]'
@@ -578,7 +750,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="text-[10px] text-zinc-400">Quick:</span>
             {[
-              { label: 'Say "Hello"', cmd: 'hello' },
+              { label: 'About Genowl', cmd: 'tell me about genowl' },
               { label: 'Pricing ($500 / $99)', cmd: 'show services and pricing' },
               { label: '3D WebGL ($2,500)', cmd: 'tell me about 3D WebGL website' },
               { label: 'Book Project', cmd: 'book a project' },
