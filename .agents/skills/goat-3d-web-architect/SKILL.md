@@ -199,3 +199,33 @@ Always place an `.htaccess` file at the root:
   RewriteRule . /index.html [L]
 </IfModule>
 ```
+
+---
+
+## 8. Antigravity Extension Toolchain Protocol
+
+To maximize the power of Antigravity IDE during 3D web development, actively harness these installed extensions in the engineering workflow:
+
+1. **glTF Tools / 3D Model Viewer (`analyticalgraphics.gltf-tools`)**:
+   - **When to Use**: Whenever introducing or modifying 3D model assets (`.glb` or `.gltf`).
+   - **Workflow**: Click the `.glb` file inside the explorer to open the interactive 3D viewport directly in Antigravity. Rotate, zoom, and inspect mesh hierarchy, material properties, and Draco compression metrics before writing Three.js code.
+
+2. **GLSL Canvas & Shader Formatter (`slevesque.shader`)**:
+   - **When to Use**: When coding custom WebGL shaders, volumetric fog, water displacement, or neon particle shaders.
+   - **Workflow**: Create `.frag` and `.vert` files with live GLSL syntax linting and interactive preview, then import the code cleanly into Three.js `ShaderMaterial`.
+
+3. **Thunder Client (`rangav.vscode-thunder-client`)**:
+   - **When to Use**: Testing backend APIs, Supabase endpoints, booking webhooks, and contact forms.
+   - **Workflow**: Fire test HTTP requests with authentication headers right inside the Antigravity sidebar to verify server responses before connecting the React UI.
+
+4. **Image Gutter Preview (`kisstkondoros.vscode-gutter-preview`)**:
+   - **When to Use**: Inspecting frame sequences and image paths in code.
+   - **Workflow**: Glance at the editor gutter to immediately verify that frame paths (e.g. `/frames/frame_001.webp`) resolve to actual images, catching broken paths before running dev servers.
+
+5. **Color Highlight (`naumovs.color-highlight`)**:
+   - **When to Use**: Fine-tuning luxury dark obsidian palettes and glowing neon accents.
+   - **Workflow**: Immediately see the exact visual hue of hex/HSL values (`#c6f554`, `#f7cc46`, `#0e1610`) directly inline in `.tsx` and `.css` files.
+
+6. **Path Intellisense & Auto Rename Tag**:
+   - **When to Use**: Linking local assets and nesting complex 3D HUD containers.
+   - **Workflow**: Prevents typos when referencing assets across `/frames` and automatically maintains clean JSX tags.
