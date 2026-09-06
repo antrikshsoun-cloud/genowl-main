@@ -72,8 +72,8 @@ export default function ServicesFAQ() {
   return (
     <div className="mt-16 space-y-16">
       {/* 1. Comparison Matrix: Genowl vs Traditional Agencies */}
-      <div className="rounded-3xl bg-[#0b120c]/90 border border-white/10 p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
-        <div className="text-center max-w-2xl mx-auto mb-8">
+      <div className="rounded-3xl bg-[#0b120c]/90 border border-white/10 p-4 sm:p-8 backdrop-blur-xl shadow-2xl overflow-hidden w-full max-w-full">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c6f554]/10 border border-[#c6f554]/30 text-[#c6f554] text-xs font-semibold mb-2">
             <Award className="w-3.5 h-3.5" />
             <span>Why Choose Genowl</span>
@@ -86,8 +86,13 @@ export default function ServicesFAQ() {
           </p>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs sm:text-sm">
+        {/* Mobile Swipe Hint */}
+        <div className="sm:hidden text-center text-[10px] text-zinc-500 mb-2 font-mono flex items-center justify-center gap-1">
+          <span>&larr; Scroll sideways to view all dimensions &rarr;</span>
+        </div>
+
+        <div className="overflow-x-auto w-full max-w-full touch-pan-x rounded-2xl border border-white/5">
+          <table className="w-full min-w-[540px] text-left border-collapse text-xs sm:text-sm">
             <thead>
               <tr className="border-b border-white/10 bg-white/[0.02] text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
                 <th className="py-3.5 px-4">Dimension</th>

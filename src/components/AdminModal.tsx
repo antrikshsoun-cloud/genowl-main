@@ -12,7 +12,6 @@ import {
   testGoogleAppsScriptDispatch,
   OFFICIAL_GENOWL_GMAIL,
 } from '../services/emailService.ts';
-import { getRazorpayKey, saveRazorpayKey } from '../services/razorpayService.ts';
 import { getSupabaseConfig, saveSupabaseConfig, testSupabaseConnection, SUPABASE_SQL_SCHEMA } from '../services/supabaseClient.ts';
 
 export interface RegisteredUser {
@@ -74,11 +73,6 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
     return localStorage.getItem('genowl_projects_delivered') || '24+';
   });
 
-  // Razorpay Gateway State
-  const [razorpayKeyInput, setRazorpayKeyInput] = useState<string>(() => {
-    return getRazorpayKey();
-  });
-
   // Supabase Backend State
   const [supabaseUrlInput, setSupabaseUrlInput] = useState<string>(() => {
     return getSupabaseConfig().url;
@@ -128,13 +122,7 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
     setTimeout(() => setSuccessMessage(null), 3000);
   };
 
-  // Handlers for Razorpay & Supabase
-  const handleSaveRazorpayKey = (e: React.FormEvent) => {
-    e.preventDefault();
-    saveRazorpayKey(razorpayKeyInput);
-    setSuccessMessage('Razorpay API Key successfully updated and activated!');
-    setTimeout(() => setSuccessMessage(null), 3000);
-  };
+  // Handler for Supabase
 
   const handleSaveSupabaseConfig = (e: React.FormEvent) => {
     e.preventDefault();
@@ -505,8 +493,8 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                         : 'text-zinc-400 hover:text-white bg-white/5'
                     }`}
                   >
-                    <CreditCard className="w-3.5 h-3.5" />
-                    <span>Razorpay &amp; Supabase</span>
+                    <Database className="w-3.5 h-3.5" />
+                    <span>Supabase Database</span>
                   </button>
                 </div>
 
@@ -960,65 +948,12 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                 <div className="max-w-2xl mx-auto py-4 space-y-6">
                   <div className="text-center space-y-1">
                     <h3 className="text-base font-bold text-white flex items-center justify-center gap-2">
-                      <CreditCard className="w-4 h-4 text-[#c6f554]" />
-                      <span>Razorpay Gateway &amp; Supabase Cloud Backend</span>
+                      <Database className="w-4 h-4 text-[#c6f554]" />
+                      <span>Supabase Cloud PostgreSQL Backend</span>
                     </h3>
                     <p className="text-xs text-zinc-400">
-                      Configure your Indian payment gateway credentials and connect your cloud PostgreSQL database.
+                      Central PostgreSQL database connecting orders, inquiries, registered clients, and real-time syncing.
                     </p>
-                  </div>
-
-                  {/* 1. RAZORPAY CONFIGURATION CARD */}
-                  <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-[#142317] border border-[#c6f554]/40 flex items-center justify-center text-[#c6f554]">
-                          <CreditCard className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-bold text-white">Razorpay Payment Gateway</h4>
-                          <span className="text-[11px] text-zinc-400">UPI, Indian Debit/Credit Cards &amp; Net Banking</span>
-                        </div>
-                      </div>
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold font-mono ${
-                        razorpayKeyInput && !razorpayKeyInput.includes('demo')
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                      }`}>
-                        {razorpayKeyInput && !razorpayKeyInput.includes('demo') ? 'Live Key Active' : 'Test Sandbox'}
-                      </span>
-                    </div>
-
-                    <form onSubmit={handleSaveRazorpayKey} className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">
-                          Razorpay Key ID (rzp_test_... or rzp_live_...)
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="rzp_live_xxxxxxxxxxxxxx"
-                          value={razorpayKeyInput}
-                          onChange={(e) => setRazorpayKeyInput(e.target.value)}
-                          className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-[#c6f554] transition-all"
-                        />
-                        <p className="text-[11px] text-zinc-500 mt-1">
-                          * Found in your Razorpay Dashboard &gt; Settings &gt; API Keys. Payouts deposit automatically into your bank account.
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-1">
-                        <div className="text-[11px] text-zinc-400">
-                          Supports: <strong className="text-white">GPay, PhonePe, Paytm, Cards, UPI</strong>
-                        </div>
-                        <button
-                          type="submit"
-                          className="px-4 py-2 rounded-xl font-bold text-xs text-black bg-[#c6f554] hover:brightness-105 transition-all cursor-pointer shadow-md"
-                        >
-                          Save Razorpay Key
-                        </button>
-                      </div>
-                    </form>
                   </div>
 
                   {/* 2. SUPABASE BACKEND CONFIGURATION CARD */}

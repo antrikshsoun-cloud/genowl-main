@@ -117,7 +117,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
   ];
 
   return (
-    <div id="services-page" className="pt-4 sm:pt-6 pb-16 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto">
+    <div id="services-page" className="pt-4 sm:pt-6 pb-16 px-4 sm:px-6 md:px-8 max-w-6xl mx-auto w-full">
       {/* Header Section */}
       <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#121c13]/90 border border-white/10 shadow-lg mb-3">
@@ -139,20 +139,20 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
         {/* CARD 01: WEBSITE SERVICE WITH 2D ($500) & 3D ($2,500) OPTIONS */}
         <div
           id="service-card-web-design"
-          className="group relative rounded-3xl bg-[#0d140e]/95 border border-[#c6f554]/30 hover:border-[#c6f554]/60 backdrop-blur-xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(198,245,84,0.2)] overflow-hidden"
+          className="group relative rounded-3xl bg-[#0d140e]/95 border border-[#c6f554]/30 hover:border-[#c6f554]/60 backdrop-blur-xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(198,245,84,0.2)] overflow-hidden"
         >
           {/* Ambient lighting */}
           <div className="absolute top-0 right-0 w-56 h-56 bg-[#c6f554]/[0.07] rounded-full blur-3xl pointer-events-none" />
 
           <div>
             {/* Header Row */}
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-[#172318] border border-[#c6f554]/40 flex items-center justify-center text-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.3)]">
-                  <Globe className="w-6 h-6" />
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4">
+              <div className="flex items-center gap-3 sm:gap-3.5">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#172318] border border-[#c6f554]/40 flex items-center justify-center text-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.3)] shrink-0">
+                  <Globe className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <span className="text-[11px] font-mono text-[#c6f554] font-semibold tracking-wider">
+                  <span className="text-[10px] sm:text-[11px] font-mono text-[#c6f554] font-semibold tracking-wider">
                     SERVICE #01
                   </span>
                   <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
@@ -162,13 +162,13 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
               </div>
 
               {/* Dynamic Price Display based on chosen tier */}
-              <div className="text-right">
+              <div className="flex items-center sm:block justify-between sm:text-right">
                 <div className="inline-flex items-baseline gap-1 px-3.5 py-1 rounded-xl bg-[#19271a] border border-[#c6f554]/50 shadow-[0_0_15px_rgba(198,245,84,0.25)]">
                   <span className="text-2xl sm:text-3xl font-black text-[#c6f554] tracking-tight font-mono transition-all">
                     {currentWebConfig.price}
                   </span>
                 </div>
-                <span className="block text-[11px] text-zinc-400 mt-1">flat project fee</span>
+                <span className="block text-[11px] text-zinc-400 sm:mt-1">flat project fee</span>
               </div>
             </div>
 
@@ -270,18 +270,18 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
             <div
               key={service.id}
               id={`service-card-${service.id}`}
-              className="group relative rounded-3xl bg-[#0d140e]/90 border border-white/[0.08] hover:border-[#c6f554]/40 backdrop-blur-xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(198,245,84,0.15)] overflow-hidden"
+              className="group relative rounded-3xl bg-[#0d140e]/90 border border-white/[0.08] hover:border-[#c6f554]/40 backdrop-blur-xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(198,245,84,0.15)] overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-48 h-48 bg-[#c6f554]/[0.04] group-hover:bg-[#c6f554]/[0.08] rounded-full blur-2xl pointer-events-none transition-colors" />
 
               <div>
-                <div className="flex items-start justify-between gap-4 mb-6">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-12 h-12 rounded-2xl bg-[#172318] border border-[#c6f554]/30 flex items-center justify-center text-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.25)] group-hover:scale-105 transition-transform">
-                      <Icon className="w-6 h-6" />
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+                  <div className="flex items-center gap-3 sm:gap-3.5">
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#172318] border border-[#c6f554]/30 flex items-center justify-center text-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.25)] group-hover:scale-105 transition-transform shrink-0">
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
                     <div>
-                      <span className="text-[11px] font-mono text-[#c6f554] font-semibold tracking-wider">
+                      <span className="text-[10px] sm:text-[11px] font-mono text-[#c6f554] font-semibold tracking-wider">
                         SERVICE #{service.number}
                       </span>
                       <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
@@ -290,13 +290,13 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <div className="inline-flex items-baseline gap-1 px-3 py-1 rounded-xl bg-[#19271a] border border-[#c6f554]/40 shadow-[0_0_12px_rgba(198,245,84,0.2)]">
+                  <div className="flex items-center sm:block justify-between sm:text-right">
+                    <div className="inline-flex items-baseline gap-1 px-3.5 py-1 rounded-xl bg-[#19271a] border border-[#c6f554]/40 shadow-[0_0_12px_rgba(198,245,84,0.2)]">
                       <span className="text-2xl sm:text-3xl font-black text-[#c6f554] tracking-tight font-mono">
                         {service.price}
                       </span>
                     </div>
-                    <span className="block text-[11px] text-zinc-400 mt-1">flat rate</span>
+                    <span className="block text-[11px] text-zinc-400 sm:mt-1">flat rate</span>
                   </div>
                 </div>
 
@@ -341,7 +341,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
       <TrustMetrics />
 
       {/* Value Banner */}
-      <div className="rounded-3xl bg-gradient-to-r from-[#0f1911] via-[#142317] to-[#0f1911] border border-white/10 p-8 sm:p-10 text-center relative overflow-hidden shadow-2xl mb-16">
+      <div className="rounded-3xl bg-gradient-to-r from-[#0f1911] via-[#142317] to-[#0f1911] border border-white/10 p-5 sm:p-8 md:p-10 text-center relative overflow-hidden shadow-2xl mb-16">
         <div className="relative z-10 max-w-2xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
             Need a combination or custom bundle?

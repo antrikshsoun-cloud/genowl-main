@@ -2,7 +2,7 @@ import React from 'react';
 import { Instagram, Mail, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 
-import { OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM } from '../services/emailService.ts';
+import { OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM, OFFICIAL_X, OFFICIAL_X_URL } from '../services/emailService.ts';
 
 interface FooterProps {
   onNavigate: (page: string) => void;
@@ -13,6 +13,8 @@ interface FooterProps {
 
 export default function Footer({ onNavigate, currentPage, onOpenLegal, onOpenAdmin }: FooterProps) {
   const instagramId = OFFICIAL_INSTAGRAM;
+  const xHandle = OFFICIAL_X;
+  const xUrl = OFFICIAL_X_URL;
   const hostingerEmail = OFFICIAL_HOSTINGER_EMAIL;
   const gmailAccount = OFFICIAL_GENOWL_GMAIL;
 
@@ -50,8 +52,8 @@ export default function Footer({ onNavigate, currentPage, onOpenLegal, onOpenAdm
           ))}
         </nav>
 
-        {/* Right Contacts (Hostinger Mail, Gmail, Instagram) */}
-        <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 text-xs">
+        {/* Right Contacts (Hostinger Mail, Gmail, Instagram, X) */}
+        <div className="flex flex-wrap items-center justify-center md:justify-end gap-2.5 text-xs">
           {/* Hostinger Official Mail */}
           <a
             href={`mailto:${hostingerEmail}`}
@@ -79,10 +81,26 @@ export default function Footer({ onNavigate, currentPage, onOpenLegal, onOpenAdm
             href={`https://instagram.com/${instagramId}`}
             target="_blank"
             rel="noopener noreferrer"
+            title="Official Instagram Profile"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-[#f7cc46]/40 text-zinc-300 hover:text-white transition-all group"
           >
             <Instagram className="w-3.5 h-3.5 text-[#f7cc46]" />
             <span>@{instagramId}</span>
+            <ArrowUpRight className="w-3 h-3 text-zinc-500 group-hover:text-white transition-colors" />
+          </a>
+
+          {/* Official X (Twitter) Handle */}
+          <a
+            href={xUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Official X (Twitter) Profile"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-[#c6f554]/50 text-zinc-300 hover:text-[#c6f554] transition-all group"
+          >
+            <svg className="w-3.5 h-3.5 fill-current text-zinc-300 group-hover:text-[#c6f554] transition-colors" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+            <span className="font-medium">@{xHandle}</span>
             <ArrowUpRight className="w-3 h-3 text-zinc-500 group-hover:text-white transition-colors" />
           </a>
         </div>

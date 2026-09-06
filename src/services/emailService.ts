@@ -5,6 +5,8 @@ import { GENOWL_LOGO_BASE64 } from './logoAsset.ts';
 export const OFFICIAL_GENOWL_GMAIL = 'genowlai@gmail.com';
 export const OFFICIAL_HOSTINGER_EMAIL = 'support@genowl.tech';
 export const OFFICIAL_INSTAGRAM = 'genowl_tech';
+export const OFFICIAL_X = 'GENOWL_TECH';
+export const OFFICIAL_X_URL = 'https://x.com/GENOWL_TECH';
 export const OFFICIAL_SUPPORT_EMAILS = [OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL];
 
 export interface EmailLog {

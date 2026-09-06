@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, ShoppingBag, CheckCircle2, Clock, CreditCard, ArrowRight, Download, ExternalLink, ShieldCheck, Camera, LogOut } from 'lucide-react';
+import { X, User, LogOut, ShoppingBag, Clock, CheckCircle2, ArrowRight, ShieldCheck, Mail, FileText, Sparkles, AlertCircle } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 import { UserProfile } from './AuthModal.tsx';
 import { ClientOrder } from './AdminModal.tsx';
@@ -19,7 +19,7 @@ export default function ProfileModal({
   onSignOut,
   onOpenOrder,
 }: ProfileModalProps) {
-  const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'payments'>('active');
+  const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'records'>('active');
   const [userOrders, setUserOrders] = useState<ClientOrder[]>([]);
   const [customAvatarUrl, setCustomAvatarUrl] = useState<string>('');
 
@@ -206,15 +206,15 @@ export default function ProfileModal({
 
           <button
             type="button"
-            onClick={() => setActiveTab('payments')}
+            onClick={() => setActiveTab('records')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-              activeTab === 'payments'
+              activeTab === 'records'
                 ? 'bg-[#c6f554] text-black shadow-md'
                 : 'text-zinc-400 hover:text-white bg-white/5'
             }`}
           >
-            <CreditCard className="w-3.5 h-3.5" />
-            <span>Payment History</span>
+            <FileText className="w-3.5 h-3.5" />
+            <span>Booking Records</span>
           </button>
         </div>
 
@@ -323,35 +323,35 @@ export default function ProfileModal({
             </div>
           )}
 
-          {/* TAB 3: PAYMENT HISTORY */}
-          {activeTab === 'payments' && (
+          {/* TAB 3: BOOKING RECORDS & SCOPE HISTORY */}
+          {activeTab === 'records' && (
             <div className="space-y-3">
               {userOrders.length === 0 ? (
                 <div className="py-10 text-center text-zinc-500 text-xs">
-                  No payment history found.
+                  No project booking records found.
                 </div>
               ) : (
                 <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/30">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="border-b border-white/10 bg-white/[0.02] text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
-                        <th className="py-3 px-4">Receipt</th>
+                        <th className="py-3 px-4">Ticket</th>
                         <th className="py-3 px-4">Service</th>
-                        <th className="py-3 px-4">Amount</th>
+                        <th className="py-3 px-4">Agreed Fee</th>
                         <th className="py-3 px-4">Date</th>
-                        <th className="py-3 px-4 text-right">Status</th>
+                        <th className="py-3 px-4 text-right">Consultation</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {userOrders.map((ord: any) => (
                         <tr key={ord.id} className="hover:bg-white/[0.02]">
-                          <td className="py-3 px-4 font-mono text-zinc-300">{ord.id}</td>
+                          <td className="py-3 px-4 font-mono text-[#c6f554] font-semibold">{ord.id}</td>
                           <td className="py-3 px-4 font-semibold text-white capitalize">{ord.service}</td>
-                          <td className="py-3 px-4 font-mono text-[#c6f554] font-bold">{ord.amount || '$99.00'}</td>
+                          <td className="py-3 px-4 font-mono text-zinc-200 font-bold">{ord.amount || '$99.00'}</td>
                           <td className="py-3 px-4 text-zinc-400">{new Date(ord.createdAt).toLocaleDateString()}</td>
                           <td className="py-3 px-4 text-right">
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#c6f554]/15 text-[#c6f554]">
-                              Confirmed
+                              Slot Reserved
                             </span>
                           </td>
                         </tr>

@@ -128,7 +128,7 @@ export default function OrderModal({
       speed: speedLabels[speed],
       amount: currentPrice,
       status: 'pending_slot_call',
-      paymentMethod: 'Direct Studio Reservation (Pay upon scope approval)',
+      paymentMethod: 'Direct Studio Consultation (Discord / Zoom Meeting Agreement)',
       createdAt: new Date().toISOString(),
     };
 

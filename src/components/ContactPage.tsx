@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, ShieldCheck, Sparkles, AlertCircle, FileText, HelpCircle, Lock, Phone, ExternalLink, RefreshCw } from 'lucide-react';
-import OwlLogo from './OwlLogo.tsx';
-import { sendProblemOrInquiryEmail, OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM } from '../services/emailService.ts';
+import { sendProblemOrInquiryEmail, OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM, OFFICIAL_X, OFFICIAL_X_URL } from '../services/emailService.ts';
 import { syncInquiryToSupabase } from '../services/supabaseClient.ts';
 import { UserProfile } from './AuthModal.tsx';
 
@@ -21,6 +20,7 @@ export default function ContactPage({
   const [copiedHostinger, setCopiedHostinger] = useState(false);
   const [copiedGmail, setCopiedGmail] = useState(false);
   const [copiedInsta, setCopiedInsta] = useState(false);
+  const [copiedX, setCopiedX] = useState(false);
   const [copiedTicket, setCopiedTicket] = useState(false);
 
   // 3 Official Report Issuance Modes
@@ -48,6 +48,8 @@ export default function ContactPage({
   const hostingerEmail = OFFICIAL_HOSTINGER_EMAIL;
   const gmailAccount = OFFICIAL_GENOWL_GMAIL;
   const instagramId = OFFICIAL_INSTAGRAM;
+  const xHandle = OFFICIAL_X;
+  const xUrl = OFFICIAL_X_URL;
 
   const handleCopyHostinger = () => {
     navigator.clipboard.writeText(hostingerEmail);
@@ -65,6 +67,12 @@ export default function ContactPage({
     navigator.clipboard.writeText(instagramId);
     setCopiedInsta(true);
     setTimeout(() => setCopiedInsta(false), 2000);
+  };
+
+  const handleCopyX = () => {
+    navigator.clipboard.writeText(`@${xHandle}`);
+    setCopiedX(true);
+    setTimeout(() => setCopiedX(false), 2000);
   };
 
   const handleCopyTicketId = () => {
@@ -88,7 +96,7 @@ export default function ContactPage({
         return [
           'Website Bug / UI Issue',
           'Account & Login Assistance',
-          'Payment & Checkout Support',
+          'Consultation & Booking Support',
           'Deliverable Revision Request',
           'Performance / Slow Loading',
           'Critical Blocker',
@@ -207,37 +215,37 @@ export default function ContactPage({
         </p>
       </div>
 
-      {/* Direct Contact Channels: Hostinger Mail, Operations Gmail & Instagram */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 mb-12">
+      {/* Direct Contact Channels: Hostinger Mail, Operations Gmail, Instagram & X */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
         {/* Hostinger Official Support Card */}
         <div
           id="contact-hostinger-card"
-          className="group relative p-5 sm:p-6 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-[#c6f554]/50 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
+          className="group relative p-5 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-[#c6f554]/50 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-28 h-28 bg-[#c6f554]/[0.06] rounded-full blur-2xl pointer-events-none" />
           <div>
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-[#142316] border border-[#c6f554]/40 flex items-center justify-center text-[#c6f554] shadow-[0_0_12px_rgba(198,245,84,0.25)]">
-                <Mail className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-xl bg-[#142316] border border-[#c6f554]/40 flex items-center justify-center text-[#c6f554] shadow-[0_0_12px_rgba(198,245,84,0.25)]">
+                <Mail className="w-4 h-4" />
               </div>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#c6f554]/15 text-[#c6f554] border border-[#c6f554]/30">
-                Primary Hostinger Mail
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#c6f554]/15 text-[#c6f554] border border-[#c6f554]/30">
+                Hostinger
               </span>
             </div>
 
-            <h3 className="text-sm font-bold text-white mb-1">Official Studio Support</h3>
+            <h3 className="text-sm font-bold text-white mb-1">Official Support</h3>
             <p className="text-[11px] text-zinc-400 mb-3">
-              Our official business mailbox for corporate inquiries, quotes, and reports.
+              Corporate mailbox for formal briefs &amp; inquiries.
             </p>
 
-            <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-3">
-              <span className="font-mono text-xs sm:text-sm text-zinc-200 font-semibold select-all truncate mr-2">
+            <div className="p-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-3 min-w-0">
+              <span className="font-mono text-xs text-zinc-200 font-semibold select-all truncate mr-1.5">
                 {hostingerEmail}
               </span>
               <button
                 type="button"
                 onClick={handleCopyHostinger}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors shrink-0"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
                 title="Copy Hostinger Mail"
               >
                 {copiedHostinger ? <Check className="w-3.5 h-3.5 text-[#c6f554]" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
@@ -249,7 +257,7 @@ export default function ContactPage({
             href={`mailto:${hostingerEmail}?subject=Official%20Report%20/%20Inquiry%20for%20Genowl`}
             className="w-full py-2 px-3 rounded-xl font-semibold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
-            <span>Send Hostinger Email</span>
+            <span>Send Email</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </a>
         </div>
@@ -257,32 +265,32 @@ export default function ContactPage({
         {/* Operations Gmail Card */}
         <div
           id="contact-gmail-card"
-          className="group relative p-5 sm:p-6 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-[#f7cc46]/50 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
+          className="group relative p-5 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-[#f7cc46]/50 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-28 h-28 bg-[#f7cc46]/[0.05] rounded-full blur-2xl pointer-events-none" />
           <div>
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-[#1c180d] border border-[#f7cc46]/40 flex items-center justify-center text-[#f7cc46] shadow-[0_0_12px_rgba(247,204,70,0.25)]">
-                <Mail className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-xl bg-[#1c180d] border border-[#f7cc46]/40 flex items-center justify-center text-[#f7cc46] shadow-[0_0_12px_rgba(247,204,70,0.25)]">
+                <Mail className="w-4 h-4" />
               </div>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#f7cc46]/15 text-[#f7cc46] border border-[#f7cc46]/30">
-                Direct Operations Gmail
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#f7cc46]/15 text-[#f7cc46] border border-[#f7cc46]/30">
+                Gmail Ops
               </span>
             </div>
 
-            <h3 className="text-sm font-bold text-white mb-1">Engineering Operations</h3>
+            <h3 className="text-sm font-bold text-white mb-1">Operations Desk</h3>
             <p className="text-[11px] text-zinc-400 mb-3">
-              Direct inbox for technical dispatches, engineering briefs, and backup.
+              Direct inbox for technical dispatches &amp; backup.
             </p>
 
-            <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-3">
-              <span className="font-mono text-xs sm:text-sm text-zinc-200 font-semibold select-all truncate mr-2">
+            <div className="p-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-3 min-w-0">
+              <span className="font-mono text-xs text-zinc-200 font-semibold select-all truncate mr-1.5">
                 {gmailAccount}
               </span>
               <button
                 type="button"
                 onClick={handleCopyGmail}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors shrink-0"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
                 title="Copy Gmail Address"
               >
                 {copiedGmail ? <Check className="w-3.5 h-3.5 text-[#c6f554]" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
@@ -294,7 +302,7 @@ export default function ContactPage({
             href={`mailto:${gmailAccount}?subject=Engineering%20Dispatch%20for%20Genowl`}
             className="w-full py-2 px-3 rounded-xl font-semibold text-xs text-black bg-gradient-to-r from-[#f8d462] to-[#e4b52b] hover:brightness-105 shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
-            <span>Send Gmail Message</span>
+            <span>Send Gmail</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </a>
         </div>
@@ -302,32 +310,32 @@ export default function ContactPage({
         {/* Instagram Card */}
         <div
           id="contact-instagram-card"
-          className="group relative p-5 sm:p-6 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-white/30 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
+          className="group relative p-5 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-white/30 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-28 h-28 bg-white/[0.03] rounded-full blur-2xl pointer-events-none" />
           <div>
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-[#141a15] border border-white/20 flex items-center justify-center text-zinc-200">
-                <Instagram className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-xl bg-[#141a15] border border-white/20 flex items-center justify-center text-zinc-200">
+                <Instagram className="w-4 h-4" />
               </div>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-zinc-300 border border-white/15">
-                Social Showcase
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-zinc-300 border border-white/15">
+                Instagram
               </span>
             </div>
 
-            <h3 className="text-sm font-bold text-white mb-1">Direct Chat &amp; Previews</h3>
+            <h3 className="text-sm font-bold text-white mb-1">Design Showcase</h3>
             <p className="text-[11px] text-zinc-400 mb-3">
-              Connect with our design department on Instagram for previews and portfolio reels.
+              Direct chat &amp; previews with design department.
             </p>
 
-            <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-3">
-              <span className="font-mono text-xs sm:text-sm text-zinc-200 font-semibold select-all">
+            <div className="p-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-3 min-w-0">
+              <span className="font-mono text-xs text-zinc-200 font-semibold select-all truncate mr-1.5">
                 @{instagramId}
               </span>
               <button
                 type="button"
                 onClick={handleCopyInsta}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors shrink-0"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
                 title="Copy Instagram Handle"
               >
                 {copiedInsta ? <Check className="w-3.5 h-3.5 text-[#c6f554]" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
@@ -341,7 +349,56 @@ export default function ContactPage({
             rel="noopener noreferrer"
             className="w-full py-2 px-3 rounded-xl font-semibold text-xs text-white bg-white/10 hover:bg-white/15 border border-white/15 shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
-            <span>Open Instagram Profile</span>
+            <span>Instagram</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+
+        {/* Official X (Twitter) Card */}
+        <div
+          id="contact-x-card"
+          className="group relative p-5 rounded-3xl bg-[#0e140f]/90 border border-white/10 hover:border-[#c6f554]/50 shadow-xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-28 h-28 bg-[#c6f554]/[0.05] rounded-full blur-2xl pointer-events-none" />
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-9 h-9 rounded-xl bg-[#142016] border border-[#c6f554]/40 flex items-center justify-center text-[#c6f554] shadow-[0_0_12px_rgba(198,245,84,0.2)]">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </div>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#c6f554]/15 text-[#c6f554] border border-[#c6f554]/30">
+                Official X
+              </span>
+            </div>
+
+            <h3 className="text-sm font-bold text-white mb-1">X Updates &amp; DMs</h3>
+            <p className="text-[11px] text-zinc-400 mb-3">
+              Official updates, release notes, and studio announcements.
+            </p>
+
+            <div className="p-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-3 min-w-0">
+              <span className="font-mono text-xs text-zinc-200 font-semibold select-all truncate mr-1.5">
+                @{xHandle}
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyX}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
+                title="Copy X Handle"
+              >
+                {copiedX ? <Check className="w-3.5 h-3.5 text-[#c6f554]" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
+              </button>
+            </div>
+          </div>
+
+          <a
+            href={xUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-2 px-3 rounded-xl font-semibold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          >
+            <span>Open X Profile</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </a>
         </div>
@@ -350,22 +407,22 @@ export default function ContactPage({
       {/* Official Report Issuance Center Form */}
       <div className="rounded-3xl bg-[#0c130d]/95 border border-white/10 p-6 sm:p-10 shadow-2xl relative overflow-hidden">
         <div className="max-w-2xl mx-auto">
-          {/* 3 Report Type Selector Tabs */}
-          <div className="flex p-1 rounded-2xl bg-white/[0.04] border border-white/10 mb-8 max-w-lg mx-auto">
+          {/* 3 Report Type Selector Tabs (Responsive on Mobile) */}
+          <div className="flex p-1 rounded-2xl bg-white/[0.04] border border-white/10 mb-8 max-w-lg mx-auto w-full">
             <button
               type="button"
               onClick={() => {
                 setReportType('project');
                 setCategory('2D Custom Website ($500)');
               }}
-              className={`flex-1 py-2 px-2.5 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 min-w-0 truncate ${
                 reportType === 'project'
                   ? 'bg-[#c6f554] text-black shadow-md'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Project Scope</span>
+              <Sparkles className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Project Scope</span>
             </button>
 
             <button
@@ -374,14 +431,14 @@ export default function ContactPage({
                 setReportType('problem');
                 setCategory('Website Bug / UI Issue');
               }}
-              className={`flex-1 py-2 px-2.5 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 min-w-0 truncate ${
                 reportType === 'problem'
                   ? 'bg-[#f7cc46] text-black shadow-md'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <AlertCircle className="w-3.5 h-3.5" />
-              <span>Issue / Bug</span>
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Issue / Bug</span>
             </button>
 
             <button
@@ -390,14 +447,14 @@ export default function ContactPage({
                 setReportType('inquiry');
                 setCategory('Studio Consultation');
               }}
-              className={`flex-1 py-2 px-2.5 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 min-w-0 truncate ${
                 reportType === 'inquiry'
                   ? 'bg-white text-black shadow-md'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Studio Inquiry</span>
+              <FileText className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Inquiry</span>
             </button>
           </div>
 
@@ -614,7 +671,7 @@ export default function ContactPage({
                       key={opt}
                       type="button"
                       onClick={() => setCategory(opt)}
-                      className={`p-2.5 rounded-xl text-xs font-medium border text-center transition-all cursor-pointer ${
+                      className={`p-2 sm:p-2.5 rounded-xl text-[11px] sm:text-xs font-medium border text-center transition-all cursor-pointer min-h-[44px] flex items-center justify-center ${
                         category === opt
                           ? reportType === 'problem'
                             ? 'bg-[#221c0e] border-[#f7cc46] text-[#f7cc46] shadow-[0_0_12px_rgba(247,204,70,0.2)]'
@@ -622,7 +679,7 @@ export default function ContactPage({
                           : 'bg-white/[0.03] border-white/10 text-zinc-300 hover:border-white/20'
                       }`}
                     >
-                      <span className="block font-semibold">{opt}</span>
+                      <span className="block font-semibold leading-snug break-words">{opt}</span>
                     </button>
                   ))}
                 </div>
@@ -638,7 +695,7 @@ export default function ContactPage({
                     <button
                       type="button"
                       onClick={() => setPriority('standard')}
-                      className={`py-2 px-1.5 rounded-xl text-[11px] font-medium border transition-all cursor-pointer text-center ${
+                      className={`py-2 px-1 rounded-xl text-[10px] sm:text-[11px] font-medium border transition-all cursor-pointer text-center truncate ${
                         priority === 'standard'
                           ? 'bg-[#1b2b1d] border-[#c6f554] text-[#c6f554]'
                           : 'bg-white/[0.02] border-white/10 text-zinc-400'
@@ -649,7 +706,7 @@ export default function ContactPage({
                     <button
                       type="button"
                       onClick={() => setPriority('high')}
-                      className={`py-2 px-1.5 rounded-xl text-[11px] font-medium border transition-all cursor-pointer text-center ${
+                      className={`py-2 px-1 rounded-xl text-[10px] sm:text-[11px] font-medium border transition-all cursor-pointer text-center truncate ${
                         priority === 'high'
                           ? 'bg-[#221c0e] border-[#f7cc46] text-[#f7cc46]'
                           : 'bg-white/[0.02] border-white/10 text-zinc-400'
@@ -660,13 +717,13 @@ export default function ContactPage({
                     <button
                       type="button"
                       onClick={() => setPriority('urgent')}
-                      className={`py-2 px-1.5 rounded-xl text-[11px] font-medium border transition-all cursor-pointer text-center ${
+                      className={`py-2 px-1 rounded-xl text-[10px] sm:text-[11px] font-medium border transition-all cursor-pointer text-center truncate ${
                         priority === 'urgent'
                           ? 'bg-rose-950/40 border-rose-500 text-rose-400'
                           : 'bg-white/[0.02] border-white/10 text-zinc-400'
                       }`}
                     >
-                      Blocker / Urgent
+                      Urgent
                     </button>
                   </div>
                 </div>

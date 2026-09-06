@@ -54,21 +54,21 @@ export default function TrustMetrics() {
   return (
     <div className="my-16 space-y-12">
       {/* 4 Performance Metrics Bar */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 sm:p-8 rounded-3xl bg-[#0b120c]/80 border border-white/10 shadow-2xl backdrop-blur-xl">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 p-4 sm:p-7 rounded-3xl bg-[#0b120c]/80 border border-white/10 shadow-2xl backdrop-blur-xl">
         {metrics.map((m, i) => (
-          <div key={i} className="text-center sm:text-left p-3">
+          <div key={i} className="text-center sm:text-left p-2 sm:p-3 min-w-0">
             <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#c6f554] tracking-tight font-mono">
               {m.value}
             </div>
-            <div className="text-xs sm:text-sm font-semibold text-white mt-1">{m.label}</div>
-            <div className="text-[11px] text-zinc-400 mt-0.5">{m.detail}</div>
+            <div className="text-xs sm:text-sm font-semibold text-white mt-1 leading-snug">{m.label}</div>
+            <div className="text-[10px] sm:text-[11px] text-zinc-400 mt-0.5 leading-tight">{m.detail}</div>
           </div>
         ))}
       </div>
 
-      {/* Honest Service Guarantees (No fake testimonials) */}
+      {/* Honest Service Guarantees */}
       <div>
-        <div className="text-center max-w-2xl mx-auto mb-8">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c6f554]/10 border border-[#c6f554]/30 text-[#c6f554] text-xs font-semibold mb-2">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Our Commitment</span>
@@ -81,19 +81,19 @@ export default function TrustMetrics() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {guarantees.map((g, idx) => {
             const Icon = g.icon;
             return (
               <div
                 key={idx}
-                className="p-6 rounded-3xl bg-[#0c130d]/80 border border-white/10 hover:border-[#c6f554]/30 backdrop-blur-xl shadow-xl flex flex-col justify-between transition-all duration-300"
+                className="p-5 sm:p-6 rounded-3xl bg-[#0c130d]/80 border border-white/10 hover:border-[#c6f554]/30 backdrop-blur-xl shadow-xl flex flex-col justify-between transition-all duration-300"
               >
                 <div>
-                  <div className="w-10 h-10 rounded-2xl bg-[#172318] border border-[#c6f554]/30 flex items-center justify-center text-[#c6f554] mb-4 shadow-[0_0_12px_rgba(198,245,84,0.2)]">
+                  <div className="w-10 h-10 rounded-2xl bg-[#172318] border border-[#c6f554]/30 flex items-center justify-center text-[#c6f554] mb-3.5 shadow-[0_0_12px_rgba(198,245,84,0.2)]">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <h4 className="text-sm font-bold text-white mb-2">{g.title}</h4>
+                  <h4 className="text-sm font-bold text-white mb-1.5">{g.title}</h4>
                   <p className="text-xs text-zinc-400 leading-relaxed">{g.desc}</p>
                 </div>
               </div>

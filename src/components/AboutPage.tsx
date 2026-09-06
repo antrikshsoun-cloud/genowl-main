@@ -63,27 +63,27 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
         </h1>
 
         {/* The Core Mission Statement / Prompt Quote */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#0e1610]/90 border border-[#c6f554]/20 shadow-[0_0_30px_rgba(198,245,84,0.08)] text-left relative overflow-hidden">
+        <div className="p-5 sm:p-8 rounded-3xl bg-[#0e1610]/90 border border-[#c6f554]/20 shadow-[0_0_30px_rgba(198,245,84,0.08)] text-left relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#c6f554]/10 rounded-full blur-2xl pointer-events-none" />
           <h2 className="text-xs uppercase tracking-widest text-[#c6f554] font-bold mb-3">Our Core Philosophy</h2>
-          <p className="text-base sm:text-lg text-zinc-200 leading-relaxed font-normal italic">
+          <p className="text-sm sm:text-base md:text-lg text-zinc-200 leading-relaxed font-normal italic">
             "In today's world, everybody knows that for almost every service possible there is an AI tool. But of course they don't have much time to use and master every tool. That is exactly why you choose Genowl: all you have to do is buy our service and tell us what to build — the rest is on us."
           </p>
         </div>
       </div>
 
       {/* 3 Step Process */}
-      <div className="mb-20">
-        <div className="text-center mb-10">
+      <div className="mb-16 sm:mb-20">
+        <div className="text-center mb-8 sm:mb-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">How It Works</h2>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">A simple, friction-free way to build and grow</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
           {steps.map((s) => (
             <div
               key={s.step}
-              className="p-6 sm:p-7 rounded-2xl bg-[#0c130d]/80 border border-white/[0.08] backdrop-blur-xl relative shadow-xl"
+              className="p-5 sm:p-7 rounded-2xl bg-[#0c130d]/80 border border-white/[0.08] backdrop-blur-xl relative shadow-xl"
             >
               <div className="w-10 h-10 rounded-xl bg-[#172318] border border-[#c6f554]/30 flex items-center justify-center text-[#c6f554] font-mono font-bold text-sm mb-4 shadow-[0_0_12px_rgba(198,245,84,0.2)]">
                 {s.step}
@@ -96,21 +96,21 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
       </div>
 
       {/* Services Breakdown on About */}
-      <div className="mb-20">
-        <div className="text-center mb-10">
+      <div className="mb-16 sm:mb-20">
+        <div className="text-center mb-8 sm:mb-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">The Services We Provide</h2>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">Four specialized pillars, each at a flat $99 fee</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
           {pillars.map((p, i) => (
             <div
               key={i}
-              className="p-6 rounded-2xl bg-[#0d150e]/90 border border-white/10 hover:border-[#c6f554]/30 transition-all flex flex-col justify-between"
+              className="p-5 sm:p-6 rounded-2xl bg-[#0d150e]/90 border border-white/10 hover:border-[#c6f554]/30 transition-all flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-base font-bold text-white">{p.title}</h3>
+                  <h3 className="text-sm sm:text-base font-bold text-white">{p.title}</h3>
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-[#1b2a1c] text-[#c6f554] border border-[#c6f554]/30">
                     {p.charge}
                   </span>
@@ -123,26 +123,26 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
       </div>
 
       {/* Direct Contact Banner */}
-      <div className="rounded-3xl bg-[#0c130d] border border-white/10 p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
+      <div className="rounded-3xl bg-[#0c130d] border border-white/10 p-5 sm:p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
         <div className="text-center md:text-left">
           <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Connect with the Genowl Team</h2>
-          <p className="text-xs sm:text-sm text-zinc-400">
-            Reach out via Hostinger <span className="text-[#c6f554] font-semibold font-mono">support@genowl.tech</span>, Gmail <span className="text-[#f7cc46] font-semibold font-mono">genowlai@gmail.com</span>, or Instagram <span className="text-zinc-300 font-semibold">@genowl_tech</span>
+          <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed break-words">
+            Reach out via Hostinger <span className="text-[#c6f554] font-semibold font-mono">support@genowl.tech</span>, Gmail <span className="text-[#f7cc46] font-semibold font-mono">genowlai@gmail.com</span>, Instagram <span className="text-zinc-300 font-semibold">@genowl_tech</span>, or X <span className="text-[#c6f554] font-semibold font-mono">@GENOWL_TECH</span>.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto shrink-0">
           <button
             type="button"
             onClick={onNavigateServices}
-            className="px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-md transition-all cursor-pointer"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-md transition-all cursor-pointer text-center"
           >
             Explore Services ($99)
           </button>
           <button
             type="button"
             onClick={onNavigateContact}
-            className="px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm text-zinc-200 bg-white/10 hover:bg-white/15 border border-white/15 transition-all cursor-pointer"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm text-zinc-200 bg-white/10 hover:bg-white/15 border border-white/15 transition-all cursor-pointer text-center"
           >
             Contact Page
           </button>
