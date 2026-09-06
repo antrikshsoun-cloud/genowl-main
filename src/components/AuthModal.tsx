@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Check, ArrowRight, Lock, Mail, User, AlertCircle, ShieldCheck, KeyRound, ArrowLeft, RefreshCw } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
+import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
 import { validatePasswordStrength } from '../utils/passwordValidator.ts';
 import { validateLegalEmail } from '../utils/emailValidator.ts';
 import { sendWelcomeEmail, sendVerificationCodeEmail } from '../services/emailService.ts';
@@ -257,7 +258,11 @@ export default function AuthModal({
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-[#141e15] border border-[#f7cc46]/50 flex items-center justify-center shadow-[0_0_12px_rgba(247,204,70,0.35)] overflow-hidden p-0.5">
-              <img src="/genowl-mail-logo.png" alt="Genowl Logo" className="w-full h-full object-contain rounded-md" />
+              <img
+                src={GENOWL_LOGO_BASE64}
+                alt="Genowl Logo"
+                className="w-full h-full object-contain rounded-md"
+              />
             </div>
             <span className="font-bold text-xs tracking-[0.18em] text-white">GENOWL SECURE AUTH</span>
           </div>

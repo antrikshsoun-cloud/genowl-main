@@ -20,7 +20,7 @@ export default function BackgroundScrollCanvas() {
 
     const cacheKey = `v_clean_${Date.now()}`;
 
-    const candidatePaths = ['/frames', '/dist/frames', '/public/frames'];
+    const candidatePaths = ['/dist/frames', '/frames', '/public/frames'];
 
     // 1. Preload 240 clean frames into memory with automatic multi-path fallback
     const frames: HTMLImageElement[] = [];
@@ -37,7 +37,7 @@ export default function BackgroundScrollCanvas() {
       };
 
       img.onload = () => {
-        if (i === 1 && currentFrameIndex === 1) {
+        if (i === 1) {
           renderFrame(1);
         }
       };
@@ -135,15 +135,23 @@ export default function BackgroundScrollCanvas() {
       currentFrameIndex = safeNum;
     };
 
-    // 4. Track scroll across the entire website document
+    // 4. Track scroll across the entire website document (Desktop + Mobile Safari/Chrome momentum support)
     const handleScroll = () => {
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop || window.scrollY || 0;
       const scrollable = document.documentElement.scrollHeight - window.innerHeight;
       if (scrollable <= 0) return;
-      targetProgress = Math.max(0, Math.min(1, window.scrollY / scrollable));
+      targetProgress = Math.max(0, Math.min(1, scrollY / scrollable));
     };
 
-    // 5. Smooth Lerp Animation Loop
+    // 5. Smooth Lerp Animation Loop with Continuous Mobile Tracking
     const loop = () => {
+      // Continuously check scroll during mobile momentum flicking
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop || window.scrollY || 0;
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollable > 0) {
+        targetProgress = Math.max(0, Math.min(1, scrollY / scrollable));
+      }
+
       const diff = targetProgress - currentProgress;
       if (Math.abs(diff) > 0.0001) {
         currentProgress += diff * LERP_FACTOR;
@@ -165,32 +173,38 @@ export default function BackgroundScrollCanvas() {
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('touchmove', handleScroll, { passive: true });
 
     handleResize();
     handleScroll();
+    renderFrame(1);
     animationFrameId = requestAnimationFrame(loop);
 
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchmove', handleScroll);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
     <div
       id="background-scroll-canvas-container"
-      className="fixed inset-0 w-screen h-screen overflow-hidden pointer-events-none"
+      className="fixed inset-0 w-full h-[100dvh] overflow-hidden pointer-events-none"
       style={{ zIndex: 0 }}
     >
-      {/* High-Performance Canvas with OLED Tuning */}
+      {/* High-Performance Canvas with Mobile-Tuned GPU Acceleration */}
       <canvas
         ref={canvasRef}
         id="bgScrollCanvas"
         className="w-full h-full block"
         style={{
-          filter: 'contrast(1.25) saturate(1.45) brightness(1.03)',
+          filter: isMobile ? 'none' : 'contrast(1.22) saturate(1.4) brightness(1.02)',
           transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
         }}
       />
 

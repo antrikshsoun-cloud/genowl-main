@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, ShieldCheck, Sparkles, AlertCircle, FileText, HelpCircle, Lock, Phone, ExternalLink, RefreshCw } from 'lucide-react';
 import { sendProblemOrInquiryEmail, OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM, OFFICIAL_X, OFFICIAL_X_URL } from '../services/emailService.ts';
+import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
 import { syncInquiryToSupabase } from '../services/supabaseClient.ts';
 import { UserProfile } from './AuthModal.tsx';
 
@@ -499,7 +500,11 @@ export default function ContactPage({
             /* OFFICIAL REPORT CONFIRMATION CARD */
             <div className="py-8 text-center space-y-5 animate-in fade-in zoom-in duration-300">
               <div className="w-16 h-16 rounded-2xl bg-[#142016] border border-[#c6f554]/60 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(198,245,84,0.35)] p-1.5">
-                <img src="/genowl-mail-logo.png" alt="Genowl Logo" className="w-full h-full object-contain" />
+                <img
+                  src={GENOWL_LOGO_BASE64}
+                  alt="Genowl Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
 
               <div>

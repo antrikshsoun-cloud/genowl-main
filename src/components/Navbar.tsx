@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
+import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
 
 import { UserProfile } from './AuthModal.tsx';
 
@@ -43,7 +44,11 @@ export default function Navbar({
           className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#0d140e]/90 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] group cursor-pointer select-none hover:border-[#f7cc46]/50 transition-all duration-300"
         >
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#141e15] border border-[#f7cc46]/50 flex items-center justify-center shadow-[0_0_14px_rgba(247,204,70,0.4)] group-hover:scale-105 transition-transform overflow-hidden p-0.5">
-            <img src="/genowl-mail-logo.png" alt="Genowl Logo" className="w-full h-full object-contain rounded-lg" />
+            <img
+              src={GENOWL_LOGO_BASE64}
+              alt="Genowl Logo"
+              className="w-full h-full object-contain rounded-lg"
+            />
           </div>
           <span className="font-bold text-xs sm:text-sm tracking-[0.18em] text-white group-hover:text-[#f7cc46] transition-colors">
             GENOWL

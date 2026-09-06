@@ -1,6 +1,7 @@
 import React from 'react';
 import { Instagram, Mail, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
+import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
 
 import { OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM, OFFICIAL_X, OFFICIAL_X_URL } from '../services/emailService.ts';
 
@@ -25,7 +26,11 @@ export default function Footer({ onNavigate, currentPage, onOpenLegal, onOpenAdm
         <div className="flex flex-col items-center md:items-start text-center md:text-left gap-2.5">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-[#141e15] border border-[#f7cc46]/50 flex items-center justify-center shadow-[0_0_10px_rgba(247,204,70,0.35)] overflow-hidden p-0.5">
-              <img src="/genowl-mail-logo.png" alt="Genowl Logo" className="w-full h-full object-contain rounded-md" />
+              <img
+                src={GENOWL_LOGO_BASE64}
+                alt="Genowl Logo"
+                className="w-full h-full object-contain rounded-md"
+              />
             </div>
             <span className="font-bold text-sm tracking-[0.18em] text-white">GENOWL</span>
           </div>

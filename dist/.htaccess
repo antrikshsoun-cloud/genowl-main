@@ -2,9 +2,21 @@
   RewriteEngine On
   RewriteBase /
 
-  # 1. Redirect legacy WordPress Google indexed links
+  # Internal transparent aliases for Hostinger dist directory structure
+  RewriteRule ^assets/(.*)$ dist/assets/$1 [L]
+  RewriteRule ^frames/(.*)$ dist/frames/$1 [L]
+  RewriteRule ^genowl-mail-logo\.png$ dist/genowl-mail-logo.png [L]
+  RewriteRule ^favicon\.ico$ dist/favicon.ico [L]
+
+  # 1. Redirect legacy WordPress Google indexed links (301 Permanent Redirect)
   RewriteRule ^home/?$ / [R=301,L]
   RewriteRule ^index\.php$ / [R=301,L]
+  RewriteRule ^wp-(.*)$ / [R=301,L]
+  RewriteRule ^category/(.*)$ / [R=301,L]
+  RewriteRule ^tag/(.*)$ / [R=301,L]
+  RewriteRule ^sample-page/?$ / [R=301,L]
+  RewriteRule ^author/(.*)$ / [R=301,L]
+  RewriteRule ^feed/?$ / [R=301,L]
 
   # 2. Never rewrite real existing files or directories (assets, frames, api, old)
   RewriteCond %{REQUEST_FILENAME} -f [OR]
