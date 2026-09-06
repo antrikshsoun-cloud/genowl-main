@@ -13,6 +13,7 @@ import AdminModal from './components/AdminModal.tsx';
 import ProfileModal from './components/ProfileModal.tsx';
 import BackgroundScrollCanvas from './components/BackgroundScrollCanvas.tsx';
 import MobileBottomNav from './components/MobileBottomNav.tsx';
+import VoiceAssistant from './components/VoiceAssistant.tsx';
 
 export default function App() {
   const [activeSection, setActiveSection] = useState<'home' | 'services' | 'about' | 'contact'>('home');
@@ -221,6 +222,13 @@ export default function App() {
           onOpenOrder={handleOpenOrder}
           currentUser={currentUser}
           onOpenProfile={() => setProfileModalOpen(true)}
+        />
+
+        {/* Non-Intrusive Floating AI Voice Navigation Guide */}
+        <VoiceAssistant
+          onNavigate={handleNavigate}
+          onOpenOrder={handleOpenOrder}
+          onOpenContact={() => handleNavigate('contact')}
         />
       </main>
 
