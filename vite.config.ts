@@ -76,6 +76,16 @@ export default defineConfig(() => {
     build: {
       rollupOptions: {
         input: path.resolve(__dirname, 'vite.html'),
+        output: {
+          entryFileNames: 'assets/bundle.js',
+          chunkFileNames: 'assets/[name].js',
+          assetFileNames: (assetInfo: any) => {
+            if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+              return 'assets/bundle.css';
+            }
+            return 'assets/[name].[ext]';
+          },
+        },
       },
     },
   };
