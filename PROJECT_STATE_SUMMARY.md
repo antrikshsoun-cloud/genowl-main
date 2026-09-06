@@ -1,91 +1,39 @@
-# Genowl Studio — Project State & Conversation Checkpoint
+# Genowl Project State Summary (Session Checkpoint)
 
-**Date:** September 6, 2026  
-**Repository:** [github.com/antrikshsoun-cloud/genowl-main.git](https://github.com/antrikshsoun-cloud/genowl-main.git)  
-**Latest Git Commit:** `604a172` (pushed to `origin/main`)  
-**Production Staging:** `springgreen-horse-473302.hostingersite.com`  
-**Master PDF Blueprint:** `c:\Users\Antriksh\Downloads\Genowl_Studio_Architectural_Blueprint.pdf`
+**Last Updated:** September 6, 2026, 19:26 IST  
+**Latest Git Commit:** `fffd81f` (`origin/main`)  
+**Production Status:** 100% Operational (Standalone `index.html`: 553 KB)
 
 ---
 
-## 1. Accomplished Features & System Architecture
+## Key Achievements & Implemented Systems:
 
-### Frictionless "Book Project" & Slot Reservation System (Replaced Upfront Razorpay Gate)
-- **Zero Payment Wall Friction:** Replaced upfront payment hurdles with a frictionless **"Book Project"** slot reservation flow across Hero and Services.
-- **Strict Form Validation:** The **"Book a Slot"** button is strictly locked until all required fields are filled:
-  1. **Project Brief / Requirements** (Minimum 10 characters).
-  2. **Phone / WhatsApp Number** (Validated with international/national format, min 7 digits).
-  3. **Preferred Turnaround / Speed** (Standard 48–72h, Express 24–48h, or Rush).
-- **Immediate 30-Minute Callback Guarantee:**
-  - Upon submission, client immediately receives an on-screen confirmation modal with ticket `#SLOT-XXXXXX`.
-  - Prominently states: *"Our engineering team will contact you via your phone number within half an hour to finalize your slot schedule and kickoff production."*
-- **Instant Dual-Admin Dispatch:**
-  - Urgent priority email sent immediately to both `genowlai@gmail.com` and `support@genowl.tech` with direct 1-click **"Call Client"** (`tel:`) and **"WhatsApp Chat"** links.
-  - Client receives an official confirmation email with their reservation ticket and turnaround details.
-- **Supabase Cloud Database Persistence:**
-  - Booking records are inserted directly into `genowl_orders` table with columns: `id`, `user_id`, `service`, `name`, `email`, `phone`, `details`, `amount`, `speed`, `status` (`pending_slot_call`), `created_at`.
-- **Admin Portal & User Profile Integration:**
-  - Admin Portal Orders tab highlights pending slot callback orders with an alert badge and direct 1-click Phone/WhatsApp actions.
-  - Status cycles smoothly: `📞 Call Client (30m)` -> `⚡ In Production` -> `✓ Completed`.
-  - Client profile displays dynamic slot status: *"Slot booked • Callback within 30 min"*.
+### 1. YZER AI Voice Guide (`VoiceAssistant.tsx`)
+- **Official Identity:** Named **YZER** (phonetically pronounced as *"Wiser"*).
+- **Interactive Guided Website Tour:**
+  - Activated by asking *"Give me a tour"* or tapping the glowing chip **`Give me a tour 🚀`**.
+  - Smoothly navigates Home $\rightarrow$ Services ($500 2D / $2,500 3D / $99 AI) $\rightarrow$ About (core studio philosophy) $\rightarrow$ Contact desk.
+- **Actionable Post-Registration Guidance:**
+  - Clearly explains what to do after signing up (reserve consultation slot, check Client Profile, prepare for 30-min call).
+- **Phonetic Sanitizer Engine:**
+  - Zero pronunciation flutter/stutter (translates `$500`, `60fps`, `2D/3D`, `100% IP`, and `YZER` into natural words).
+- **Soothing Natural Tone & Calibrated Cadence:**
+  - Relaxed `1.05x` speed with warm `0.98` pitch using natural neural studio voices.
+- **Factory Speech Session Pipeline:**
+  - Fresh native session creation on every mic tap, resolving WASAPI driver locks and unlocking input across all PC microphones, USB headsets, and Bluetooth TWS earbuds.
+- **Brave / AdBlocker Network Shield Alert:**
+  - Informs visitors if third-party shields block cloud speech access, with immediate typing bar fallback.
 
-### Outbound Transactional Mailer (Google Apps Script — 100% Free Forever)
-- **Primary Sender:** All verification OTP security codes, official welcome letters, and slot booking notifications are dispatched directly from `genowlai@gmail.com`.
-- **Google Cloud Webhook:** `https://script.google.com/macros/s/AKfycbwY6ycQQx1qV2C0dhNR686LeKWjGezYQ7kgSmUR2babI6dTIdmpK19etUdkBsSoqT-AfQ/exec`.
-- **Zero Cost & No Subscriptions:** 500 free emails per day handled directly by Google's infrastructure with 100% genuine Gmail DKIM/SPF deliverability.
-- **Admin Email Panel:** Added real-time Google Cloud status indicator, editable webhook URL field, and 1-click **"Send Test Email"** button.
+### 2. 3D Scroll Canvas Animation
+- **Root Frames Bundled:** All 240 clean animation frames are committed at `frames/` in the repository root.
+- **Hostinger Git Compatibility:** When deployed on Hostinger, `public_html/frames/` is automatically populated, permanently eliminating the black screen bug.
 
-### Core Philosophy & Brand Identity
-- **Motto:** *"In today's world everybody knows that for almost every service possible there is an AI tool. But people don't have time to master every tool. All you have to do is buy our service and tell us what to build — the rest is on us."*
-- **Visuals:** Golden Owl insignia, obsidian dark palette (`#060a07`, `#0d140f`, `#f7cc46`, `#c6f554`).
-- **Pricing Tiers:**
-  - 2D Website: **$500** Flat
-  - 3D Interactive WebGL: **$2,500** Flat
-  - Rapid Creative Sprints: **$99** Flat (AI Video, Personalized AI, Content Creation)
-  - 100% Client Intellectual Property (IP) transfer within 48 - 72 hours.
-
-### Security & Navigation Ergonomics
-- **Master Admin Password:** Permanently locked to `CristianoMessi@2005`.
-- **Navbar Clean-Up:** Admin button **completely removed from top Navbar** (both desktop header and mobile navigation drawer).
-- **Admin Access Exclusively in Footer:** Protected by password modal with 7-day authentication sessions.
-- **Hostinger Webmail Quick Access:** Direct link to [mail.hostinger.com](https://mail.hostinger.com) inside Admin Portal for quick inbox triage.
-- **Mandatory User Login:** Both Orders and Reports strictly require a logged-in account to bind tickets directly to verified client accounts.
-
-### Official Report & Inquiry Desk (`ContactPage.tsx`)
-- **Official Report Issuance System:**
-  - 📋 **Project Scope & Brief Report**: 2D, 3D WebGL, AI Video, Personalized AI, or Full Custom Architecture.
-  - ⚠️ **Issue & Bug Report**: Website bugs, UI glitches, revision requests, account assistance, or urgent blockers.
-  - 💬 **Studio Consultation & Inquiry**: Enterprise IP inquiries, consultations, partnerships, or custom quotations.
-- **Validated Contact Capture:** Phone / WhatsApp input with country code formatting validation.
-- **Priority SLAs:** Select between *Standard (24h)*, *High Priority (2-4h)*, and *Blocker / Urgent*.
-- **Tracking Ticket Generation:** Automatically issues `#PRJ-XXXXXX`, `#PRB-XXXXXX`, or `#INQ-XXXXXX`.
-- **Pre-Filled Email App Backup:** Confirmation receipt features a 1-click button to open Gmail/Hostinger/Outlook with the pre-composed report.
-
-### Redundant Delivery Pipeline
-1. **Google Apps Script Dispatch:** Instant transactional delivery from `genowlai@gmail.com`.
-2. **Primary Hostinger Corporate Mail:** Dispatches to `support@genowl.tech` with CC to `genowlai@gmail.com`.
-3. **Operations Backup Gmail:** Parallel dispatch to `genowlai@gmail.com` with CC to `support@genowl.tech`.
-4. **Supabase Cloud PostgreSQL Database:** Real-time persistence to `genowl_inquiries` before email dispatch, ensuring zero lost leads.
-5. **Pre-Filled `mailto:` Backup:** Client-side 1-click fallback directly launches the user's native email software.
+### 3. Home Page Announcement
+- **Hero Badge:** Added sleek neon glassmorphic pill introducing YZER to all incoming visitors right on the home page.
 
 ---
 
-## 2. Where We Paused & Next Steps
-
-When you're ready to resume work, here is the exact roadmap:
-
-1. **Hostinger 1-Click Redeploy:**
-   - In Hostinger hPanel -> Websites -> `springgreen-horse-473302.hostingersite.com`, click **"Redeploy"** to push commit `93c9e2c` live to production.
-2. **Live Sign-Up Verification Test:**
-   - Register a new client account on the live website and watch the 6-digit OTP and Welcome message land directly in the client inbox from `genowlai@gmail.com`.
-3. **Razorpay Live Activation:**
-   - Add your live Razorpay Key ID and Secret Key in the Admin Portal under the **"Razorpay & Supabase"** tab.
-4. **International Checkout (Stripe / PayPal):**
-   - Connect international payment processors for global clients.
-5. **Automated PDF Invoices:**
-   - Connect automated client invoice downloads upon transaction completion.
-
----
-
-*All files, documentation, and source code are safely saved, built, committed, and pushed to GitHub main (`93c9e2c`). Everything is secured!*
-
+## Repositories & Sync Status:
+- **Primary Repo:** `c:\Users\Antriksh\Downloads\genowlbygooglestudio` (Clean, up to date with `origin/main`).
+- **Backup Repo:** `c:\Users\Antriksh\Downloads\antigravitygenowl project` (Synced with `origin/main`).
+- **Remote:** `https://github.com/antrikshsoun-cloud/genowl-main.git` (Branch: `main`, commit `fffd81f`).
