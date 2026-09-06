@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2 } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 
 interface VoiceAssistantProps {
@@ -17,20 +17,12 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     'Ask me anything about Genowl services, pricing, timeline, or say "Book a project"!'
   );
   const [isSupported, setIsSupported] = useState(true);
-  const [micVolume, setMicVolume] = useState<number>(0); // Live PC mic sound level (0 to 100)
-  const [hasDetectedAudio, setHasDetectedAudio] = useState(false);
 
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const isListeningRef = useRef(false);
   const silenceTimerRef = useRef<any>(null);
   const restartTimerRef = useRef<any>(null);
-
-  // AudioContext & Analyser for real-time PC mic hardware volume tracking
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const micStreamRef = useRef<MediaStream | null>(null);
-  const animFrameRef = useRef<number | null>(null);
 
   // Cache available voices
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
@@ -56,39 +48,33 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-        recognition.lang = 'en-US';
+        recognition.lang = navigator.language || 'en-US';
 
         recognition.onstart = () => {
           setIsListening(true);
           isListeningRef.current = true;
+          setAssistantMessage('Listening... Speak your question now.');
         };
 
         recognition.onresult = (event: any) => {
-          let interimTranscript = '';
-          let finalTranscript = '';
-
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            const transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              finalTranscript += transcript;
-            } else {
-              interimTranscript += transcript;
-            }
+          let fullTranscript = '';
+          for (let i = 0; i < event.results.length; ++i) {
+            fullTranscript += event.results[i][0].transcript;
           }
 
-          const liveText = finalTranscript || interimTranscript;
-          if (liveText.trim()) {
-            setHasDetectedAudio(true);
-            setQueryText(liveText.trim());
+          const liveText = fullTranscript.trim();
+          if (liveText) {
+            // Live type into input bar in real time
+            setQueryText(liveText);
 
-            // Auto-execute after 1.3s pause
+            // Auto-execute after 1.2s pause
             if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
             silenceTimerRef.current = setTimeout(() => {
-              if (liveText.trim()) {
-                handleExecuteQuery(liveText.trim());
+              if (liveText) {
+                handleExecuteQuery(liveText);
                 stopListening();
               }
-            }, 1300);
+            }, 1200);
           }
         };
 
@@ -101,13 +87,13 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
           if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
             isListeningRef.current = false;
             setIsListening(false);
-            setAssistantMessage('Microphone access is blocked in your browser. Please click the lock/tune icon in your address bar and Allow Microphone, or type below!');
+            setAssistantMessage('Microphone access is blocked in your browser. Please click the lock icon in your address bar and Allow Microphone, or type below!');
             return;
           }
         };
 
         recognition.onend = () => {
-          // Asynchronous restart with 250ms tick to prevent Desktop Chrome InvalidStateError
+          // Asynchronous restart with 250ms tick to keep listening alive cleanly on both PC & Mobile
           if (isListeningRef.current) {
             if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
             restartTimerRef.current = setTimeout(() => {
@@ -132,7 +118,6 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
 
     return () => {
       isListeningRef.current = false;
-      stopAudioMonitoring();
       if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       if (synthRef.current) synthRef.current.cancel();
@@ -144,73 +129,6 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     };
   }, []);
 
-  // Hardware Audio Metering (Monitors physical PC mic volume)
-  const startAudioMonitoring = async () => {
-    try {
-      if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        micStreamRef.current = stream;
-
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        const audioCtx = new AudioContextClass();
-        audioContextRef.current = audioCtx;
-
-        const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 256;
-        analyserRef.current = analyser;
-
-        const source = audioCtx.createMediaStreamSource(stream);
-        source.connect(analyser);
-
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-        const checkVolume = () => {
-          if (!isListeningRef.current) return;
-          analyser.getByteFrequencyData(dataArray);
-
-          let sum = 0;
-          for (let i = 0; i < dataArray.length; i++) {
-            sum += dataArray[i];
-          }
-          const avg = sum / dataArray.length;
-          const normalized = Math.min(100, Math.round((avg / 128) * 100));
-          setMicVolume(normalized);
-
-          if (normalized > 12) {
-            setHasDetectedAudio(true);
-          }
-
-          animFrameRef.current = requestAnimationFrame(checkVolume);
-        };
-
-        checkVolume();
-        return true;
-      }
-    } catch (err: any) {
-      console.warn('[Voice Assistant] Audio monitoring error:', err);
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setAssistantMessage('Microphone access was denied. Please allow microphone permissions in your browser URL bar.');
-      }
-      return false;
-    }
-    return false;
-  };
-
-  const stopAudioMonitoring = () => {
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    if (micStreamRef.current) {
-      micStreamRef.current.getTracks().forEach((track) => track.stop());
-      micStreamRef.current = null;
-    }
-    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-      try {
-        audioContextRef.current.close();
-      } catch {}
-      audioContextRef.current = null;
-    }
-    setMicVolume(0);
-  };
-
   // Text-To-Speech with Crisp Natural Voice & Professional Speed
   const speak = (text: string) => {
     setAssistantMessage(text);
@@ -220,21 +138,16 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
       synthRef.current.cancel(); // Cancel any existing audio immediately
 
       const utterance = new SpeechSynthesisUtterance(text);
-      // Increased speed for energetic, crisp, and professional cadence (no slow robotic drag)
-      utterance.rate = 1.15;
+      utterance.rate = 1.15; // Crisp, energetic, professional pace
       utterance.pitch = 1.0;
 
-      // Select the most soothing, high-fidelity natural voice
+      // Select natural studio voice
       const voices = voicesRef.current.length > 0 ? voicesRef.current : synthRef.current.getVoices();
       
       const naturalVoice =
-        // Edge / Windows Online Natural Neural voices (studio voice actor quality)
         voices.find((v) => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Online'))) ||
-        // Google High Quality voices (Chrome)
         voices.find((v) => v.name.includes('Google US English') || v.name.includes('Google UK English Female')) ||
-        // Apple High Quality voices (Safari / Mac)
         voices.find((v) => v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Serena')) ||
-        // Filter out legacy robotic voices like Microsoft David Desktop
         voices.find((v) => v.lang.startsWith('en') && !v.name.includes('Desktop')) ||
         voices.find((v) => v.lang.startsWith('en'));
 
@@ -259,17 +172,32 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
     setIsSpeaking(false);
   };
 
+  // Start continuous listening with zero hardware stream conflict
   const startListening = async () => {
     stopAll(); // Silence TTS before starting mic
 
-    const hardwareGranted = await startAudioMonitoring();
+    // Request permissions if needed, but immediately stop stream so SpeechRecognition gets exclusive hardware access!
+    try {
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    } catch (err: any) {
+      console.warn('[Voice Assistant] Permission check:', err);
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setAssistantMessage('Microphone access is blocked in your browser. Click the lock icon in your address bar to Allow Microphone!');
+        setIsListening(false);
+        isListeningRef.current = false;
+        return;
+      }
+    }
+
     if (!recognitionRef.current) return;
 
     try {
       isListeningRef.current = true;
       setIsListening(true);
-      setHasDetectedAudio(false);
-      setAssistantMessage('Listening... Speak clearly into your PC mic.');
+      setAssistantMessage('Listening... Speak clearly now.');
       recognitionRef.current.start();
     } catch (e: any) {
       console.warn('[Voice Assistant] Recognition start:', e?.message);
@@ -279,7 +207,6 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
   const stopListening = () => {
     isListeningRef.current = false;
     setIsListening(false);
-    stopAudioMonitoring();
     if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     if (recognitionRef.current) {
@@ -625,7 +552,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
                     }`}
                   />
                   <span>
-                    {isListening ? 'Listening on PC mic...' : isSpeaking ? 'Speaking...' : 'Ready for voice or text'}
+                    {isListening ? 'Listening (speak now)...' : isSpeaking ? 'Speaking...' : 'Ready for voice or text'}
                   </span>
                 </div>
               </div>
@@ -662,20 +589,17 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
             </p>
           </div>
 
-          {/* REAL-TIME PC HARDWARE MIC LEVEL GAUGE */}
+          {/* ACTIVE MIC STATUS BAR (Universal for Mobile and PC) */}
           {isListening && (
             <div className="p-2 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
                 <Mic className="w-3 h-3 text-red-400 animate-pulse" />
-                <span>PC Mic Level:</span>
+                <span>Mic Status:</span>
               </div>
-              <div className="flex-1 flex items-center gap-0.5 h-3 bg-white/5 rounded-full px-1 overflow-hidden">
-                <div
-                  className="h-1.5 rounded-full bg-gradient-to-r from-[#c6f554] to-red-400 transition-all duration-75"
-                  style={{ width: `${Math.max(8, micVolume)}%` }}
-                />
+              <div className="flex items-center gap-1.5 text-[10px] text-[#c6f554] font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
+                <span>Listening actively...</span>
               </div>
-              <span className="text-[10px] font-mono text-[#c6f554]">{micVolume}%</span>
             </div>
           )}
 
@@ -687,7 +611,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
                   key={i}
                   className={`w-1 rounded-full ${isListening ? 'bg-red-400' : 'bg-[#c6f554]'} animate-pulse`}
                   style={{
-                    height: `${isListening ? Math.max(4, (micVolume / 100) * 24) : isSpeaking ? h * 0.22 : 4}px`,
+                    height: `${isListening ? (i % 2 === 0 ? 16 : 8) : isSpeaking ? h * 0.22 : 4}px`,
                     animationDuration: `${0.35 + i * 0.08}s`,
                   }}
                 />
@@ -725,7 +649,7 @@ export default function VoiceAssistant({ onNavigate, onOpenOrder, onOpenContact 
             <button
               type="button"
               onClick={toggleListening}
-              title={isListening ? 'Stop listening' : 'Start speaking on PC mic'}
+              title={isListening ? 'Stop listening' : 'Start speaking'}
               className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
                 isListening
                   ? 'bg-red-500 text-white border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse'
