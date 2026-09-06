@@ -19,7 +19,7 @@ export default function Hero({ onStartTrial }: HeroProps) {
         >
           <span className="w-2 h-2 rounded-full bg-[#c6f554] animate-pulse" />
           <span className="text-xs text-zinc-300 font-normal">
-            Meet <strong className="text-[#c6f554] font-semibold">YZER</strong> — Your Interactive AI Voice Guide • Tap the mic or ask <span className="text-white italic">"Give me a tour"</span>
+            Meet <strong className="text-[#c6f554] font-semibold">YZER</strong> — Your Interactive AI Voice Guide • Tap the mic or ask <span className="text-white italic">"Navigate me for a tour"</span>
           </span>
         </div>
       </div>

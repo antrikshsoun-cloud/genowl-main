@@ -94,8 +94,8 @@ export default function VoiceAssistant({
     };
   }, []);
 
-  // Text-To-Speech with Phonetic Sanitizer and Soothing Tone
-  const speak = (text: string) => {
+  // Text-To-Speech with Phonetic Sanitizer, Deep Clear Male Resonance & onComplete Callback
+  const speak = (text: string, onComplete?: () => void) => {
     setAssistantMessage(text);
 
     if (!synthRef.current) return;
@@ -106,28 +106,33 @@ export default function VoiceAssistant({
       const cleanPronunciation = sanitizeForSpeech(text);
       const utterance = new SpeechSynthesisUtterance(cleanPronunciation);
 
-      // Relaxed, soothing cadence (1.05x) and warm pitch (0.98)
-      utterance.rate = 1.05;
-      utterance.pitch = 0.98;
+      // Energetic, snappier cadence (1.10x) with deep, resonant, clear male pitch (0.88)
+      utterance.rate = 1.10;
+      utterance.pitch = 0.88;
 
-      // Select soft natural studio voice
+      // Select deep, clear natural male studio voice
       const voices = voicesRef.current.length > 0 ? voicesRef.current : synthRef.current.getVoices();
-      const naturalVoice =
-        // Ultra-soft natural neural voices (Jenny, Aria, Sonia)
-        voices.find((v) => v.name.includes('Jenny') || v.name.includes('Aria') || v.name.includes('Sonia')) ||
-        voices.find((v) => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Online'))) ||
-        // Smooth studio Google voices
-        voices.find((v) => v.name.includes('Google UK English Female') || v.name.includes('Google US English')) ||
-        // Clean Apple voices
-        voices.find((v) => v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Serena')) ||
-        voices.find((v) => v.lang.startsWith('en') && !v.name.includes('Desktop')) ||
+      const maleVoice =
+        // Windows/Edge Microsoft Online Natural male voices (Guy, Christopher, Ryan, Eric)
+        voices.find((v) => (v.name.includes('Guy') || v.name.includes('Christopher') || v.name.includes('Ryan') || v.name.includes('Eric')) && (v.name.includes('Natural') || v.name.includes('Online'))) ||
+        // Chrome / Google Natural male voices
+        voices.find((v) => v.name.includes('Google UK English Male') || v.name.includes('Google US English Male')) ||
+        // Apple / Safari natural male voices (Daniel, Oliver, Tom, Alex)
+        voices.find((v) => v.name.includes('Daniel') || v.name.includes('Oliver') || v.name.includes('Tom') || v.name.includes('Alex')) ||
+        // High quality fallback male voices
+        voices.find((v) => v.lang.startsWith('en') && (v.name.includes('Male') || v.name.includes('David') || v.name.includes('George'))) ||
         voices.find((v) => v.lang.startsWith('en'));
 
-      if (naturalVoice) utterance.voice = naturalVoice;
+      if (maleVoice) utterance.voice = maleVoice;
 
       utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        if (onComplete) onComplete();
+      };
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+      };
 
       synthRef.current.speak(utterance);
     } catch (e) {
@@ -263,7 +268,7 @@ export default function VoiceAssistant({
     }
   };
 
-  // GUIDED WEBSITE TOUR: Walks the user step-by-step through the entire site
+  // GUIDED WEBSITE TOUR: Sequences smoothly onComplete so sentences never get cut off!
   const startWebsiteTour = () => {
     stopAll();
     setIsTourActive(true);
@@ -273,33 +278,38 @@ export default function VoiceAssistant({
     onNavigate('home');
     const step1 =
       'We are Genowl, your all-in-one digital service partner. Here on our home page, you can experience our cinema-grade 3D scroll architecture and discover how we craft high-performance digital experiences without template bloat. Next, let us explore our services.';
-    speak(step1);
-
-    // STEP 2: Services Page (triggered after step 1 finishes)
-    tourTimerRef.current = setTimeout(() => {
-      onNavigate('services');
-      const step2 =
-        'Here in our services catalog, we offer three core solutions: high-converting 2D websites at $500, interactive 3D WebGL experiences at $2,500, and AI video and advertisement production for $99. Every service comes with full intellectual property transfer. Now let us look at our core philosophy.';
-      speak(step2);
-
-      // STEP 3: About Page
+    
+    speak(step1, () => {
+      // Step 2 triggers ONLY after Step 1 has 100% finished speaking!
       tourTimerRef.current = setTimeout(() => {
-        onNavigate('about');
-        const step3 =
-          'Here is our core philosophy: basically, we build for you. You do not have to waste your time building websites or advertisements; all you have to do is choose a service, the rest is on us. Finally, let us see how you can reach our team.';
-        speak(step3);
-
-        // STEP 4: Contact Desk
-        tourTimerRef.current = setTimeout(() => {
-          if (onOpenContact) onOpenContact();
-          else onNavigate('contact');
-          const step4 =
-            'And here is our direct contact desk where you can message our team, email support@genowl.tech, or reach out on X at @GENOWL_TECH. You can also book a consultation slot anytime. Tour complete! How can YZER build for you today?';
-          speak(step4);
-          setIsTourActive(false);
-        }, 14000);
-      }, 15000);
-    }, 14000);
+        onNavigate('services');
+        const step2 =
+          'Here in our services catalog, we offer three core solutions: high-converting 2D websites at $500, interactive 3D WebGL experiences at $2,500, and AI video and advertisement production for $99. Every service comes with full intellectual property transfer. Now let us look at our core philosophy.';
+        
+        speak(step2, () => {
+          // Step 3 triggers ONLY after Step 2 has 100% finished speaking!
+          tourTimerRef.current = setTimeout(() => {
+            onNavigate('about');
+            const step3 =
+              'Here is our core philosophy: basically, we build for you. You do not have to waste your time building websites or advertisements; all you have to do is choose a service, the rest is on us. Finally, let us see how you can reach our team.';
+            
+            speak(step3, () => {
+              // Step 4 triggers ONLY after Step 3 has 100% finished speaking!
+              tourTimerRef.current = setTimeout(() => {
+                if (onOpenContact) onOpenContact();
+                else onNavigate('contact');
+                const step4 =
+                  'And here is our direct contact desk where you can message our team, email support@genowl.tech, or reach out on X at @GENOWL_TECH. You can also book a consultation slot anytime. Tour complete! How can YZER build for you today?';
+                
+                speak(step4, () => {
+                  setIsTourActive(false);
+                });
+              }, 1000);
+            });
+          }, 1000);
+        });
+      }, 1000);
+    });
   };
 
   // Comprehensive Genowl Knowledge Base & Natural Language Classifier
@@ -322,9 +332,11 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 2. GUIDED WEBSITE TOUR COMMAND
+    // 2. GUIDED WEBSITE TOUR COMMAND (including "navigate me for a tour")
     if (
       text.includes('tour') ||
+      text.includes('navigate me for a tour') ||
+      text.includes('navigate me') ||
       text.includes('walk me through') ||
       text.includes('show me around') ||
       text.includes('guide me through') ||
@@ -935,7 +947,7 @@ export default function VoiceAssistant({
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="text-[10px] text-zinc-400">Quick:</span>
             {[
-              { label: 'Give me a tour 🚀', cmd: 'give me a tour about the website' },
+              { label: 'Navigate me for a tour 🚀', cmd: 'navigate me for a tour' },
               { label: 'After Sign Up?', cmd: 'what should I do after signing up?' },
               { label: 'About Genowl', cmd: 'tell me about genowl' },
               { label: 'Pricing ($500 / $99)', cmd: 'show services and pricing' },
