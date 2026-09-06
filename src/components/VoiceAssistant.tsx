@@ -102,20 +102,20 @@ export default function VoiceAssistant({
       const cleanPronunciation = sanitizeForSpeech(text);
       const utterance = new SpeechSynthesisUtterance(cleanPronunciation);
 
-      // Uniform 1.15x natural cadence across both PC and mobile
-      utterance.rate = 1.15;
-      utterance.pitch = 1.0;
+      // Soft, calm, and natural pacing (1.05x) with warm pitch (0.98)
+      utterance.rate = 1.05;
+      utterance.pitch = 0.98;
 
-      // Select highest fidelity natural studio voice
+      // Select softest, highest fidelity natural studio voice
       const voices = voicesRef.current.length > 0 ? voicesRef.current : synthRef.current.getVoices();
       const naturalVoice =
-        // Edge / Windows Online Neural voices
+        // Ultra-soft natural neural voices (Jenny, Aria, Sonia)
+        voices.find((v) => v.name.includes('Jenny') || v.name.includes('Aria') || v.name.includes('Sonia')) ||
         voices.find((v) => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Online'))) ||
-        // Google High Quality voices (Chrome)
-        voices.find((v) => v.name.includes('Google US English') || v.name.includes('Google UK English Female')) ||
-        // Apple High Quality voices (Safari / Mac / iOS)
+        // Smooth studio Google voices
+        voices.find((v) => v.name.includes('Google UK English Female') || v.name.includes('Google US English')) ||
+        // Clean Apple voices
         voices.find((v) => v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Serena')) ||
-        // Filter out legacy robotic voices like Microsoft David Desktop
         voices.find((v) => v.lang.startsWith('en') && !v.name.includes('Desktop')) ||
         voices.find((v) => v.lang.startsWith('en'));
 
@@ -615,7 +615,102 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 21. NAVIGATION SHORTCUTS
+    // 21. 2D VS 3D DIFFERENCE & COMPARISON
+    if (
+      (text.includes('difference') && (text.includes('2d') || text.includes('3d'))) ||
+      text.includes('compare') ||
+      text.includes('which service') ||
+      text.includes('which one should i choose')
+    ) {
+      onNavigate('services');
+      speak(
+        'Our 2D websites at $500 are high-speed conversion machines ideal for businesses and landing pages. Our 3D websites at $2,500 feature cinema-grade WebGL physics, shaders, and 60 frames per second scroll animations for luxury brands looking to truly stand out.'
+      );
+      return;
+    }
+
+    // 22. CUSTOM WEB APPS, SAAS & ENTERPRISE
+    if (
+      text.includes('custom') ||
+      text.includes('enterprise') ||
+      text.includes('saas') ||
+      text.includes('web app') ||
+      text.includes('backend') ||
+      text.includes('database') ||
+      text.includes('complex')
+    ) {
+      onNavigate('services');
+      speak(
+        'For custom web applications, SaaS platforms, and enterprise databases, our studio designs tailored architectures. Book a consultation slot and we will scope your exact requirements.'
+      );
+      return;
+    }
+
+    // 23. BRANDING, LOGOS & GRAPHIC DESIGN
+    if (
+      text.includes('logo') ||
+      text.includes('branding') ||
+      text.includes('graphic') ||
+      text.includes('design') ||
+      text.includes('identity')
+    ) {
+      speak(
+        'Every project includes complete brand styling, typography, color palettes, and asset optimization so your digital presence looks world-class.'
+      );
+      return;
+    }
+
+    // 24. HOSTING, DOMAIN & MAINTENANCE
+    if (
+      text.includes('hosting') ||
+      text.includes('domain') ||
+      text.includes('deploy') ||
+      text.includes('maintenance') ||
+      text.includes('update')
+    ) {
+      speak(
+        'We handle full deployment on Hostinger, Vercel, or your custom server with zero downtime, and hand over complete production files and documentation.'
+      );
+      return;
+    }
+
+    // 25. PAYMENT & MILESTONE PROCESS
+    if (
+      text.includes('how to pay') ||
+      text.includes('payment') ||
+      text.includes('milestone') ||
+      text.includes('invoice')
+    ) {
+      speak(
+        'We work on transparent milestone agreements. You book a consultation slot, we finalize scope and delivery dates, and work begins with a 100% money-back guarantee.'
+      );
+      return;
+    }
+
+    // 26. COMPLIMENTS & PRAISE
+    if (
+      text.includes('great website') ||
+      text.includes('awesome') ||
+      text.includes('cool') ||
+      text.includes('amazing') ||
+      text.includes('love this') ||
+      text.includes('beautiful') ||
+      text.includes('good job') ||
+      text.includes('nice work')
+    ) {
+      speak(
+        'Thank you so much! Our studio puts intense craftsmanship into every single pixel and animation. Let us know if you would like us to build something extraordinary for you!'
+      );
+      return;
+    }
+
+    // 27. THANK YOU / THANKS
+    if (text === 'thank you' || text === 'thanks' || text.startsWith('thank you') || text.startsWith('thanks')) {
+      speak('You are very welcome! Feel free to ask anytime or book a consultation when you are ready.');
+      return;
+    }
+
+    // 28. NAVIGATION SHORTCUTS
     if (text.includes('home') || text.includes('top') || text.includes('start over')) {
       onNavigate('home');
       speak('Navigating to the top home section.');
@@ -633,7 +728,7 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 22. OUT-OF-SCOPE GUARDRAIL
+    // 29. OUT-OF-SCOPE GUARDRAIL
     speak(
       'I am Genowl’s AI guide, trained on our web services, 3D interactive engineering, video generation, and project booking. How can our team build for you today?'
     );

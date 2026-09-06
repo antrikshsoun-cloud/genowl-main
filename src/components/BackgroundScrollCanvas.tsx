@@ -18,9 +18,7 @@ export default function BackgroundScrollCanvas() {
     let currentFrameIndex = 1;
     let animationFrameId: number;
 
-    const cacheKey = `v_clean_${Date.now()}`;
-
-    const candidatePaths = ['/dist/frames', '/frames', '/public/frames'];
+    const candidatePaths = ['/frames', 'frames', './frames', '/public/frames', 'public/frames', '/dist/frames'];
 
     // 1. Preload 240 clean frames into memory with automatic multi-path fallback
     const frames: HTMLImageElement[] = [];
@@ -30,7 +28,7 @@ export default function BackgroundScrollCanvas() {
 
       const tryLoad = (pathIdx: number) => {
         if (pathIdx >= candidatePaths.length) return;
-        img.src = `${candidatePaths[pathIdx]}/ezgif-frame-${numStr}.jpg?v=${cacheKey}`;
+        img.src = `${candidatePaths[pathIdx]}/ezgif-frame-${numStr}.jpg`;
         img.onerror = () => {
           tryLoad(pathIdx + 1);
         };
