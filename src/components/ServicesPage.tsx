@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
-import { Globe, Video, Brain, PenTool, CheckCircle2, ArrowRight, Sparkles, Box, Layers, X, Check, Palette } from 'lucide-react';
+import { Globe, Video, Brain, PenTool, CheckCircle2, ArrowRight, Sparkles, Box, Layers, X, Check, Palette, Eye } from 'lucide-react';
 import ServicesFAQ from './ServicesFAQ.tsx';
 import TrustMetrics from './TrustMetrics.tsx';
 import { getStylesForService } from '../data/serviceStyles.ts';
+import Web2DVisualShowcase from './service-visuals/Web2DVisualShowcase.tsx';
+import Web3DVisualShowcase from './service-visuals/Web3DVisualShowcase.tsx';
+import AiAgentVisualShowcase from './service-visuals/AiAgentVisualShowcase.tsx';
+import VideoVisualShowcase from './service-visuals/VideoVisualShowcase.tsx';
+import ContentVisualShowcase from './service-visuals/ContentVisualShowcase.tsx';
 
 interface ServicesPageProps {
   onSelectService: (serviceName: string, styleName?: string) => void;
@@ -14,15 +19,15 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
   const [webTier, setWebTier] = useState<'2d' | '3d'>('2d');
   const [webOptionsModalOpen, setWebOptionsModalOpen] = useState(false);
 
-  // Tab state per service: 'features' vs 'styles'
-  const [activeTabByService, setActiveTabByService] = useState<Record<string, 'features' | 'styles'>>({
-    website: 'features',
-    'ai-agents': 'features',
-    'video-generation': 'features',
-    'content-creation': 'features',
+  // Tab state per service: 'product' vs 'features' vs 'styles'
+  const [activeTabByService, setActiveTabByService] = useState<Record<string, 'product' | 'features' | 'styles'>>({
+    website: 'product',
+    'ai-agents': 'product',
+    'video-generation': 'product',
+    'content-creation': 'product',
   });
 
-  const toggleTab = (key: string, tab: 'features' | 'styles') => {
+  const toggleTab = (key: string, tab: 'product' | 'features' | 'styles') => {
     setActiveTabByService((prev) => ({ ...prev, [key]: tab }));
   };
 
@@ -235,15 +240,27 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
               {currentWebConfig.description}
             </p>
 
-            {/* Interactive Tab Switcher: Specs vs Style Archetypes */}
+            {/* Interactive Tab Switcher: Live Product vs Specs vs Style Archetypes */}
             <div className="border-t border-white/[0.08] pt-4 mb-4">
-              <div className="flex items-center justify-between mb-3.5">
-                <div className="inline-flex p-1 rounded-xl bg-white/[0.04] border border-white/10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
+                <div className="inline-flex p-1 rounded-xl bg-white/[0.04] border border-white/10 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => toggleTab('website', 'product')}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      activeTabByService['website'] === 'product'
+                        ? 'bg-[#c6f554] text-black shadow-sm'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Live Visual Product</span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => toggleTab('website', 'features')}
                     className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                      (activeTabByService['website'] || 'features') === 'features'
+                      activeTabByService['website'] === 'features'
                         ? 'bg-[#c6f554] text-black shadow-sm'
                         : 'text-zinc-400 hover:text-white'
                     }`}
@@ -260,16 +277,29 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                     }`}
                   >
                     <Palette className="w-3.5 h-3.5" />
-                    <span>Visual Styles (3)</span>
+                    <span>Styles (3)</span>
                   </button>
                 </div>
-                <span className="text-[10px] text-zinc-500 hidden sm:inline font-mono">
-                  {activeTabByService['website'] === 'styles' ? 'Pick an aesthetic archetype' : currentWebConfig.badge}
+                <span className="text-[10px] text-zinc-500 font-mono">
+                  {activeTabByService['website'] === 'product'
+                    ? (webTier === '2d' ? 'Interactive 2D Frontend Sandbox' : 'Real-Time 3D WebGL Viewport')
+                    : activeTabByService['website'] === 'styles'
+                    ? 'Pick an aesthetic archetype'
+                    : currentWebConfig.badge}
                 </span>
               </div>
 
-              {activeTabByService['website'] === 'styles' ? (
-                /* 3 VISUAL STYLE ARCHETYPES FOR THIS TIER */
+              {activeTabByService['website'] === 'product' ? (
+                /* 1. REAL LIVE VISUAL PRODUCT VIEWPORT */
+                <div className="mb-6">
+                  {webTier === '2d' ? (
+                    <Web2DVisualShowcase onBookNow={() => onSelectService('2D Website')} />
+                  ) : (
+                    <Web3DVisualShowcase onBookNow={() => onSelectService('3D Website')} />
+                  )}
+                </div>
+              ) : activeTabByService['website'] === 'styles' ? (
+                /* 2. 3 VISUAL STYLE ARCHETYPES FOR THIS TIER */
                 <div className="space-y-2.5 mb-5">
                   {getStylesForService(currentWebConfig.title).map((st) => (
                     <div
@@ -318,7 +348,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                   ))}
                 </div>
               ) : (
-                /* STANDARD FEATURES LIST */
+                /* 3. STANDARD FEATURES LIST */
                 <ul className="space-y-2 mb-6">
                   {currentWebConfig.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
@@ -397,13 +427,25 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
 
                 {/* Interactive Tab Switcher: Specs vs Style Archetypes */}
                 <div className="border-t border-white/[0.08] pt-4 mb-4">
-                  <div className="flex items-center justify-between mb-3.5">
-                    <div className="inline-flex p-1 rounded-xl bg-white/[0.04] border border-white/10">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
+                    <div className="inline-flex p-1 rounded-xl bg-white/[0.04] border border-white/10 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => toggleTab(service.id, 'product')}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          activeTabByService[service.id] === 'product'
+                            ? 'bg-[#c6f554] text-black shadow-sm'
+                            : 'text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Live Visual Demo</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => toggleTab(service.id, 'features')}
                         className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                          (activeTabByService[service.id] || 'features') === 'features'
+                          activeTabByService[service.id] === 'features'
                             ? 'bg-[#c6f554] text-black shadow-sm'
                             : 'text-zinc-400 hover:text-white'
                         }`}
@@ -420,16 +462,33 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                         }`}
                       >
                         <Palette className="w-3.5 h-3.5" />
-                        <span>Visual Styles ({getStylesForService(service.title).length})</span>
+                        <span>Styles ({getStylesForService(service.title).length})</span>
                       </button>
                     </div>
-                    <span className="text-[10px] text-zinc-500 hidden sm:inline font-mono">
-                      {activeTabByService[service.id] === 'styles' ? 'Pick a style archetype' : service.badge}
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                      {activeTabByService[service.id] === 'product'
+                        ? 'Real-world visual output'
+                        : activeTabByService[service.id] === 'styles'
+                        ? 'Pick a style archetype'
+                        : service.badge}
                     </span>
                   </div>
 
-                  {activeTabByService[service.id] === 'styles' ? (
-                    /* VISUAL STYLE ARCHETYPES FOR THIS SERVICE */
+                  {activeTabByService[service.id] === 'product' ? (
+                    /* 1. REAL LIVE VISUAL PRODUCT DEMO */
+                    <div className="mb-6">
+                      {service.id === 'ai-agents' && (
+                        <AiAgentVisualShowcase onBookNow={() => onSelectService(service.title)} />
+                      )}
+                      {service.id === 'video-generation' && (
+                        <VideoVisualShowcase onBookNow={() => onSelectService(service.title)} />
+                      )}
+                      {service.id === 'content-creation' && (
+                        <ContentVisualShowcase onBookNow={() => onSelectService(service.title)} />
+                      )}
+                    </div>
+                  ) : activeTabByService[service.id] === 'styles' ? (
+                    /* 2. VISUAL STYLE ARCHETYPES FOR THIS SERVICE */
                     <div className="space-y-2.5 mb-5">
                       {getStylesForService(service.title).map((st) => (
                         <div
@@ -478,7 +537,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                       ))}
                     </div>
                   ) : (
-                    /* STANDARD INCLUDED LIST */
+                    /* 3. STANDARD INCLUDED LIST */
                     <ul className="space-y-2.5 mb-6">
                       {service.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
