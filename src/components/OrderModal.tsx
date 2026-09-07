@@ -23,11 +23,13 @@ import { UserProfile } from './AuthModal.tsx';
 import { sendSlotBookingEmail } from '../services/emailService.ts';
 import { syncOrderToSupabase } from '../services/supabaseClient.ts';
 import { submitBookingToHostinger } from '../services/hostingerDbService.ts';
+import { getStylesForService } from '../data/serviceStyles.ts';
 
 interface OrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialService?: string;
+  initialStyle?: string;
   currentUser?: UserProfile | null;
   onOpenLegal?: (tab: 'terms' | 'privacy' | 'refund') => void;
 }
@@ -36,6 +38,7 @@ export default function OrderModal({
   isOpen,
   onClose,
   initialService = '2D Website',
+  initialStyle,
   currentUser,
   onOpenLegal,
 }: OrderModalProps) {
@@ -52,6 +55,7 @@ export default function OrderModal({
   };
 
   const [selectedService, setSelectedService] = useState(() => normalizeService(initialService));
+  const [selectedStyle, setSelectedStyle] = useState<string>(initialStyle || '');
   const [name, setName] = useState(currentUser?.name || '');
   const [email, setEmail] = useState(currentUser?.email || '');
   const [phone, setPhone] = useState('');
@@ -87,6 +91,7 @@ export default function OrderModal({
   };
 
   const currentPrice = getServicePrice(selectedService);
+  const availableStyles = getStylesForService(selectedService);
 
   const speedLabels = {
     standard: 'Standard Sprint (48 - 72 Hours)',
@@ -131,8 +136,9 @@ export default function OrderModal({
       if (initialService) {
         setSelectedService(normalizeService(initialService));
       }
+      setSelectedStyle(initialStyle || '');
     }
-  }, [isOpen, initialService]);
+  }, [isOpen, initialService, initialStyle]);
 
   useEffect(() => {
     if (currentUser) {
@@ -170,6 +176,7 @@ export default function OrderModal({
     const newOrder = {
       id: ticketId,
       service: selectedService,
+      styleReference: selectedStyle || 'Studio Curated / Custom',
       name: name.trim(),
       email: email.trim(),
       phone: phone.trim(),
@@ -206,12 +213,12 @@ export default function OrderModal({
       service_type: newOrder.service,
       budget: newOrder.amount,
       preferred_time: newOrder.preferredTime,
-      project_scope: `Available Time: ${newOrder.preferredTime} | Phone: ${newOrder.phone} | Speed: ${newOrder.speed} | Details: ${newOrder.details} | Ref: ${newOrder.referenceUrl}`,
+      project_scope: `Style: ${newOrder.styleReference} | Available Time: ${newOrder.preferredTime} | Phone: ${newOrder.phone} | Speed: ${newOrder.speed} | Details: ${newOrder.details} | Ref: ${newOrder.referenceUrl}`,
     }).catch((err) => {
       console.warn('Hostinger DB sync note:', err);
     });
 
-    // 4. Dispatch automated confirmation to client & urgent lead alert to admins with preferred time
+    // 4. Dispatch automated confirmation to client & urgent lead alert to admins with preferred time & selected style
     try {
       await sendSlotBookingEmail(
         newOrder.name,
@@ -223,7 +230,8 @@ export default function OrderModal({
         newOrder.speed,
         ticketId,
         newOrder.referenceUrl,
-        newOrder.preferredTime
+        newOrder.preferredTime,
+        newOrder.styleReference
       );
     } catch (err) {
       console.warn('Email slot dispatch error:', err);
@@ -312,6 +320,16 @@ export default function OrderModal({
                 <span className="font-bold text-[#c6f554]">{currentPrice}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
+                <span className="text-zinc-500">Style Archetype:</span>
+                <span className="font-semibold text-[#c6f554]">{selectedStyle || 'Studio Curated / Tailored'}</span>
+              </div>
+              {preferredTime && (
+                <div className="flex justify-between text-zinc-300">
+                  <span className="text-zinc-500">Preferred Slot:</span>
+                  <span className="font-mono text-zinc-200">{preferredTime}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-zinc-300">
                 <span className="text-zinc-500">Turnaround:</span>
                 <span className="text-zinc-200">{speedLabels[speed]}</span>
               </div>
@@ -375,6 +393,8 @@ export default function OrderModal({
                         type="button"
                         onClick={() => {
                           setSelectedService(s.title);
+                          const styles = getStylesForService(s.title);
+                          setSelectedStyle(styles[0]?.name || '');
                           setAllowRebooking(false);
                           setSubmitError(null);
                         }}
@@ -466,7 +486,59 @@ export default function OrderModal({
                 </div>
               ) : (
                 <>
-                  {/* 2. Client Name & Email */}
+                  {/* 2. Style Archetype Selection */}
+                  {availableStyles.length > 0 && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-white flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-[#c6f554]" />
+                          <span>2. Select Visual Archetype / Style</span>
+                        </label>
+                        <span className="text-[10px] text-zinc-400">Tailors reference stack</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {availableStyles.map((st) => {
+                          const isSelected = (selectedStyle || availableStyles[0]?.name) === st.name;
+                          return (
+                            <button
+                              key={st.id}
+                              type="button"
+                              onClick={() => setSelectedStyle(st.name)}
+                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                                isSelected
+                                  ? 'bg-[#18291b] border-[#c6f554] shadow-[0_0_12px_rgba(198,245,84,0.22)]'
+                                  : 'bg-white/[0.03] border-white/10 hover:border-white/20 text-zinc-300'
+                              }`}
+                            >
+                              <div>
+                                <div className="flex items-center justify-between gap-1 mb-1">
+                                  <span className={`text-xs font-bold ${isSelected ? 'text-[#c6f554]' : 'text-white'}`}>
+                                    {st.name}
+                                  </span>
+                                  {isSelected && <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />}
+                                </div>
+                                <p className="text-[10.5px] text-zinc-400 line-clamp-2 leading-snug">
+                                  {st.tagline}
+                                </p>
+                              </div>
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {st.vibeTags.slice(0, 2).map((tag, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="px-1.5 py-0.5 rounded text-[8.5px] font-mono bg-white/5 text-zinc-300 border border-white/5"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. Client Name & Email */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-semibold text-zinc-300 mb-1">

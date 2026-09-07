@@ -853,16 +853,18 @@ export async function sendSlotBookingEmail(
   turnaround: string,
   ticketId: string,
   referenceUrl?: string,
-  preferredTime?: string
+  preferredTime?: string,
+  styleReference?: string
 ): Promise<{ success: boolean; message: string; ticketId: string }> {
   const cleanName = name.trim();
   const cleanEmail = clientEmail.trim().toLowerCase();
   const cleanPhone = phone.trim();
   const cleanRefUrl = referenceUrl ? referenceUrl.trim() : '';
   const cleanPreferredTime = preferredTime ? preferredTime.trim() : 'Flexible / Connect at earliest';
+  const cleanStyle = styleReference ? styleReference.trim() : 'Studio Curated / Tailored';
 
   const clientSubject = `Genowl Studio: Slot Booking Received #${ticketId}`;
-  const adminSubject = `🚨 [NEW SLOT BOOKING #${ticketId}] ${service} from ${cleanName}`;
+  const adminSubject = `🚨 [NEW SLOT BOOKING #${ticketId}] ${service} (${cleanStyle}) from ${cleanName}`;
 
   const clientPlainText = `Hi ${cleanName},
 
@@ -870,6 +872,7 @@ Thank you for booking a project slot on Genowl Studio!
 
 Ticket Reference: #${ticketId}
 Service Selected: ${service} (${amount} Flat)
+Target Visual Style: ${cleanStyle}
 Preferred Kickoff Time / Availability: ${cleanPreferredTime}
 Preferred Turnaround: ${turnaround}
 Contact Phone: ${cleanPhone}
@@ -907,6 +910,10 @@ Desk: ${OFFICIAL_GENOWL_GMAIL} | ${OFFICIAL_HOSTINGER_EMAIL}`;
           <td style="color:#ffffff;font-weight:600;">${service} (${amount})</td>
         </tr>
         <tr>
+          <td style="color:#71717a;">Target Style:</td>
+          <td style="color:#c6f554;font-weight:600;">${cleanStyle}</td>
+        </tr>
+        <tr>
           <td style="color:#71717a;">Your Preferred Time:</td>
           <td style="color:#c6f554;font-weight:600;">${cleanPreferredTime}</td>
         </tr>
@@ -936,13 +943,14 @@ Client Name: ${cleanName}
 Client Email: ${cleanEmail}
 Client Phone: ${cleanPhone}
 Service: ${service} (${amount})
+Target Style Reference: ${cleanStyle}
 Client Preferred Available Time: ${cleanPreferredTime}
 Preferred Turnaround: ${turnaround}
 ${cleanRefUrl ? `Reference Link: ${cleanRefUrl}\n` : ''}
 Project Brief:
 ${brief}
 
-ACTION REQUIRED: Review client preferred time (${cleanPreferredTime}) and contact them at ${cleanPhone} or email!`;
+ACTION REQUIRED: Review client preferred time (${cleanPreferredTime}) and target style (${cleanStyle}) and contact them at ${cleanPhone} or email!`;
 
   const adminHtml = wrapEmailInGenowlTheme(
     `New Slot Request #${ticketId}`,
@@ -978,6 +986,10 @@ ACTION REQUIRED: Review client preferred time (${cleanPreferredTime}) and contac
         <tr>
           <td style="color:#71717a;">Service:</td>
           <td style="color:#f7cc46;font-weight:700;">${service} (${amount})</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Target Style:</td>
+          <td style="color:#c6f554;font-weight:700;">${cleanStyle}</td>
         </tr>
         <tr>
           <td style="color:#71717a;">Preferred Free Time:</td>
@@ -1026,6 +1038,7 @@ ACTION REQUIRED: Review client preferred time (${cleanPreferredTime}) and contac
         email: cleanEmail,
         phone: cleanPhone,
         service,
+        styleReference: cleanStyle,
         turnaround,
         preferredTime: cleanPreferredTime,
         brief,

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Globe, Video, Brain, PenTool, CheckCircle2, ArrowRight, Sparkles, Box, Layers, X, Check } from 'lucide-react';
+import { Globe, Video, Brain, PenTool, CheckCircle2, ArrowRight, Sparkles, Box, Layers, X, Check, Palette } from 'lucide-react';
 import ServicesFAQ from './ServicesFAQ.tsx';
 import TrustMetrics from './TrustMetrics.tsx';
+import { getStylesForService } from '../data/serviceStyles.ts';
 
 interface ServicesPageProps {
-  onSelectService: (serviceName: string) => void;
+  onSelectService: (serviceName: string, styleName?: string) => void;
   onNavigateContact: () => void;
 }
 
@@ -12,6 +13,18 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
   // Website Tier Selection: '2d' ($500) vs '3d' ($1,000)
   const [webTier, setWebTier] = useState<'2d' | '3d'>('2d');
   const [webOptionsModalOpen, setWebOptionsModalOpen] = useState(false);
+
+  // Tab state per service: 'features' vs 'styles'
+  const [activeTabByService, setActiveTabByService] = useState<Record<string, 'features' | 'styles'>>({
+    website: 'features',
+    'ai-agents': 'features',
+    'video-generation': 'features',
+    'content-creation': 'features',
+  });
+
+  const toggleTab = (key: string, tab: 'features' | 'styles') => {
+    setActiveTabByService((prev) => ({ ...prev, [key]: tab }));
+  };
 
   const websiteTiers = {
     '2d': {
@@ -222,24 +235,99 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
               {currentWebConfig.description}
             </p>
 
-            {/* Features List */}
-            <div className="border-t border-white/[0.08] pt-4 mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                  Included in {currentWebConfig.title}:
-                </h3>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#c6f554]/10 text-[#c6f554] border border-[#c6f554]/30 font-medium">
-                  {currentWebConfig.badge}
+            {/* Interactive Tab Switcher: Specs vs Style Archetypes */}
+            <div className="border-t border-white/[0.08] pt-4 mb-4">
+              <div className="flex items-center justify-between mb-3.5">
+                <div className="inline-flex p-1 rounded-xl bg-white/[0.04] border border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => toggleTab('website', 'features')}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      (activeTabByService['website'] || 'features') === 'features'
+                        ? 'bg-[#c6f554] text-black shadow-sm'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    Specs &amp; Deliverables
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleTab('website', 'styles')}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      activeTabByService['website'] === 'styles'
+                        ? 'bg-[#c6f554] text-black shadow-sm'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <Palette className="w-3.5 h-3.5" />
+                    <span>Visual Styles (3)</span>
+                  </button>
+                </div>
+                <span className="text-[10px] text-zinc-500 hidden sm:inline font-mono">
+                  {activeTabByService['website'] === 'styles' ? 'Pick an aesthetic archetype' : currentWebConfig.badge}
                 </span>
               </div>
-              <ul className="space-y-2">
-                {currentWebConfig.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
-                    <CheckCircle2 className="w-4 h-4 text-[#c6f554] shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+
+              {activeTabByService['website'] === 'styles' ? (
+                /* 3 VISUAL STYLE ARCHETYPES FOR THIS TIER */
+                <div className="space-y-2.5 mb-5">
+                  {getStylesForService(currentWebConfig.title).map((st) => (
+                    <div
+                      key={st.id}
+                      className={`p-3.5 rounded-2xl border bg-gradient-to-r ${st.gradient} border-white/10 hover:border-[#c6f554]/50 transition-all space-y-2`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span
+                              className="text-[9px] font-bold px-2 py-0.5 rounded-full border"
+                              style={{
+                                color: st.accentColor,
+                                borderColor: `${st.accentColor}40`,
+                                backgroundColor: `${st.accentColor}15`,
+                              }}
+                            >
+                              {st.badge}
+                            </span>
+                            <span className="text-xs font-bold text-white">{st.title}</span>
+                          </div>
+                          <p className="text-[11px] text-zinc-300 leading-snug">{st.description}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5 pt-0.5">
+                        {st.visualHighlights.map((hl, i) => (
+                          <span
+                            key={i}
+                            className="text-[10px] px-2 py-0.5 rounded bg-black/40 text-zinc-300 border border-white/5 font-mono"
+                          >
+                            &bull; {hl}
+                          </span>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => onSelectService(currentWebConfig.title, st.title)}
+                        className="w-full mt-1 py-1.5 px-3 rounded-lg text-xs font-bold text-black bg-white hover:bg-[#c6f554] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                      >
+                        <span>Select This Style &bull; Book ({currentWebConfig.price})</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* STANDARD FEATURES LIST */
+                <ul className="space-y-2 mb-6">
+                  {currentWebConfig.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
+                      <CheckCircle2 className="w-4 h-4 text-[#c6f554] shrink-0 mt-0.5" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
 
@@ -307,18 +395,99 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                   {service.description}
                 </p>
 
-                <div className="border-t border-white/[0.08] pt-5 mb-8">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300 mb-3.5">
-                    What's included:
-                  </h3>
-                  <ul className="space-y-2.5">
-                    {service.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
-                        <CheckCircle2 className="w-4 h-4 text-[#c6f554] shrink-0 mt-0.5" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                {/* Interactive Tab Switcher: Specs vs Style Archetypes */}
+                <div className="border-t border-white/[0.08] pt-4 mb-4">
+                  <div className="flex items-center justify-between mb-3.5">
+                    <div className="inline-flex p-1 rounded-xl bg-white/[0.04] border border-white/10">
+                      <button
+                        type="button"
+                        onClick={() => toggleTab(service.id, 'features')}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                          (activeTabByService[service.id] || 'features') === 'features'
+                            ? 'bg-[#c6f554] text-black shadow-sm'
+                            : 'text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        Specs &amp; Included
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleTab(service.id, 'styles')}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          activeTabByService[service.id] === 'styles'
+                            ? 'bg-[#c6f554] text-black shadow-sm'
+                            : 'text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        <Palette className="w-3.5 h-3.5" />
+                        <span>Visual Styles ({getStylesForService(service.title).length})</span>
+                      </button>
+                    </div>
+                    <span className="text-[10px] text-zinc-500 hidden sm:inline font-mono">
+                      {activeTabByService[service.id] === 'styles' ? 'Pick a style archetype' : service.badge}
+                    </span>
+                  </div>
+
+                  {activeTabByService[service.id] === 'styles' ? (
+                    /* VISUAL STYLE ARCHETYPES FOR THIS SERVICE */
+                    <div className="space-y-2.5 mb-5">
+                      {getStylesForService(service.title).map((st) => (
+                        <div
+                          key={st.id}
+                          className={`p-3.5 rounded-2xl border bg-gradient-to-r ${st.gradient} border-white/10 hover:border-[#c6f554]/50 transition-all space-y-2`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span
+                                  className="text-[9px] font-bold px-2 py-0.5 rounded-full border"
+                                  style={{
+                                    color: st.accentColor,
+                                    borderColor: `${st.accentColor}40`,
+                                    backgroundColor: `${st.accentColor}15`,
+                                  }}
+                                >
+                                  {st.badge}
+                                </span>
+                                <span className="text-xs font-bold text-white">{st.title}</span>
+                              </div>
+                              <p className="text-[11px] text-zinc-300 leading-snug">{st.description}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-1.5 pt-0.5">
+                            {st.visualHighlights.map((hl, i) => (
+                              <span
+                                key={i}
+                                className="text-[10px] px-2 py-0.5 rounded bg-black/40 text-zinc-300 border border-white/5 font-mono"
+                              >
+                                &bull; {hl}
+                              </span>
+                            ))}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => onSelectService(service.title, st.title)}
+                            className="w-full mt-1 py-1.5 px-3 rounded-lg text-xs font-bold text-black bg-white hover:bg-[#c6f554] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                          >
+                            <span>Select This Style &bull; Book ({service.price})</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    /* STANDARD INCLUDED LIST */
+                    <ul className="space-y-2.5 mb-6">
+                      {service.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
+                          <CheckCircle2 className="w-4 h-4 text-[#c6f554] shrink-0 mt-0.5" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
 
