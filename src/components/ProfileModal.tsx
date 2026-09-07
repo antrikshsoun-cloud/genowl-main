@@ -317,6 +317,19 @@ export default function ProfileModal({
                       {ord.details}
                     </p>
 
+                    <div className="flex flex-wrap gap-2">
+                      {ord.styleReference && (
+                        <div className="text-[11px] text-[#c6f554] bg-[#c6f554]/10 border border-[#c6f554]/25 px-2.5 py-1 rounded-lg">
+                          <strong>Style Archetype:</strong> {ord.styleReference}
+                        </div>
+                      )}
+                      {ord.preferredTime && (
+                        <div className="text-[11px] text-zinc-300 bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg">
+                          <strong>Preferred Slot:</strong> {ord.preferredTime}
+                        </div>
+                      )}
+                    </div>
+
                     <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-1">
                       <div className="flex items-center gap-1.5 text-[#c6f554]">
                         <Clock className="w-3.5 h-3.5" />

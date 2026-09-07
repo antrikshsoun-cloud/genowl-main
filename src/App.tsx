@@ -46,7 +46,8 @@ export default function App() {
 
   // Order & Checkout Modal
   const [orderModalOpen, setOrderModalOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState('2D Website');
+  const [selectedService, setSelectedService] = useState<string>('2D Website');
+  const [selectedStyle, setSelectedStyle] = useState<string | undefined>(undefined);
 
   // Legal Modal (Terms & Conditions, Privacy Policy, Refund Policy)
   const [legalModalOpen, setLegalModalOpen] = useState(false);
@@ -74,8 +75,9 @@ export default function App() {
   };
 
   // Smart Gated "Get Started" & Service Order Trigger
-  const handleOpenOrder = (serviceName: string = '2D Website') => {
+  const handleOpenOrder = (serviceName: string = '2D Website', styleName?: string) => {
     setSelectedService(serviceName);
+    setSelectedStyle(styleName);
 
     if (!currentUser) {
       // User is not signed in or session expired (> 7 days): prompt AuthModal!
@@ -262,8 +264,12 @@ export default function App() {
       {/* Service Order & Project Slot Reservation Modal */}
       <OrderModal
         isOpen={orderModalOpen}
-        onClose={() => setOrderModalOpen(false)}
+        onClose={() => {
+          setOrderModalOpen(false);
+          setSelectedStyle(undefined);
+        }}
         initialService={selectedService}
+        initialStyle={selectedStyle}
         currentUser={currentUser}
         onOpenLegal={handleOpenLegal}
       />

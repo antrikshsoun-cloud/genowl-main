@@ -399,10 +399,11 @@ export async function sendWelcomeEmail(
 Welcome to Genowl Studio! Your verified client account has been successfully created and is now active.
 
 Here is what you can do right now from your Client Hub:
-• Order Premium Work: 2D Websites ($500), 3D WebGL Worlds ($2,500), or $99 AI & Video packages.
+• Order Premium Work: 2D Websites ($500), 3D WebGL Worlds ($1,000), AI Agents ($200), or Video Generation ($100).
 • 48-Hour Turnaround: Your projects are immediately assigned to production upon order placement.
 • 100% Commercial IP Rights: You own all source code, SVGs, and assets with zero royalties or license fees.
 • Live Production Tracker: Check order progress, chat with your designer, and download deliverables directly from your profile.
+• Direct Communication: You can always reply directly to this email or contact support@genowl.tech.
 
 Support: ${OFFICIAL_HOSTINGER_EMAIL}
 Log in anytime at Genowl to start your first project.
@@ -412,35 +413,34 @@ The Genowl Studio Team
 https://genowl.tech`;
 
   const htmlContent = wrapEmailInGenowlTheme(
-    'Welcome to Genowl Studio',
-    `<h2 style="font-size:22px;font-weight:700;color:#ffffff;margin:0 0 8px 0;">Welcome to Genowl Studio! 🦉</h2>
-    <div style="display:inline-block;padding:4px 12px;background-color:rgba(198,245,84,0.15);border:1px solid rgba(198,245,84,0.4);border-radius:999px;color:#c6f554;font-size:11px;font-weight:600;margin-bottom:20px;">
-      &check; Client Account Active &bull; 7-Day Session Established
-    </div>
-
-    <p style="font-size:13px;color:#a1a1aa;line-height:1.6;margin:0 0 20px 0;">
-      Hi <strong style="color:#ffffff;">${cleanName}</strong>, your verified client profile is now live. You can now order custom web engineering, 3D experiences, and AI production directly from our studio.
+    'Genowl Studio Account Activated',
+    `<h2 style="font-size:20px;font-weight:700;color:#ffffff;margin:0 0 10px 0;">
+      Welcome to Genowl Studio!
+    </h2>
+    <p style="font-size:14px;color:#a1a1aa;line-height:1.6;margin:0 0 16px 0;">
+      Hi <strong style="color:#ffffff;">${cleanName}</strong>, your client portal account has been provisioned and verified.
     </p>
 
-    <!-- Services Overview Card -->
-    <div style="background-color:#080e0a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin:0 0 24px 0;">
-      <div style="font-size:12px;font-weight:700;color:#ffffff;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.05em;">Your Client Guarantees:</div>
-      <table width="100%" cellpadding="6" cellspacing="0" style="font-size:12px;color:#d4d4d8;">
+    <div style="background-color:#080e0a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin:0 0 20px 0;">
+      <h3 style="font-size:13px;font-weight:700;color:#c6f554;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 12px 0;">
+        Studio Capabilities Ready For You:
+      </h3>
+      <table width="100%" cellpadding="6" cellspacing="0" style="font-size:13px;color:#d4d4d8;">
         <tr>
-          <td width="20" valign="top" style="color:#c6f554;">&bull;</td>
-          <td><strong>2D High-Converting Websites:</strong> $500 Flat &bull; Full Responsive React/Tailwind</td>
+          <td width="24" style="color:#c6f554;">&bull;</td>
+          <td><strong>2D Modern Websites:</strong> $500 Flat &bull; Ultra-fast React architectures</td>
         </tr>
         <tr>
-          <td width="20" valign="top" style="color:#f7cc46;">&bull;</td>
-          <td><strong>3D WebGL Worlds:</strong> $2,500 Flat &bull; Three.js Interactive Immersion</td>
+          <td style="color:#c6f554;">&bull;</td>
+          <td><strong>3D WebGL Worlds:</strong> $1,000 Flat &bull; Three.js Interactive Immersion</td>
         </tr>
         <tr>
-          <td width="20" valign="top" style="color:#c6f554;">&bull;</td>
-          <td><strong>$99 Creative Packages:</strong> AI Generation, Video Production, Content Strategy</td>
+          <td style="color:#c6f554;">&bull;</td>
+          <td><strong>AI Agents:</strong> $200 Flat &bull; Custom LLM & Workflow Automation</td>
         </tr>
         <tr>
-          <td width="20" valign="top" style="color:#f7cc46;">&bull;</td>
-          <td><strong>100% Commercial Rights:</strong> You own all source code and assets with zero royalties.</td>
+          <td style="color:#c6f554;">&bull;</td>
+          <td><strong>AI Video Generation:</strong> $100 Flat &bull; Cinematic Promo Assets</td>
         </tr>
       </table>
     </div>
@@ -852,15 +852,19 @@ export async function sendSlotBookingEmail(
   brief: string,
   turnaround: string,
   ticketId: string,
-  referenceUrl?: string
+  referenceUrl?: string,
+  preferredTime?: string,
+  styleReference?: string
 ): Promise<{ success: boolean; message: string; ticketId: string }> {
   const cleanName = name.trim();
   const cleanEmail = clientEmail.trim().toLowerCase();
   const cleanPhone = phone.trim();
   const cleanRefUrl = referenceUrl ? referenceUrl.trim() : '';
+  const cleanPreferredTime = preferredTime ? preferredTime.trim() : 'Flexible / Connect at earliest';
+  const cleanStyle = styleReference ? styleReference.trim() : 'Studio Curated / Tailored';
 
   const clientSubject = `Genowl Studio: Slot Booking Received #${ticketId}`;
-  const adminSubject = `🚨 [NEW SLOT BOOKING #${ticketId}] ${service} from ${cleanName}`;
+  const adminSubject = `🚨 [NEW SLOT BOOKING #${ticketId}] ${service} (${cleanStyle}) from ${cleanName}`;
 
   const clientPlainText = `Hi ${cleanName},
 
@@ -868,13 +872,15 @@ Thank you for booking a project slot on Genowl Studio!
 
 Ticket Reference: #${ticketId}
 Service Selected: ${service} (${amount} Flat)
+Target Visual Style: ${cleanStyle}
+Preferred Kickoff Time / Availability: ${cleanPreferredTime}
 Preferred Turnaround: ${turnaround}
 Contact Phone: ${cleanPhone}
 ${cleanRefUrl ? `Reference Link: ${cleanRefUrl}\n` : ''}
 Project Brief:
 ${brief}
 
-NOTICE: Our team will review your brief and contact you at your phone number (${cleanPhone}) within half an hour to finalize your slot schedule and discuss details.
+NOTICE: Our team will review your brief and contact you according to your preferred time at your phone number (${cleanPhone}) or email within 30 minutes to confirm your slot.
 
 Best regards,
 The Genowl Studio Team
@@ -890,7 +896,7 @@ Desk: ${OFFICIAL_GENOWL_GMAIL} | ${OFFICIAL_HOSTINGER_EMAIL}`;
     </div>
 
     <p style="font-size:13px;color:#a1a1aa;line-height:1.6;margin:0 0 18px 0;">
-      Hi <strong style="color:#ffffff;">${cleanName}</strong>, we have received your project brief. Our engineering lead will call / WhatsApp you at <strong style="color:#c6f554;">${cleanPhone}</strong> within 30 minutes to confirm your slot.
+      Hi <strong style="color:#ffffff;">${cleanName}</strong>, we have received your project brief. Our engineering lead will reach out according to your available time at <strong style="color:#c6f554;">${cleanPhone}</strong> or email to finalize your slot schedule.
     </p>
 
     <div style="background-color:#080e0a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;margin:0 0 20px 0;">
@@ -902,6 +908,14 @@ Desk: ${OFFICIAL_GENOWL_GMAIL} | ${OFFICIAL_HOSTINGER_EMAIL}`;
         <tr>
           <td style="color:#71717a;">Service:</td>
           <td style="color:#ffffff;font-weight:600;">${service} (${amount})</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Target Style:</td>
+          <td style="color:#c6f554;font-weight:600;">${cleanStyle}</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Your Preferred Time:</td>
+          <td style="color:#c6f554;font-weight:600;">${cleanPreferredTime}</td>
         </tr>
         <tr>
           <td style="color:#71717a;">Turnaround:</td>
@@ -929,12 +943,14 @@ Client Name: ${cleanName}
 Client Email: ${cleanEmail}
 Client Phone: ${cleanPhone}
 Service: ${service} (${amount})
+Target Style Reference: ${cleanStyle}
+Client Preferred Available Time: ${cleanPreferredTime}
 Preferred Turnaround: ${turnaround}
 ${cleanRefUrl ? `Reference Link: ${cleanRefUrl}\n` : ''}
 Project Brief:
 ${brief}
 
-ACTION REQUIRED: Contact this client at ${cleanPhone} within 30 minutes to confirm the booking!`;
+ACTION REQUIRED: Review client preferred time (${cleanPreferredTime}) and target style (${cleanStyle}) and contact them at ${cleanPhone} or email!`;
 
   const adminHtml = wrapEmailInGenowlTheme(
     `New Slot Request #${ticketId}`,
@@ -942,7 +958,7 @@ ACTION REQUIRED: Contact this client at ${cleanPhone} within 30 minutes to confi
       🚨 Urgent: New Project Slot Request #${ticketId}
     </h2>
     <div style="display:inline-block;padding:4px 12px;background-color:rgba(247,204,70,0.15);border:1px solid rgba(247,204,70,0.4);border-radius:999px;color:#f7cc46;font-size:11px;font-weight:700;margin-bottom:18px;">
-      &bull; CALL CLIENT WITHIN 30 MINUTES
+      &bull; CALL CLIENT ACCORDING TO PREFERRED TIME
     </div>
 
     <div style="background-color:#080e0a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin:0 0 20px 0;">
@@ -970,6 +986,14 @@ ACTION REQUIRED: Contact this client at ${cleanPhone} within 30 minutes to confi
         <tr>
           <td style="color:#71717a;">Service:</td>
           <td style="color:#f7cc46;font-weight:700;">${service} (${amount})</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Target Style:</td>
+          <td style="color:#c6f554;font-weight:700;">${cleanStyle}</td>
+        </tr>
+        <tr>
+          <td style="color:#71717a;">Preferred Free Time:</td>
+          <td style="color:#c6f554;font-weight:700;font-size:14px;">${cleanPreferredTime}</td>
         </tr>
         <tr>
           <td style="color:#71717a;">Turnaround:</td>
@@ -1014,7 +1038,9 @@ ACTION REQUIRED: Contact this client at ${cleanPhone} within 30 minutes to confi
         email: cleanEmail,
         phone: cleanPhone,
         service,
+        styleReference: cleanStyle,
         turnaround,
+        preferredTime: cleanPreferredTime,
         brief,
         _cc: OFFICIAL_GENOWL_GMAIL,
       }),
@@ -1028,7 +1054,7 @@ ACTION REQUIRED: Contact this client at ${cleanPhone} within 30 minutes to confi
     recipientEmail: cleanEmail,
     recipientName: cleanName,
     subject: clientSubject,
-    contentPreview: `Slot #${ticketId} [${service}]: Phone ${cleanPhone} - ${brief.slice(0, 100)}`,
+    contentPreview: `Slot #${ticketId} [${service}]: Phone ${cleanPhone} | Free Time: ${cleanPreferredTime} - ${brief.slice(0, 80)}`,
     dispatchedAt: new Date().toISOString(),
     status: 'delivered',
   };
