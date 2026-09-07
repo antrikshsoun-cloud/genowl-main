@@ -9,7 +9,7 @@ interface ServicesPageProps {
 }
 
 export default function ServicesPage({ onSelectService, onNavigateContact }: ServicesPageProps) {
-  // Website Tier Selection: '2d' ($500) vs '3d' ($2,500)
+  // Website Tier Selection: '2d' ($500) vs '3d' ($1,000)
   const [webTier, setWebTier] = useState<'2d' | '3d'>('2d');
   const [webOptionsModalOpen, setWebOptionsModalOpen] = useState(false);
 
@@ -32,7 +32,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
     },
     '3d': {
       title: '3D Website',
-      price: '$2,500',
+      price: '$1,000',
       badge: 'Cinema-Grade WebGL',
       tagline: 'Immersive Three.js & WebGL 3D interactive digital worlds.',
       description:
@@ -52,14 +52,35 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
 
   const standardServices = [
     {
+      id: 'ai-agents',
+      category: 'ai',
+      number: '02',
+      title: 'AI Agents',
+      price: '$200',
+      pricePeriod: 'per project',
+      icon: Brain,
+      tagline: 'Custom autonomous AI agents, intelligent systems and automated workflows.',
+      description:
+        'Empower your business with tailored autonomous AI agents, multi-tool workflows, and intelligent customer-facing assistants customized strictly to your operations.',
+      features: [
+        'Custom prompt & context engineering with memory',
+        'Autonomous task & customer service agent setup',
+        'Workflow automation for repetitive business tasks',
+        'Data extraction & document intelligence insights',
+        'Integration with your existing tool stack & APIs',
+        'Ongoing tuning, guardrails & evaluation benchmarks',
+      ],
+      badge: 'High Demand',
+    },
+    {
       id: 'video-generation',
       category: 'video',
-      number: '02',
+      number: '03',
       title: 'Video Generation',
-      price: '$99',
+      price: '$100',
       pricePeriod: 'per project',
       icon: Video,
-      tagline: 'Stunning AI-powered promo videos, reels, and cinematic clips.',
+      tagline: 'Stunning AI-powered promo videos, reels, and cinematic commercial clips.',
       description:
         'Captivate your target audience with high-impact visual storytelling, dynamic product showcases, and social-ready commercial assets.',
       features: [
@@ -71,27 +92,6 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
         'Fast turnaround with iterative revisions',
       ],
       badge: 'Trending',
-    },
-    {
-      id: 'personalized-ai',
-      category: 'ai',
-      number: '03',
-      title: 'Personalized AI',
-      price: '$99',
-      pricePeriod: 'per project',
-      icon: Brain,
-      tagline: 'Custom AI systems and intelligent workflow automation.',
-      description:
-        'Empower your team with tailored AI assistants, custom knowledge agents, and automated workflows tailored strictly to your operations.',
-      features: [
-        'Custom prompt & context engineering',
-        'Intelligent customer service assistant setup',
-        'Workflow automation for repetitive tasks',
-        'Data extraction & document insights',
-        'Integration with your existing tool stack',
-        'Ongoing tuning & performance evaluation',
-      ],
-      badge: 'Advanced',
     },
     {
       id: 'content-creation',
@@ -129,7 +129,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
           Our Services &amp; <span className="text-[#c6f554] font-serif-italic">Pricing</span>
         </h1>
         <p className="text-zinc-400 text-xs sm:text-sm md:text-base leading-relaxed">
-          From high-converting <span className="text-white font-semibold">2D Websites ($500)</span> and cinema-grade <span className="text-[#c6f554] font-semibold">3D WebGL ($2,500)</span>, to rapid <span className="text-white font-semibold">$99 packages</span> for AI, Video &amp; Content. 100% IP ownership guaranteed.
+          From high-converting <span className="text-white font-semibold">2D Websites ($500)</span> and cinema-grade <span className="text-[#c6f554] font-semibold">3D WebGL ($1,000)</span>, to autonomous <span className="text-white font-semibold">AI Agents ($200)</span> and cinematic <span className="text-white font-semibold">Video Generation ($100)</span>. 100% IP ownership guaranteed.
         </p>
       </div>
 
@@ -199,7 +199,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                   <span>2D Website ($500)</span>
                 </button>
 
-                {/* 3D Option Button ($2,500) */}
+                {/* 3D Option Button ($1,000) */}
                 <button
                   type="button"
                   onClick={() => setWebTier('3d')}
@@ -210,7 +210,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                   }`}
                 >
                   <Box className="w-3.5 h-3.5 shrink-0" />
-                  <span>3D Website ($2,500)</span>
+                  <span>3D Website ($1,000)</span>
                 </button>
               </div>
             </div>
@@ -430,12 +430,12 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                 </button>
               </div>
 
-              {/* Option 2: 3D Website ($2,500) */}
+              {/* Option 2: 3D Website ($1,000) */}
               <div className="p-5 rounded-2xl bg-gradient-to-b from-[#142317] to-[#0a120b] border border-[#c6f554]/50 shadow-[0_0_25px_rgba(198,245,84,0.15)] flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#c6f554] text-black">Top 1% Immersive</span>
-                    <span className="text-xl font-black text-[#c6f554] font-mono">$2,500</span>
+                    <span className="text-xl font-black text-[#c6f554] font-mono">$1,000</span>
                   </div>
                   <h3 className="text-lg font-bold text-white mb-1">3D Website</h3>
                   <p className="text-xs text-zinc-300 leading-relaxed mb-4">
@@ -468,7 +468,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                   }}
                   className="w-full py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.4)] transition-all cursor-pointer"
                 >
-                  Book 3D Website ($2,500)
+                  Book 3D Website ($1,000)
                 </button>
               </div>
             </div>

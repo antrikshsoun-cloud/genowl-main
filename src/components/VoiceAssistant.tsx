@@ -18,8 +18,11 @@ interface VoiceAssistantProps {
 function sanitizeForSpeech(raw: string): string {
   return raw
     .replace(/\bYZER\b/gi, 'Wiser')
-    .replace(/\$2,500/g, 'twenty-five hundred dollars')
+    .replace(/\$1,000/g, 'one thousand dollars')
+    .replace(/\$2,500/g, 'one thousand dollars')
     .replace(/\$500/g, 'five hundred dollars')
+    .replace(/\$200/g, 'two hundred dollars')
+    .replace(/\$100/g, 'one hundred dollars')
     .replace(/\$99/g, 'ninety-nine dollars')
     .replace(/\$([0-9]+)/g, '$1 dollars')
     .replace(/60\s*fps/gi, 'sixty frames per second')
@@ -284,7 +287,7 @@ export default function VoiceAssistant({
       tourTimerRef.current = setTimeout(() => {
         onNavigate('services');
         const step2 =
-          'Here in our services catalog, we offer three core solutions: high-converting 2D websites at $500, interactive 3D WebGL experiences at $2,500, and AI video and advertisement production for $99. Every service comes with full intellectual property transfer. Now let us look at our core philosophy.';
+          'Here in our services catalog, we offer our core solutions: high-converting 2D websites at $500, interactive 3D WebGL experiences at $1,000, autonomous AI agents at $200, and AI video production for $100. Every service comes with full intellectual property transfer. Now let us look at our core philosophy.';
         
         speak(step2, () => {
           // Step 3 triggers ONLY after Step 2 has 100% finished speaking!
@@ -516,7 +519,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'Our 3D Interactive WebGL websites start at $2,500. They feature silky-smooth 60 frames per second physics, custom canvas shaders, interactive models, and 100% intellectual property transfer.'
+        'Our 3D Interactive WebGL websites start at $1,000. They feature silky-smooth 60 frames per second physics, custom canvas shaders, interactive models, and 100% intellectual property transfer.'
       );
       return;
     }
@@ -536,7 +539,22 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 13. AI & VIDEO GENERATION / ADVERTISEMENTS
+    // 13. AI AGENTS & WORKFLOW AUTOMATION
+    if (
+      text.includes('agent') ||
+      text.includes('personalized ai') ||
+      text.includes('automation') ||
+      text.includes('workflow') ||
+      text.includes('custom ai')
+    ) {
+      onNavigate('services');
+      speak(
+        'Our AI Agents package is $200. We build tailored autonomous AI agents, multi-tool automation workflows, and custom customer chat agents customized strictly to your business.'
+      );
+      return;
+    }
+
+    // 13B. AI & VIDEO GENERATION / ADVERTISEMENTS
     if (
       text.includes('video') ||
       text.includes('advertisement') ||
@@ -548,7 +566,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'Our AI and Video Production package is just $99. We craft tailored marketing visuals, 4K promotional renders, and video advertisements ready for your campaigns.'
+        'Our AI and Video Production package is $100. We craft tailored marketing visuals, 4K promotional renders, and video advertisements ready for your campaigns.'
       );
       return;
     }
@@ -568,7 +586,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'Genowl pricing is completely transparent: $500 for high-converting 2D Websites, $2,500 for Cinema-grade 3D WebGL, and $99 for AI Video generation. All services include full code and IP transfer.'
+        'Genowl pricing is completely transparent: $500 for high-converting 2D Websites, $1,000 for Cinema-grade 3D WebGL, $200 for autonomous AI Agents, and $100 for AI Video generation. All services include full code and IP transfer.'
       );
       return;
     }
@@ -584,7 +602,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'We offer three primary services: 2D modern websites for $500, interactive 3D WebGL websites for $2,500, and AI video and advertisement generation for $99. Scrolling to the services catalog now.'
+        'We offer core services: 2D modern websites for $500, interactive 3D WebGL websites for $1,000, autonomous AI Agents for $200, and AI video and advertisement generation for $100. Scrolling to the services catalog now.'
       );
       return;
     }
@@ -676,7 +694,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'Our 2D websites at $500 are high-speed conversion machines ideal for businesses and landing pages. Our 3D websites at $2,500 feature cinema-grade WebGL physics, shaders, and 60 frames per second scroll animations for luxury brands looking to truly stand out.'
+        'Our 2D websites at $500 are high-speed conversion machines ideal for businesses and landing pages. Our 3D websites at $1,000 feature cinema-grade WebGL physics, shaders, and 60 frames per second scroll animations for luxury brands looking to truly stand out.'
       );
       return;
     }

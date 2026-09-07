@@ -7,6 +7,7 @@ export interface BookingPayload {
   service_type: string;
   budget?: string;
   project_scope?: string;
+  preferred_time?: string;
 }
 
 export interface ContactPayload {
