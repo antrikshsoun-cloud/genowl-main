@@ -88,9 +88,9 @@ export default function ContactPage({
       case 'project':
         return [
           '2D Custom Website ($500)',
-          '3D WebGL World ($2,500)',
-          'AI Video Production ($99)',
-          'Personalized AI Solution ($99)',
+          '3D WebGL World ($1,000)',
+          'AI Agents Solution ($200)',
+          'AI Video Production ($100)',
           'Content & Creative Sprint ($99)',
           'Full Custom Architecture',
         ];

@@ -12,7 +12,7 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
     {
       step: '01',
       title: 'Pick Your Service',
-      desc: 'Select from 2D Websites ($500), 3D WebGL ($2,500), Video Generation, Personalized AI, or Content Creation ($99).',
+      desc: 'Select from 2D Websites ($500), 3D WebGL ($1,000), AI Agents ($200), Video Generation ($100), or Content Creation ($99).',
     },
     {
       step: '02',
@@ -29,18 +29,18 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
   const pillars = [
     {
       title: '1. Website Architecture',
-      charge: '$500 / $2,500',
-      highlight: 'From responsive 2D layouts ($500) to cinema-grade interactive 3D WebGL digital worlds ($2,500).',
+      charge: '$500 / $1,000',
+      highlight: 'From responsive 2D layouts ($500) to cinema-grade interactive 3D WebGL digital worlds ($1,000).',
     },
     {
-      title: '2. Video Generation',
-      charge: '$99',
+      title: '2. AI Agents',
+      charge: '$200',
+      highlight: 'Autonomous intelligence systems, multi-step workflow automation, and custom customer chat agents.',
+    },
+    {
+      title: '3. Video Generation',
+      charge: '$100',
       highlight: 'Cinematic visual commercials, social media clips, and promotional reels that command attention.',
-    },
-    {
-      title: '3. Personalized AI',
-      charge: '$99',
-      highlight: 'Automated intelligence engines, workflow accelerators, and custom customer chat agents.',
     },
     {
       title: '4. Content Creation',

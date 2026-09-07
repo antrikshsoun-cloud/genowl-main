@@ -2,6 +2,11 @@
 /**
  * Genowl Studio - Hostinger Database API: Bookings
  */
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
@@ -30,6 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $service_type = trim($data['service_type'] ?? ($data['service'] ?? 'General Consultation'));
     $budget = trim($data['budget'] ?? ($data['amount'] ?? ''));
     $project_scope = trim($data['project_scope'] ?? ($data['details'] ?? ($data['notes'] ?? '')));
+    $preferred_time = trim($data['preferred_time'] ?? ($data['slot_time'] ?? ''));
+    if (!empty($preferred_time) && strpos($project_scope, 'Preferred Time:') === false) {
+        $project_scope = "Preferred Free Time: " . $preferred_time . " | " . $project_scope;
+    }
 
     if (empty($name) || empty($email)) {
         http_response_code(400);

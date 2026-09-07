@@ -3,6 +3,10 @@
  * Hostinger MySQL Database Configuration for Genowl Studio
  */
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Database Credentials
 // Replace with your Hostinger database details:
 define('DB_HOST', 'localhost');

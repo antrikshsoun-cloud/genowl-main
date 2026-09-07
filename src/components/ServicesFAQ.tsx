@@ -8,12 +8,12 @@ export default function ServicesFAQ() {
     {
       question: 'How does Genowl\'s transparent pricing model work?',
       answer:
-        'We believe in absolute upfront transparency: $500 for high-converting 2D Websites, $2,500 for cutting-edge 3D WebGL interactive experiences, and $99 for specialized AI, Video Generation, and Content packages. There are zero surprise fees, no complex hourly billing, and no recurring subscriptions. You select your tier, submit your brief, and we execute.',
+        'We believe in absolute upfront transparency: $500 for high-converting 2D Websites, $1,000 for cutting-edge 3D WebGL interactive experiences, $200 for autonomous AI Agents, and $100 for Video Generation packages. There are zero surprise fees, no complex hourly billing, and no recurring subscriptions. You select your tier, submit your brief, and we execute.',
     },
     {
       question: 'What is the difference between 2D and 3D Websites?',
       answer:
-        'Our 2D Websites ($500) are sleek, responsive, and mobile-optimized landing pages and multi-page sites with modern typography and fast load speeds. Our 3D Websites ($2,500) are cinema-grade interactive WebGL & Three.js experiences featuring custom 3D models, shaders, particle simulations, and scroll-driven camera movements for brands looking to stand out in the top 1% of the web.',
+        'Our 2D Websites ($500) are sleek, responsive, and mobile-optimized landing pages and multi-page sites with modern typography and fast load speeds. Our 3D Websites ($1,000) are cinema-grade interactive WebGL & Three.js experiences featuring custom 3D models, shaders, particle simulations, and scroll-driven camera movements for brands looking to stand out in the top 1% of the web.',
     },
     {
       question: 'What is the typical delivery turnaround time?',
@@ -45,7 +45,7 @@ export default function ServicesFAQ() {
   const comparisons = [
     {
       feature: 'Pricing Model',
-      genowl: 'Transparent flat rates ($99 - $2,500)',
+      genowl: 'Transparent flat rates ($99 - $1,000)',
       traditional: '$3,000 - $10,000 monthly retainers',
       freelance: 'Unpredictable hourly rates ($50-$150/hr)',
     },
