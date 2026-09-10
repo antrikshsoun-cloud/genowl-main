@@ -85,7 +85,7 @@ export default function Navbar({
                   {isActive && (
                     <motion.div
                       layoutId="navbar-active-pill"
-                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                      transition={{ type: 'spring', stiffness: 220, damping: 26, mass: 0.7 }}
                       className="absolute inset-0 rounded-full bg-white/[0.09] border border-[#c6f554]/40 shadow-[0_0_12px_rgba(198,245,84,0.25)]"
                     />
                   )}

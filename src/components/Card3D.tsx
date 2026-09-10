@@ -53,7 +53,7 @@ export default function Card3D({ children, className = '', hasLaserBeam = false 
       style={{
         perspective: 1000,
       }}
-      className="relative rounded-3xl group"
+      className="relative rounded-3xl group h-full w-full flex flex-col"
     >
       {/* Continuous Orbiting Laser Border Beam (Flagship Tier only) */}
       {hasLaserBeam && (
@@ -73,7 +73,7 @@ export default function Card3D({ children, className = '', hasLaserBeam = false 
             ? 'transform 0.1s ease-out'
             : 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
-        className={`relative z-10 w-full h-full rounded-3xl overflow-hidden will-change-transform ${className}`}
+        className={`relative z-10 w-full h-full flex flex-col flex-1 rounded-3xl overflow-hidden will-change-transform ${className}`}
       >
         {/* Real-time Cursor-Tracking Specular Spotlight Mask */}
         <div
@@ -99,7 +99,9 @@ export default function Card3D({ children, className = '', hasLaserBeam = false 
         />
 
         {/* Card Content with 3D Spatial Depth */}
-        {children}
+        <div className="flex flex-col justify-between h-full w-full flex-1 relative z-20">
+          {children}
+        </div>
       </div>
     </div>
   );

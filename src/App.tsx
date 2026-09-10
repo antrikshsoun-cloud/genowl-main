@@ -148,11 +148,12 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Motion-Powered Spring-Smoothed Scroll Progress
+  // Motion-Powered Spring-Smoothed Scroll Progress (Ultra-smooth glide)
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
-    stiffness: 400,
-    damping: 35,
+    stiffness: 80,
+    damping: 24,
+    mass: 0.15,
     restDelta: 0.001,
   });
 

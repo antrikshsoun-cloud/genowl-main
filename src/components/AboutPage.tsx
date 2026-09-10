@@ -164,7 +164,7 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">Four specialized pillars, each at a flat $99 fee</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 sm:auto-rows-fr gap-5 items-stretch">
           {pillars.map((p, i) => (
             <motion.div
               key={i}
@@ -174,13 +174,13 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
               transition={{
                 duration: 0.5,
                 delay: i * 0.1,
-                ease: [0.16, 1, 0.3, 1],
+                ease: [0.16, 1, 0.3, 1] as const,
               }}
               whileHover={{
                 y: -4,
                 transition: { type: 'spring', stiffness: 350, damping: 25 },
               }}
-              className="p-5 sm:p-6 rounded-2xl bg-[#0d150e]/90 border border-white/10 hover:border-[#c6f554]/40 transition-colors flex flex-col justify-between"
+              className="p-5 sm:p-6 rounded-2xl bg-[#0d150e]/90 border border-white/10 hover:border-[#c6f554]/40 transition-colors flex flex-col justify-between h-full"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">

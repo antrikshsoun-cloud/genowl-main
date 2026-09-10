@@ -2,19 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Zap, Award, Sparkles, CheckCircle2, Clock, Scale, FileCode, Check } from 'lucide-react';
 
 export default function TrustMetrics() {
-  const [projectsDelivered, setProjectsDelivered] = useState<string>('24+');
+  const [projectsDelivered, setProjectsDelivered] = useState<string>(() => {
+    const val = localStorage.getItem('genowl_projects_delivered');
+    return (val !== null && val !== undefined && val !== '24+') ? val : '0';
+  });
 
-  // Load dynamically configured count from localStorage or default
+  // Load dynamically configured count from localStorage or default to '0'
   useEffect(() => {
     const saved = localStorage.getItem('genowl_projects_delivered');
-    if (saved) {
+    if (saved !== null && saved !== undefined && saved !== '24+') {
       setProjectsDelivered(saved);
+    } else {
+      localStorage.setItem('genowl_projects_delivered', '0');
+      setProjectsDelivered('0');
     }
 
     // Listen for live updates from admin portal
     const handleStorage = () => {
       const updated = localStorage.getItem('genowl_projects_delivered');
-      if (updated) setProjectsDelivered(updated);
+      if (updated !== null && updated !== undefined) setProjectsDelivered(updated);
     };
 
     window.addEventListener('storage', handleStorage);

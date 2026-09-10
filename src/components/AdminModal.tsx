@@ -70,7 +70,8 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
 
   // Editable Live Metrics state
   const [projectsCounter, setProjectsCounter] = useState<string>(() => {
-    return localStorage.getItem('genowl_projects_delivered') || '24+';
+    const val = localStorage.getItem('genowl_projects_delivered');
+    return (val !== null && val !== undefined && val !== '24+') ? val : '0';
   });
 
   // Supabase Backend State
@@ -928,7 +929,7 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                     <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-xs text-zinc-400 space-y-1">
                       <div className="text-white font-medium">Current Live Preview:</div>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold font-mono text-[#c6f554]">{projectsCounter || '24+'}</span>
+                        <span className="text-2xl font-bold font-mono text-[#c6f554]">{projectsCounter !== '' ? projectsCounter : '0'}</span>
                         <span className="text-zinc-300">Projects Delivered</span>
                       </div>
                     </div>

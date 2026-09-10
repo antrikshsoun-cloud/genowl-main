@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, CheckCircle2, Clock } from 'lucide-react';
-import Hero3DObject from './Hero3DObject.tsx';
 
 interface HeroProps {
   onStartTrial?: () => void;
@@ -37,7 +36,7 @@ export default function Hero({ onStartTrial }: HeroProps) {
       initial="hidden"
       animate="visible"
       id="hero-section"
-      className="relative pt-16 sm:pt-20 md:pt-24 pb-8 sm:pb-12 text-center px-4"
+      className="relative pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16 text-center px-4 max-w-5xl mx-auto flex flex-col items-center justify-center min-h-[70vh]"
     >
       {/* Subtle green ambient light pool behind headline */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[480px] h-[300px] bg-[#c6f554]/[0.07] rounded-full blur-3xl pointer-events-none" />
@@ -73,18 +72,13 @@ export default function Hero({ onStartTrial }: HeroProps) {
       <motion.p
         variants={itemVariants}
         id="hero-subtitle"
-        className="mt-5 text-sm sm:text-base md:text-lg text-zinc-400 max-w-xl mx-auto font-normal leading-relaxed"
+        className="mt-6 text-sm sm:text-base md:text-lg text-zinc-400 max-w-xl mx-auto font-normal leading-relaxed"
       >
         High-converting 2D websites, cinema-grade 3D WebGL experiences, and custom AI production — engineered for visionary brands.
       </motion.p>
 
-      {/* Interactive 3D WebGL Cyber-Emblem */}
-      <motion.div variants={itemVariants} className="w-full flex justify-center">
-        <Hero3DObject />
-      </motion.div>
-
       {/* CTA Button */}
-      <motion.div variants={itemVariants} className="mt-4 sm:mt-6 flex flex-col items-center">
+      <motion.div variants={itemVariants} className="mt-8 sm:mt-10 flex flex-col items-center">
         <motion.button
           whileHover={{ scale: 1.04, y: -2 }}
           whileTap={{ scale: 0.96 }}
@@ -97,6 +91,7 @@ export default function Hero({ onStartTrial }: HeroProps) {
           <span>Book Project</span>
           <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
         </motion.button>
+
 
         {/* Value Proposition Badges */}
         <div
