@@ -388,7 +388,7 @@ export default function OrderModal({
                         onClick={() => {
                           setSelectedService(s.title);
                           const styles = getStylesForService(s.title);
-                          setSelectedStyle(styles[0]?.title || styles[0]?.name || '');
+                          setSelectedStyle(styles[0]?.title || (styles[0] as any)?.name || '');
                           setAllowRebooking(false);
                           setSubmitError(null);
                         }}
@@ -493,7 +493,7 @@ export default function OrderModal({
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {availableStyles.map((st) => {
                           const styleTitle = st.title || (st as any).name || "";
-                          const isSelected = (selectedStyle || availableStyles[0]?.title || availableStyles[0]?.name) === styleTitle;
+                          const isSelected = (selectedStyle || availableStyles[0]?.title || (availableStyles[0] as any)?.name) === styleTitle;
                           const highlights = st.visualHighlights || (st as any).vibeTags || [];
                           return (
                             <button
