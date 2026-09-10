@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Check, ArrowRight, Lock, Mail, User, AlertCircle, ShieldCheck, KeyRound, ArrowLeft, RefreshCw } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
@@ -46,8 +47,6 @@ export default function AuthModal({
   const [generatedCode, setGeneratedCode] = useState('');
   const [enteredCode, setEnteredCode] = useState('');
   const [codeCopied, setCodeCopied] = useState(false);
-
-  if (!isOpen) return null;
 
   // Helper to get registered users from registry
   const getRegisteredUsers = () => {
@@ -230,16 +229,26 @@ export default function AuthModal({
   };
 
   return (
-    <div
-      id="auth-modal-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity"
-      onClick={onClose}
-    >
-      <div
-        id="auth-modal-dialog"
-        className="relative w-full max-w-md rounded-3xl bg-[#0d140f] border border-white/15 p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[92vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          id="auth-modal-backdrop"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.94, opacity: 0, y: 15 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.94, opacity: 0, y: 15 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            id="auth-modal-dialog"
+            className="relative w-full max-w-md rounded-3xl bg-[#0d140f] border border-white/15 p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[92vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Ambient Top Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-60 h-24 bg-[#c6f554]/15 rounded-full blur-3xl pointer-events-none" />
 
@@ -623,7 +632,9 @@ export default function AuthModal({
             </div>
           </div>
         )}
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

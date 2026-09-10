@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
   Check,
@@ -141,8 +142,6 @@ export default function OrderModal({
     }
   }, [currentUser]);
 
-  if (!isOpen) return null;
-
   // Strict Validation: Required Phone, Preferred Time, Details/Brief, Turnaround, Name & Email
   const cleanPhoneDigits = phone.replace(/\D/g, '');
   const isPhoneValid = cleanPhoneDigits.length >= 7;
@@ -236,16 +235,26 @@ export default function OrderModal({
   };
 
   return (
-    <div
-      id="order-modal-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md transition-opacity"
-      onClick={onClose}
-    >
-      <div
-        id="order-modal-dialog"
-        className="relative w-full max-w-xl rounded-3xl bg-[#0e1610] border border-white/15 p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[94vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          id="order-modal-backdrop"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.94, opacity: 0, y: 15 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.94, opacity: 0, y: 15 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            id="order-modal-dialog"
+            className="relative w-full max-w-xl rounded-3xl bg-[#0e1610] border border-white/15 p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[94vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Ambient Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-24 bg-[#c6f554]/15 rounded-full blur-3xl pointer-events-none" />
 
@@ -792,7 +801,9 @@ export default function OrderModal({
             </div>
           </div>
         )}
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

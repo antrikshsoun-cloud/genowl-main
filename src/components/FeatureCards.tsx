@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { Sparkles, TrendingUp } from 'lucide-react';
 import ServicesListVisual from './ServicesListVisual.tsx';
 import ChartVisual from './ChartVisual.tsx';
@@ -25,17 +26,30 @@ export default function FeatureCards() {
   return (
     <section id="features-section" className="max-w-5xl mx-auto px-4 sm:px-6 pb-24">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {cards.map((card) => {
+        {cards.map((card, index) => {
           const Icon = card.icon;
           return (
-            <div
+            <motion.div
               key={card.id}
               id={card.id}
-              className="group relative rounded-2xl bg-[#0c130d]/80 border border-white/[0.08] hover:border-white/20 backdrop-blur-xl p-6 sm:p-7 flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.8)] min-h-[420px]"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{
+                duration: 0.6,
+                delay: index * 0.15,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              whileHover={{
+                y: -6,
+                scale: 1.015,
+                transition: { type: 'spring', stiffness: 350, damping: 25 },
+              }}
+              className="group relative rounded-2xl bg-[#0c130d]/80 border border-white/[0.08] hover:border-[#c6f554]/40 backdrop-blur-xl p-6 sm:p-7 flex flex-col justify-between overflow-hidden shadow-2xl transition-colors duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_25px_rgba(198,245,84,0.1)] min-h-[420px]"
             >
               {/* Subtle top-light gradient reflection */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
-              
+
               {/* Card Header */}
               <div>
                 <div className="flex items-center gap-3 mb-3">
@@ -56,7 +70,7 @@ export default function FeatureCards() {
               <div className="mt-6 pt-2 flex items-center justify-center">
                 {card.visual}
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>

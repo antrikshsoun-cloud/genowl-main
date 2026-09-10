@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
@@ -37,7 +38,9 @@ export default function Navbar({
     <header id="main-header" className="fixed top-0 left-0 right-0 z-50 pt-5 px-4 sm:px-8 md:px-12 pointer-events-none">
       <div className="max-w-7xl mx-auto flex items-center justify-between pointer-events-auto">
         {/* Left Top Corner - Genowl Brand & Owl Logo */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           type="button"
           onClick={() => onNavigate('home')}
           id="brand-logo"
@@ -57,31 +60,35 @@ export default function Navbar({
             <span className="w-1.5 h-1.5 rounded-full bg-[#c6f554] animate-pulse" />
             Operational
           </span>
-        </button>
+        </motion.button>
 
         {/* Right Top Corner - Navigation Bar & Get Started */}
         <nav
           id="navbar-container"
-          className="relative flex items-center gap-6 px-4 sm:px-6 py-2 rounded-full bg-[#0d140e]/85 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] transition-all duration-300"
+          className="relative flex items-center gap-4 sm:gap-6 px-3 sm:px-5 py-1.5 sm:py-2 rounded-full bg-[#0d140e]/85 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] transition-all duration-300"
         >
-          {/* Desktop Navigation Links */}
-          <ul id="desktop-nav-links" className="hidden md:flex items-center gap-8 text-xs font-medium">
+          {/* Desktop Navigation Links with Spring LayoutId Morphing */}
+          <ul id="desktop-nav-links" className="hidden md:flex items-center gap-1 text-xs font-medium relative">
             {navLinks.map((link) => {
               const isActive = currentPage.toLowerCase() === link.id.toLowerCase();
               return (
-                <li key={link.id}>
+                <li key={link.id} className="relative">
                   <button
                     type="button"
                     onClick={() => onNavigate(link.id)}
-                    className={`relative py-1 transition-colors duration-200 cursor-pointer ${
-                      isActive ? 'text-white font-semibold' : 'text-zinc-400 hover:text-zinc-200'
+                    className={`relative z-10 px-3.5 py-1.5 rounded-full transition-colors duration-200 cursor-pointer ${
+                      isActive ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white'
                     }`}
                   >
                     {link.label}
-                    {isActive && (
-                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#c6f554] shadow-[0_0_6px_#c6f554]" />
-                    )}
                   </button>
+                  {isActive && (
+                    <motion.div
+                      layoutId="navbar-active-pill"
+                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                      className="absolute inset-0 rounded-full bg-white/[0.09] border border-[#c6f554]/40 shadow-[0_0_12px_rgba(198,245,84,0.25)]"
+                    />
+                  )}
                 </li>
               );
             })}
@@ -126,16 +133,20 @@ export default function Navbar({
                 </button>
               </div>
             ) : (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
                 type="button"
                 onClick={() => onOpenAuth?.('signin')}
                 className="text-xs font-medium text-zinc-300 hover:text-white px-2.5 py-1.5 transition-colors cursor-pointer"
               >
                 Log In
-              </button>
+              </motion.button>
             )}
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               id="nav-get-started-btn"
               type="button"
               onClick={() => onOpenOrder?.('2D Website')}
@@ -143,7 +154,7 @@ export default function Navbar({
             >
               <span>Get Started</span>
               <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-            </button>
+            </motion.button>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -151,7 +162,7 @@ export default function Navbar({
             id="mobile-menu-toggle"
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-1.5 rounded-full text-zinc-300 hover:text-white bg-white/5 border border-white/10"
+            className="md:hidden p-1.5 rounded-full text-zinc-300 hover:text-white bg-white/5 border border-white/10 cursor-pointer"
             aria-label="Toggle Menu"
           >
             {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -159,105 +170,113 @@ export default function Navbar({
         </nav>
       </div>
 
-      {/* Mobile Dropdown Menu */}
-      {mobileMenuOpen && (
-        <div className="max-w-7xl mx-auto px-4 mt-2 pointer-events-auto">
-          <div
-            id="mobile-menu"
-            className="md:hidden p-4 rounded-2xl bg-[#0d140e]/95 backdrop-blur-2xl border border-white/10 shadow-2xl space-y-3"
+      {/* Mobile Dropdown Menu with AnimatePresence */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-7xl mx-auto px-4 mt-2 pointer-events-auto"
           >
-            {/* User status in mobile */}
-            {currentUser && (
-              <div className="pb-3 border-b border-white/10 space-y-2.5">
-                <div className="flex items-center justify-between text-xs text-zinc-300">
-                  <div className="flex items-center gap-2">
-                    {currentUser.avatar ? (
-                      <img
-                        src={currentUser.avatar}
-                        alt={currentUser.name}
-                        className="w-6 h-6 rounded-full object-cover border border-[#c6f554]/60"
-                      />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-[#c6f554]/20 border border-[#c6f554]/60 text-[#c6f554] font-bold text-[10px] flex items-center justify-center">
-                        {currentUser.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <span className="font-semibold text-white truncate max-w-[140px]">{currentUser.name}</span>
+            <div
+              id="mobile-menu"
+              className="md:hidden p-4 rounded-2xl bg-[#0d140e]/95 backdrop-blur-2xl border border-white/10 shadow-2xl space-y-3"
+            >
+              {/* User status in mobile */}
+              {currentUser && (
+                <div className="pb-3 border-b border-white/10 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs text-zinc-300">
+                    <div className="flex items-center gap-2">
+                      {currentUser.avatar ? (
+                        <img
+                          src={currentUser.avatar}
+                          alt={currentUser.name}
+                          className="w-6 h-6 rounded-full object-cover border border-[#c6f554]/60"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-[#c6f554]/20 border border-[#c6f554]/60 text-[#c6f554] font-bold text-[10px] flex items-center justify-center">
+                          {currentUser.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="font-semibold text-white truncate max-w-[140px]">{currentUser.name}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSignOut?.();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="text-rose-400 hover:underline text-xs"
+                    >
+                      Logout
+                    </button>
                   </div>
                   <button
                     type="button"
                     onClick={() => {
-                      onSignOut?.();
                       setMobileMenuOpen(false);
+                      onOpenProfile?.();
                     }}
-                    className="text-rose-400 hover:underline text-xs"
+                    className="w-full py-2 px-3 rounded-lg text-xs font-semibold text-black bg-[#c6f554] hover:bg-[#d6fa66] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_12px_rgba(198,245,84,0.3)]"
                   >
-                    Logout
+                    <span>My Profile, Orders & Live Status</span>
                   </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenProfile?.();
-                  }}
-                  className="w-full py-2 px-3 rounded-lg text-xs font-semibold text-black bg-[#c6f554] hover:bg-[#d6fa66] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_12px_rgba(198,245,84,0.3)]"
-                >
-                  <span>My Profile, Orders & Live Status</span>
-                </button>
-              </div>
-            )}
+              )}
 
-            <ul className="space-y-1">
-              {navLinks.map((link) => (
-                <li key={link.id}>
+              <ul className="space-y-1">
+                {navLinks.map((link) => (
+                  <li key={link.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onNavigate(link.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        currentPage.toLowerCase() === link.id.toLowerCase()
+                          ? 'bg-white/10 text-white font-medium'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      {link.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="pt-2 border-t border-white/10 space-y-2">
+                {!currentUser && (
                   <button
                     type="button"
                     onClick={() => {
-                      onNavigate(link.id);
                       setMobileMenuOpen(false);
+                      onOpenAuth?.('signin');
                     }}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      currentPage.toLowerCase() === link.id.toLowerCase()
-                        ? 'bg-white/10 text-white font-medium'
-                        : 'text-zinc-400 hover:text-white'
-                    }`}
+                    className="w-full py-2 rounded-full text-xs font-semibold text-white bg-white/10 hover:bg-white/15 transition-all text-center cursor-pointer"
                   >
-                    {link.label}
+                    Log In
                   </button>
-                </li>
-              ))}
-            </ul>
+                )}
 
-            <div className="pt-2 border-t border-white/10 space-y-2">
-              {!currentUser && (
                 <button
                   type="button"
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    onOpenAuth?.('signin');
+                    onOpenOrder?.('2D Website');
                   }}
-                  className="w-full py-2 rounded-full text-xs font-semibold text-white bg-white/10 hover:bg-white/15 transition-all text-center cursor-pointer"
+                  className="w-full py-2.5 rounded-full text-sm font-semibold text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] shadow-lg flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  Log In
+                  <span>Get Started</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenOrder?.('2D Website');
-                }}
-                className="w-full py-2.5 rounded-full text-sm font-semibold text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] shadow-lg flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <span>Get Started</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

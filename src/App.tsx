@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, useScroll, useSpring } from 'motion/react';
 import Navbar from './components/Navbar.tsx';
 import Hero from './components/Hero.tsx';
 import FeatureCards from './components/FeatureCards.tsx';
@@ -147,9 +148,23 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Motion-Powered Spring-Smoothed Scroll Progress
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 400,
+    damping: 35,
+    restDelta: 0.001,
+  });
+
   return (
     <div className="min-h-screen bg-[#070a07] text-white selection:bg-[#c6f554]/30 selection:text-[#c6f554] relative overflow-x-clip">
       
+      {/* Motion-Powered Top Laser Scroll Progress Bar */}
+      <motion.div
+        style={{ scaleX, transformOrigin: '0%' }}
+        className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#c6f554] via-[#f7cc46] to-[#c6f554] z-[100] pointer-events-none shadow-[0_0_12px_rgba(198,245,84,0.7)]"
+      />
+
       {/* 1. Persistent 240-Frame Canvas Scroll Animation in Background */}
       <BackgroundScrollCanvas />
 

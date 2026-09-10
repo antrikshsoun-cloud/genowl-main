@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Globe, Video, Brain, PenTool, CheckCircle2, ArrowRight, Sparkles, Box, Layers, X, Check } from 'lucide-react';
 import ServicesFAQ from './ServicesFAQ.tsx';
 import TrustMetrics from './TrustMetrics.tsx';
@@ -137,9 +138,17 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-16">
         
         {/* CARD 01: WEBSITE SERVICE WITH 2D ($500) & 3D ($2,500) OPTIONS */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          whileHover={{
+            y: -6,
+            transition: { type: 'spring', stiffness: 350, damping: 25 },
+          }}
           id="service-card-web-design"
-          className="group relative rounded-3xl bg-[#0d140e]/95 border border-[#c6f554]/30 hover:border-[#c6f554]/60 backdrop-blur-xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(198,245,84,0.2)] overflow-hidden"
+          className="group relative rounded-3xl bg-[#0d140e]/95 border border-[#c6f554]/30 hover:border-[#c6f554]/60 backdrop-blur-xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl transition-colors duration-300 hover:shadow-[0_20px_50px_rgba(198,245,84,0.18)] overflow-hidden"
         >
           {/* Ambient lighting */}
           <div className="absolute top-0 right-0 w-56 h-56 bg-[#c6f554]/[0.07] rounded-full blur-3xl pointer-events-none" />
@@ -189,28 +198,42 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                 <button
                   type="button"
                   onClick={() => setWebTier('2d')}
-                  className={`py-2.5 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
-                    webTier === '2d'
-                      ? 'bg-[#c6f554] text-black shadow-[0_0_15px_rgba(198,245,84,0.4)]'
-                      : 'text-zinc-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08]'
+                  className={`relative py-2.5 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-colors cursor-pointer ${
+                    webTier === '2d' ? 'text-black' : 'text-zinc-400 hover:text-white'
                   }`}
                 >
-                  <Layers className="w-3.5 h-3.5 shrink-0" />
-                  <span>2D Website ($500)</span>
+                  {webTier === '2d' && (
+                    <motion.div
+                      layoutId="webtier-active-pill"
+                      transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                      className="absolute inset-0 rounded-xl bg-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.4)]"
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
+                    <Layers className="w-3.5 h-3.5 shrink-0" />
+                    <span>2D Website ($500)</span>
+                  </span>
                 </button>
 
                 {/* 3D Option Button ($2,500) */}
                 <button
                   type="button"
                   onClick={() => setWebTier('3d')}
-                  className={`py-2.5 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
-                    webTier === '3d'
-                      ? 'bg-[#c6f554] text-black shadow-[0_0_15px_rgba(198,245,84,0.4)]'
-                      : 'text-zinc-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08]'
+                  className={`relative py-2.5 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-colors cursor-pointer ${
+                    webTier === '3d' ? 'text-black' : 'text-zinc-400 hover:text-white'
                   }`}
                 >
-                  <Box className="w-3.5 h-3.5 shrink-0" />
-                  <span>3D Website ($2,500)</span>
+                  {webTier === '3d' && (
+                    <motion.div
+                      layoutId="webtier-active-pill"
+                      transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                      className="absolute inset-0 rounded-xl bg-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.4)]"
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
+                    <Box className="w-3.5 h-3.5 shrink-0" />
+                    <span>3D Website ($2,500)</span>
+                  </span>
                 </button>
               </div>
             </div>
@@ -261,16 +284,28 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
               View Side-by-Side 2D vs 3D Specs
             </button>
           </div>
-        </div>
+        </motion.div>
 
         {/* CARDS 02, 03, 04: STANDARD $99 SERVICES */}
-        {standardServices.map((service) => {
+        {standardServices.map((service, idx) => {
           const Icon = service.icon;
           return (
-            <div
+            <motion.div
               key={service.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{
+                duration: 0.6,
+                delay: (idx + 1) * 0.12,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              whileHover={{
+                y: -6,
+                transition: { type: 'spring', stiffness: 350, damping: 25 },
+              }}
               id={`service-card-${service.id}`}
-              className="group relative rounded-3xl bg-[#0d140e]/90 border border-white/[0.08] hover:border-[#c6f554]/40 backdrop-blur-xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(198,245,84,0.15)] overflow-hidden"
+              className="group relative rounded-3xl bg-[#0d140e]/90 border border-white/[0.08] hover:border-[#c6f554]/40 backdrop-blur-xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl transition-colors duration-300 hover:shadow-[0_20px_50px_rgba(198,245,84,0.15)] overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-48 h-48 bg-[#c6f554]/[0.04] group-hover:bg-[#c6f554]/[0.08] rounded-full blur-2xl pointer-events-none transition-colors" />
 
@@ -312,8 +347,8 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                     What's included:
                   </h3>
                   <ul className="space-y-2.5">
-                    {service.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
+                    {service.features.map((feature, fIdx) => (
+                      <li key={fIdx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
                         <CheckCircle2 className="w-4 h-4 text-[#c6f554] shrink-0 mt-0.5" />
                         <span>{feature}</span>
                       </li>
@@ -332,7 +367,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                   <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
                 </button>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
@@ -364,117 +399,127 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
       <ServicesFAQ />
 
       {/* 2D vs 3D WEBSITE SELECTION MODAL */}
-      {webOptionsModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
-          onClick={() => setWebOptionsModalOpen(false)}
-        >
-          <div
-            className="relative w-full max-w-2xl rounded-3xl bg-[#0e1610] border border-white/15 p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {webOptionsModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+            onClick={() => setWebOptionsModalOpen(false)}
           >
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <span className="text-[11px] font-mono text-[#c6f554] font-semibold">CHOOSE ARCHITECTURE</span>
-                <h2 className="text-2xl font-bold text-white">Select Your Website Tier</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setWebOptionsModalOpen(false)}
-                className="p-1.5 rounded-full text-zinc-400 hover:text-white bg-white/5"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Option 1: 2D Website ($500) */}
-              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-[#c6f554]/50 transition-all flex flex-col justify-between">
+            <motion.div
+              initial={{ scale: 0.94, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.94, opacity: 0, y: 15 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+              className="relative w-full max-w-2xl rounded-3xl bg-[#0e1610] border border-white/15 p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-white">2D Architecture</span>
-                    <span className="text-xl font-black text-[#c6f554] font-mono">$500</span>
-                  </div>
-                  <h3 className="text-lg font-bold text-white mb-1">2D Website</h3>
-                  <p className="text-xs text-zinc-400 leading-relaxed mb-4">
-                    High-converting responsive landing pages &amp; corporate websites with sleek 2D graphics and lightning-fast speeds.
-                  </p>
-                  <ul className="space-y-2 text-xs text-zinc-300 mb-6">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
-                      <span>Custom Responsive 2D Layout</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
-                      <span>Mobile &amp; Tablet Cross-Browser</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
-                      <span>High-Conversion Form &amp; CTAs</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
-                      <span>48 - 72h Rapid Turnaround</span>
-                    </li>
-                  </ul>
+                  <span className="text-[11px] font-mono text-[#c6f554] font-semibold">CHOOSE ARCHITECTURE</span>
+                  <h2 className="text-2xl font-bold text-white">Select Your Website Tier</h2>
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setWebOptionsModalOpen(false);
-                    onSelectService('2D Website');
-                  }}
-                  className="w-full py-2.5 rounded-xl font-bold text-xs text-black bg-[#c6f554] hover:brightness-105 transition-all cursor-pointer"
+                  onClick={() => setWebOptionsModalOpen(false)}
+                  className="p-1.5 rounded-full text-zinc-400 hover:text-white bg-white/5"
                 >
-                  Book 2D Website ($500)
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Option 2: 3D Website ($2,500) */}
-              <div className="p-5 rounded-2xl bg-gradient-to-b from-[#142317] to-[#0a120b] border border-[#c6f554]/50 shadow-[0_0_25px_rgba(198,245,84,0.15)] flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#c6f554] text-black">Top 1% Immersive</span>
-                    <span className="text-xl font-black text-[#c6f554] font-mono">$2,500</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Option 1: 2D Website ($500) */}
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-[#c6f554]/50 transition-all flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-white">2D Architecture</span>
+                      <span className="text-xl font-black text-[#c6f554] font-mono">$500</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-1">2D Website</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed mb-4">
+                      High-converting responsive landing pages &amp; corporate websites with sleek 2D graphics and lightning-fast speeds.
+                    </p>
+                    <ul className="space-y-2 text-xs text-zinc-300 mb-6">
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
+                        <span>Custom Responsive 2D Layout</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
+                        <span>Mobile &amp; Tablet Cross-Browser</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
+                        <span>High-Conversion Form &amp; CTAs</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
+                        <span>48 - 72h Rapid Turnaround</span>
+                      </li>
+                    </ul>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-1">3D Website</h3>
-                  <p className="text-xs text-zinc-300 leading-relaxed mb-4">
-                    Cinema-grade interactive WebGL &amp; Three.js 3D environments with dynamic models, shaders, and camera sequences.
-                  </p>
-                  <ul className="space-y-2 text-xs text-zinc-300 mb-6">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
-                      <span>Interactive Three.js / WebGL Scene</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
-                      <span>Custom 3D Model &amp; Shader Lighting</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
-                      <span>Scroll-Driven Camera Movements</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
-                      <span>Full 3D Assets &amp; GLTF Source Files</span>
-                    </li>
-                  </ul>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWebOptionsModalOpen(false);
+                      onSelectService('2D Website');
+                    }}
+                    className="w-full py-2.5 rounded-xl font-bold text-xs text-black bg-[#c6f554] hover:brightness-105 transition-all cursor-pointer"
+                  >
+                    Book 2D Website ($500)
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setWebOptionsModalOpen(false);
-                    onSelectService('3D Website');
-                  }}
-                  className="w-full py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.4)] transition-all cursor-pointer"
-                >
-                  Book 3D Website ($2,500)
-                </button>
+
+                {/* Option 2: 3D Website ($2,500) */}
+                <div className="p-5 rounded-2xl bg-gradient-to-b from-[#142317] to-[#0a120b] border border-[#c6f554]/50 shadow-[0_0_25px_rgba(198,245,84,0.15)] flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#c6f554] text-black">Top 1% Immersive</span>
+                      <span className="text-xl font-black text-[#c6f554] font-mono">$2,500</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-1">3D Website</h3>
+                    <p className="text-xs text-zinc-300 leading-relaxed mb-4">
+                      Cinema-grade interactive WebGL &amp; Three.js 3D environments with dynamic models, shaders, and camera sequences.
+                    </p>
+                    <ul className="space-y-2 text-xs text-zinc-300 mb-6">
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
+                        <span>Interactive Three.js / WebGL Scene</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
+                        <span>Custom 3D Model &amp; Shader Lighting</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
+                        <span>Scroll-Driven Camera Movements</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />
+                        <span>Full 3D Assets &amp; GLTF Source Files</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWebOptionsModalOpen(false);
+                      onSelectService('3D Website');
+                    }}
+                    className="w-full py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.4)] transition-all cursor-pointer"
+                  >
+                    Book 3D Website ($2,500)
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

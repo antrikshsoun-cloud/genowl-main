@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { ArrowRight, Sparkles, CheckCircle2, ShieldCheck, Zap, Layers, Mail, Instagram } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 
@@ -63,13 +64,19 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
         </h1>
 
         {/* The Core Mission Statement / Prompt Quote */}
-        <div className="p-5 sm:p-8 rounded-3xl bg-[#0e1610]/90 border border-[#c6f554]/20 shadow-[0_0_30px_rgba(198,245,84,0.08)] text-left relative overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="p-5 sm:p-8 rounded-3xl bg-[#0e1610]/90 border border-[#c6f554]/20 shadow-[0_0_30px_rgba(198,245,84,0.08)] text-left relative overflow-hidden"
+        >
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#c6f554]/10 rounded-full blur-2xl pointer-events-none" />
           <h2 className="text-xs uppercase tracking-widest text-[#c6f554] font-bold mb-3">Our Core Philosophy</h2>
           <p className="text-sm sm:text-base md:text-lg text-zinc-200 leading-relaxed font-normal italic">
             "In today's world, everybody knows that for almost every service possible there is an AI tool. But of course they don't have much time to use and master every tool. That is exactly why you choose Genowl: all you have to do is buy our service and tell us what to build — the rest is on us."
           </p>
-        </div>
+        </motion.div>
       </div>
 
       {/* 3 Step Process */}
@@ -80,17 +87,29 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-          {steps.map((s) => (
-            <div
+          {steps.map((s, idx) => (
+            <motion.div
               key={s.step}
-              className="p-5 sm:p-7 rounded-2xl bg-[#0c130d]/80 border border-white/[0.08] backdrop-blur-xl relative shadow-xl"
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{
+                duration: 0.55,
+                delay: idx * 0.12,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              whileHover={{
+                y: -5,
+                transition: { type: 'spring', stiffness: 350, damping: 25 },
+              }}
+              className="p-5 sm:p-7 rounded-2xl bg-[#0c130d]/80 border border-white/[0.08] hover:border-[#c6f554]/40 backdrop-blur-xl relative shadow-xl transition-colors duration-300"
             >
               <div className="w-10 h-10 rounded-xl bg-[#172318] border border-[#c6f554]/30 flex items-center justify-center text-[#c6f554] font-mono font-bold text-sm mb-4 shadow-[0_0_12px_rgba(198,245,84,0.2)]">
                 {s.step}
               </div>
               <h3 className="text-base font-bold text-white mb-2">{s.title}</h3>
               <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">{s.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -104,9 +123,21 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
           {pillars.map((p, i) => (
-            <div
+            <motion.div
               key={i}
-              className="p-5 sm:p-6 rounded-2xl bg-[#0d150e]/90 border border-white/10 hover:border-[#c6f554]/30 transition-all flex flex-col justify-between"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{
+                duration: 0.5,
+                delay: i * 0.1,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              whileHover={{
+                y: -4,
+                transition: { type: 'spring', stiffness: 350, damping: 25 },
+              }}
+              className="p-5 sm:p-6 rounded-2xl bg-[#0d150e]/90 border border-white/10 hover:border-[#c6f554]/40 transition-colors flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -117,7 +148,7 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
                 </div>
                 <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">{p.highlight}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -132,20 +163,24 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto shrink-0">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
             type="button"
             onClick={onNavigateServices}
             className="w-full sm:w-auto px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-md transition-all cursor-pointer text-center"
           >
             Explore Services ($99)
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
             type="button"
             onClick={onNavigateContact}
             className="w-full sm:w-auto px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm text-zinc-200 bg-white/10 hover:bg-white/15 border border-white/15 transition-all cursor-pointer text-center"
           >
             Contact Page
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, ShieldCheck, Sparkles, AlertCircle, FileText, HelpCircle, Lock, Phone, ExternalLink, RefreshCw } from 'lucide-react';
 import { sendProblemOrInquiryEmail, OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM, OFFICIAL_X, OFFICIAL_X_URL } from '../services/emailService.ts';
 import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
@@ -418,21 +419,28 @@ export default function ContactPage({
       <div className="rounded-3xl bg-[#0c130d]/95 border border-white/10 p-6 sm:p-10 shadow-2xl relative overflow-hidden">
         <div className="max-w-2xl mx-auto">
           {/* 3 Report Type Selector Tabs (Responsive on Mobile) */}
-          <div className="flex p-1 rounded-2xl bg-white/[0.04] border border-white/10 mb-8 max-w-lg mx-auto w-full">
+          <div className="flex p-1 rounded-2xl bg-white/[0.04] border border-white/10 mb-8 max-w-lg mx-auto w-full relative">
             <button
               type="button"
               onClick={() => {
                 setReportType('project');
                 setCategory('2D Custom Website ($500)');
               }}
-              className={`flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 min-w-0 truncate ${
-                reportType === 'project'
-                  ? 'bg-[#c6f554] text-black shadow-md'
-                  : 'text-zinc-400 hover:text-white'
+              className={`relative flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 min-w-0 truncate ${
+                reportType === 'project' ? 'text-black' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">Project Scope</span>
+              {reportType === 'project' && (
+                <motion.div
+                  layoutId="contact-report-tab-pill"
+                  transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                  className="absolute inset-0 rounded-xl bg-[#c6f554] shadow-md"
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-1 sm:gap-1.5 truncate">
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Project Scope</span>
+              </span>
             </button>
 
             <button
@@ -441,14 +449,21 @@ export default function ContactPage({
                 setReportType('problem');
                 setCategory('Website Bug / UI Issue');
               }}
-              className={`flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 min-w-0 truncate ${
-                reportType === 'problem'
-                  ? 'bg-[#f7cc46] text-black shadow-md'
-                  : 'text-zinc-400 hover:text-white'
+              className={`relative flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 min-w-0 truncate ${
+                reportType === 'problem' ? 'text-black' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">Issue / Bug</span>
+              {reportType === 'problem' && (
+                <motion.div
+                  layoutId="contact-report-tab-pill"
+                  transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                  className="absolute inset-0 rounded-xl bg-[#f7cc46] shadow-md"
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-1 sm:gap-1.5 truncate">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Issue / Bug</span>
+              </span>
             </button>
 
             <button
@@ -457,14 +472,21 @@ export default function ContactPage({
                 setReportType('inquiry');
                 setCategory('Studio Consultation');
               }}
-              className={`flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 min-w-0 truncate ${
-                reportType === 'inquiry'
-                  ? 'bg-white text-black shadow-md'
-                  : 'text-zinc-400 hover:text-white'
+              className={`relative flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 min-w-0 truncate ${
+                reportType === 'inquiry' ? 'text-black' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <FileText className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">Inquiry</span>
+              {reportType === 'inquiry' && (
+                <motion.div
+                  layoutId="contact-report-tab-pill"
+                  transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                  className="absolute inset-0 rounded-xl bg-white shadow-md"
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-1 sm:gap-1.5 truncate">
+                <FileText className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Inquiry</span>
+              </span>
             </button>
           </div>
 
@@ -800,7 +822,10 @@ export default function ContactPage({
               </div>
 
               {/* Submit CTA */}
-              <button
+              <motion.button
+                whileHover={{ scale: 1.015 }}
+                whileTap={{ scale: 0.985 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 id="report-submit-btn"
                 type="submit"
                 disabled={isSending}
@@ -827,7 +852,7 @@ export default function ContactPage({
                     <Send className="w-4 h-4" />
                   </>
                 )}
-              </button>
+              </motion.button>
             </form>
           )}
         </div>
