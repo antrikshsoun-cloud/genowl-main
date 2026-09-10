@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Sparkles, TrendingUp } from 'lucide-react';
 import ServicesListVisual from './ServicesListVisual.tsx';
 import ChartVisual from './ChartVisual.tsx';
+import Card3D from './Card3D.tsx';
 
 export default function FeatureCards() {
   const cards = [
@@ -38,38 +39,41 @@ export default function FeatureCards() {
               transition={{
                 duration: 0.6,
                 delay: index * 0.15,
-                ease: [0.16, 1, 0.3, 1],
+                ease: [0.16, 1, 0.3, 1] as const,
               }}
-              whileHover={{
-                y: -6,
-                scale: 1.015,
-                transition: { type: 'spring', stiffness: 350, damping: 25 },
-              }}
-              className="group relative rounded-2xl bg-[#0c130d]/80 border border-white/[0.08] hover:border-[#c6f554]/40 backdrop-blur-xl p-6 sm:p-7 flex flex-col justify-between overflow-hidden shadow-2xl transition-colors duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_25px_rgba(198,245,84,0.1)] min-h-[420px]"
+              className="h-full"
             >
-              {/* Subtle top-light gradient reflection */}
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
+              <Card3D className="bg-[#0c130d]/85 border border-white/[0.08] hover:border-[#c6f554]/40 backdrop-blur-xl p-6 sm:p-7 flex flex-col justify-between shadow-2xl transition-colors duration-300 min-h-[420px]">
+                {/* Subtle top-light gradient reflection */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
 
-              {/* Card Header */}
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#162217] border border-[#c6f554]/30 flex items-center justify-center text-[#c6f554] shadow-[0_0_12px_rgba(198,245,84,0.2)]">
-                    <Icon className="w-4 h-4 fill-[#c6f554]/20" />
+                {/* Card Header with 3D Pop Depth */}
+                <div style={{ transform: 'translateZ(20px)' }}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div
+                      style={{ transform: 'translateZ(30px)' }}
+                      className="w-8 h-8 rounded-xl bg-[#162217] border border-[#c6f554]/30 flex items-center justify-center text-[#c6f554] shadow-[0_0_12px_rgba(198,245,84,0.2)]"
+                    >
+                      <Icon className="w-4 h-4 fill-[#c6f554]/20" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-semibold text-white tracking-tight capitalize">
+                      {card.title}
+                    </h3>
                   </div>
-                  <h3 className="text-base sm:text-lg font-semibold text-white tracking-tight capitalize">
-                    {card.title}
-                  </h3>
+
+                  <p className="text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed">
+                    {card.description}
+                  </p>
                 </div>
 
-                <p className="text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed">
-                  {card.description}
-                </p>
-              </div>
-
-              {/* Graphic / Content Area */}
-              <div className="mt-6 pt-2 flex items-center justify-center">
-                {card.visual}
-              </div>
+                {/* Graphic / Content Area with elevated 3D depth */}
+                <div
+                  style={{ transform: 'translateZ(25px)' }}
+                  className="mt-6 pt-2 flex items-center justify-center"
+                >
+                  {card.visual}
+                </div>
+              </Card3D>
             </motion.div>
           );
         })}
@@ -77,3 +81,4 @@ export default function FeatureCards() {
     </section>
   );
 }
+

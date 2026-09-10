@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Globe, Video, Brain, PenTool, CheckCircle2, ArrowRight, Sparkles, Box, Layers, X, Check } from 'lucide-react';
 import ServicesFAQ from './ServicesFAQ.tsx';
 import TrustMetrics from './TrustMetrics.tsx';
+import Card3D from './Card3D.tsx';
 
 interface ServicesPageProps {
   onSelectService: (serviceName: string) => void;
@@ -138,152 +139,159 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-16">
         
         {/* CARD 01: WEBSITE SERVICE WITH 2D ($500) & 3D ($2,500) OPTIONS */}
+        {/* CARD 01: WEBSITE SERVICE WITH 2D ($500) & 3D ($2,500) OPTIONS */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          whileHover={{
-            y: -6,
-            transition: { type: 'spring', stiffness: 350, damping: 25 },
-          }}
-          id="service-card-web-design"
-          className="group relative rounded-3xl bg-[#0d140e]/95 border border-[#c6f554]/30 hover:border-[#c6f554]/60 backdrop-blur-xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl transition-colors duration-300 hover:shadow-[0_20px_50px_rgba(198,245,84,0.18)] overflow-hidden"
+          className="h-full"
         >
-          {/* Ambient lighting */}
-          <div className="absolute top-0 right-0 w-56 h-56 bg-[#c6f554]/[0.07] rounded-full blur-3xl pointer-events-none" />
+          <Card3D
+            hasLaserBeam={webTier === '3d'}
+            className="h-full bg-[#0d140e]/95 border border-[#c6f554]/30 hover:border-[#c6f554]/60 backdrop-blur-xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl transition-colors duration-300 hover:shadow-[0_20px_50px_rgba(198,245,84,0.18)]"
+          >
+            {/* Ambient lighting */}
+            <div className="absolute top-0 right-0 w-56 h-56 bg-[#c6f554]/[0.07] rounded-full blur-3xl pointer-events-none" />
 
-          <div>
-            {/* Header Row */}
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4">
-              <div className="flex items-center gap-3 sm:gap-3.5">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#172318] border border-[#c6f554]/40 flex items-center justify-center text-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.3)] shrink-0">
-                  <Globe className="w-5 h-5 sm:w-6 sm:h-6" />
+            <div>
+              {/* Header Row with 3D Depth */}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4">
+                <div className="flex items-center gap-3 sm:gap-3.5">
+                  <div
+                    style={{ transform: 'translateZ(30px)' }}
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#172318] border border-[#c6f554]/40 flex items-center justify-center text-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.3)] shrink-0 transition-transform"
+                  >
+                    <Globe className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] sm:text-[11px] font-mono text-[#c6f554] font-semibold tracking-wider">
+                      SERVICE #01
+                    </span>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                      Website Service
+                    </h2>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[10px] sm:text-[11px] font-mono text-[#c6f554] font-semibold tracking-wider">
-                    SERVICE #01
-                  </span>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                    Website Service
-                  </h2>
+
+                {/* Dynamic Price Display with Floating 3D Pop-out */}
+                <div className="flex items-center sm:block justify-between sm:text-right">
+                  <div
+                    style={{ transform: 'translateZ(40px)' }}
+                    className="inline-flex items-baseline gap-1 px-3.5 py-1 rounded-xl bg-[#19271a] border border-[#c6f554]/50 shadow-[0_0_15px_rgba(198,245,84,0.25)] transition-transform"
+                  >
+                    <span className="text-2xl sm:text-3xl font-black text-[#c6f554] tracking-tight font-mono transition-all">
+                      {currentWebConfig.price}
+                    </span>
+                  </div>
+                  <span className="block text-[11px] text-zinc-400 sm:mt-1">flat project fee</span>
                 </div>
               </div>
 
-              {/* Dynamic Price Display based on chosen tier */}
-              <div className="flex items-center sm:block justify-between sm:text-right">
-                <div className="inline-flex items-baseline gap-1 px-3.5 py-1 rounded-xl bg-[#19271a] border border-[#c6f554]/50 shadow-[0_0_15px_rgba(198,245,84,0.25)]">
-                  <span className="text-2xl sm:text-3xl font-black text-[#c6f554] tracking-tight font-mono transition-all">
-                    {currentWebConfig.price}
+              {/* INTERACTIVE 2D vs 3D SELECTION TABS */}
+              <div className="mb-5 p-1 rounded-2xl bg-black/60 border border-white/10 space-y-1">
+                <div className="px-3 py-1 text-[11px] text-zinc-400 font-medium flex items-center justify-between">
+                  <span>Select Website Tier:</span>
+                  <button
+                    type="button"
+                    onClick={() => setWebOptionsModalOpen(true)}
+                    className="text-[10px] text-[#c6f554] hover:underline cursor-pointer"
+                  >
+                    Compare Details
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {/* 2D Option Button ($500) */}
+                  <button
+                    type="button"
+                    onClick={() => setWebTier('2d')}
+                    className={`relative py-2.5 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-colors cursor-pointer ${
+                      webTier === '2d' ? 'text-black' : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    {webTier === '2d' && (
+                      <motion.div
+                        layoutId="webtier-active-pill"
+                        transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                        className="absolute inset-0 rounded-xl bg-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.4)]"
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
+                      <Layers className="w-3.5 h-3.5 shrink-0" />
+                      <span>2D Website ($500)</span>
+                    </span>
+                  </button>
+
+                  {/* 3D Option Button ($2,500) */}
+                  <button
+                    type="button"
+                    onClick={() => setWebTier('3d')}
+                    className={`relative py-2.5 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-colors cursor-pointer ${
+                      webTier === '3d' ? 'text-black' : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    {webTier === '3d' && (
+                      <motion.div
+                        layoutId="webtier-active-pill"
+                        transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                        className="absolute inset-0 rounded-xl bg-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.4)]"
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
+                      <Box className="w-3.5 h-3.5 shrink-0" />
+                      <span>3D Website ($2,500)</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-sm text-zinc-200 font-medium mb-2">
+                {currentWebConfig.tagline}
+              </p>
+              <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+                {currentWebConfig.description}
+              </p>
+
+              {/* Features List */}
+              <div className="border-t border-white/[0.08] pt-4 mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
+                    Included in {currentWebConfig.title}:
+                  </h3>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#c6f554]/10 text-[#c6f554] border border-[#c6f554]/30 font-medium">
+                    {currentWebConfig.badge}
                   </span>
                 </div>
-                <span className="block text-[11px] text-zinc-400 sm:mt-1">flat project fee</span>
+                <ul className="space-y-2">
+                  {currentWebConfig.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
+                      <CheckCircle2 className="w-4 h-4 text-[#c6f554] shrink-0 mt-0.5" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 
-            {/* INTERACTIVE 2D vs 3D SELECTION TABS */}
-            <div className="mb-5 p-1 rounded-2xl bg-black/60 border border-white/10 space-y-1">
-              <div className="px-3 py-1 text-[11px] text-zinc-400 font-medium flex items-center justify-between">
-                <span>Select Website Tier:</span>
-                <button
-                  type="button"
-                  onClick={() => setWebOptionsModalOpen(true)}
-                  className="text-[10px] text-[#c6f554] hover:underline cursor-pointer"
-                >
-                  Compare Details
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-1.5">
-                {/* 2D Option Button ($500) */}
-                <button
-                  type="button"
-                  onClick={() => setWebTier('2d')}
-                  className={`relative py-2.5 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-colors cursor-pointer ${
-                    webTier === '2d' ? 'text-black' : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  {webTier === '2d' && (
-                    <motion.div
-                      layoutId="webtier-active-pill"
-                      transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-                      className="absolute inset-0 rounded-xl bg-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.4)]"
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
-                    <Layers className="w-3.5 h-3.5 shrink-0" />
-                    <span>2D Website ($500)</span>
-                  </span>
-                </button>
-
-                {/* 3D Option Button ($2,500) */}
-                <button
-                  type="button"
-                  onClick={() => setWebTier('3d')}
-                  className={`relative py-2.5 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-colors cursor-pointer ${
-                    webTier === '3d' ? 'text-black' : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  {webTier === '3d' && (
-                    <motion.div
-                      layoutId="webtier-active-pill"
-                      transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-                      className="absolute inset-0 rounded-xl bg-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.4)]"
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
-                    <Box className="w-3.5 h-3.5 shrink-0" />
-                    <span>3D Website ($2,500)</span>
-                  </span>
-                </button>
-              </div>
+            {/* Action Row with 3D Depth */}
+            <div style={{ transform: 'translateZ(25px)' }} className="pt-2 space-y-2 transition-transform">
+              <button
+                type="button"
+                onClick={() => onSelectService(currentWebConfig.title)}
+                className="w-full py-3.5 px-4 rounded-xl font-bold text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.35)] hover:shadow-[0_0_30px_rgba(198,245,84,0.6)] transition-all flex items-center justify-center gap-2 cursor-pointer group/btn"
+              >
+                <span>Book Project &bull; {currentWebConfig.title} ({currentWebConfig.price})</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setWebOptionsModalOpen(true)}
+                className="w-full py-2 text-center text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              >
+                View Side-by-Side 2D vs 3D Specs
+              </button>
             </div>
-
-            <p className="text-sm text-zinc-200 font-medium mb-2">
-              {currentWebConfig.tagline}
-            </p>
-            <p className="text-xs text-zinc-400 leading-relaxed mb-6">
-              {currentWebConfig.description}
-            </p>
-
-            {/* Features List */}
-            <div className="border-t border-white/[0.08] pt-4 mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                  Included in {currentWebConfig.title}:
-                </h3>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#c6f554]/10 text-[#c6f554] border border-[#c6f554]/30 font-medium">
-                  {currentWebConfig.badge}
-                </span>
-              </div>
-              <ul className="space-y-2">
-                {currentWebConfig.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
-                    <CheckCircle2 className="w-4 h-4 text-[#c6f554] shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Action Row */}
-          <div className="pt-2 space-y-2">
-            <button
-              type="button"
-              onClick={() => onSelectService(currentWebConfig.title)}
-              className="w-full py-3.5 px-4 rounded-xl font-bold text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.35)] hover:shadow-[0_0_30px_rgba(198,245,84,0.6)] transition-all flex items-center justify-center gap-2 cursor-pointer group/btn"
-            >
-              <span>Book Project &bull; {currentWebConfig.title} ({currentWebConfig.price})</span>
-              <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setWebOptionsModalOpen(true)}
-              className="w-full py-2 text-center text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
-            >
-              View Side-by-Side 2D vs 3D Specs
-            </button>
-          </div>
+          </Card3D>
         </motion.div>
 
         {/* CARDS 02, 03, 04: STANDARD $99 SERVICES */}
@@ -300,73 +308,78 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                 delay: (idx + 1) * 0.12,
                 ease: [0.16, 1, 0.3, 1],
               }}
-              whileHover={{
-                y: -6,
-                transition: { type: 'spring', stiffness: 350, damping: 25 },
-              }}
-              id={`service-card-${service.id}`}
-              className="group relative rounded-3xl bg-[#0d140e]/90 border border-white/[0.08] hover:border-[#c6f554]/40 backdrop-blur-xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl transition-colors duration-300 hover:shadow-[0_20px_50px_rgba(198,245,84,0.15)] overflow-hidden"
+              className="h-full"
             >
-              <div className="absolute top-0 right-0 w-48 h-48 bg-[#c6f554]/[0.04] group-hover:bg-[#c6f554]/[0.08] rounded-full blur-2xl pointer-events-none transition-colors" />
+              <Card3D
+                className="h-full bg-[#0d140e]/90 border border-white/[0.08] hover:border-[#c6f554]/40 backdrop-blur-xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl transition-colors duration-300 hover:shadow-[0_20px_50px_rgba(198,245,84,0.15)]"
+              >
+                <div className="absolute top-0 right-0 w-48 h-48 bg-[#c6f554]/[0.04] group-hover:bg-[#c6f554]/[0.08] rounded-full blur-2xl pointer-events-none transition-colors" />
 
-              <div>
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-                  <div className="flex items-center gap-3 sm:gap-3.5">
-                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#172318] border border-[#c6f554]/30 flex items-center justify-center text-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.25)] group-hover:scale-105 transition-transform shrink-0">
-                      <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                <div>
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div className="flex items-center gap-3 sm:gap-3.5">
+                      <div
+                        style={{ transform: 'translateZ(30px)' }}
+                        className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#172318] border border-[#c6f554]/30 flex items-center justify-center text-[#c6f554] shadow-[0_0_15px_rgba(198,245,84,0.25)] group-hover:scale-105 transition-transform shrink-0"
+                      >
+                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] sm:text-[11px] font-mono text-[#c6f554] font-semibold tracking-wider">
+                          SERVICE #{service.number}
+                        </span>
+                        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                          {service.title}
+                        </h2>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] sm:text-[11px] font-mono text-[#c6f554] font-semibold tracking-wider">
-                        SERVICE #{service.number}
-                      </span>
-                      <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                        {service.title}
-                      </h2>
+
+                    <div className="flex items-center sm:block justify-between sm:text-right">
+                      <div
+                        style={{ transform: 'translateZ(40px)' }}
+                        className="inline-flex items-baseline gap-1 px-3.5 py-1 rounded-xl bg-[#19271a] border border-[#c6f554]/40 shadow-[0_0_12px_rgba(198,245,84,0.2)] transition-transform"
+                      >
+                        <span className="text-2xl sm:text-3xl font-black text-[#c6f554] tracking-tight font-mono">
+                          {service.price}
+                        </span>
+                      </div>
+                      <span className="block text-[11px] text-zinc-400 sm:mt-1">flat rate</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center sm:block justify-between sm:text-right">
-                    <div className="inline-flex items-baseline gap-1 px-3.5 py-1 rounded-xl bg-[#19271a] border border-[#c6f554]/40 shadow-[0_0_12px_rgba(198,245,84,0.2)]">
-                      <span className="text-2xl sm:text-3xl font-black text-[#c6f554] tracking-tight font-mono">
-                        {service.price}
-                      </span>
-                    </div>
-                    <span className="block text-[11px] text-zinc-400 sm:mt-1">flat rate</span>
+                  <p className="text-sm text-zinc-300 font-medium mb-3">
+                    {service.tagline}
+                  </p>
+                  <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+                    {service.description}
+                  </p>
+
+                  <div className="border-t border-white/[0.08] pt-5 mb-8">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300 mb-3.5">
+                      What's included:
+                    </h3>
+                    <ul className="space-y-2.5">
+                      {service.features.map((feature, fIdx) => (
+                        <li key={fIdx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
+                          <CheckCircle2 className="w-4 h-4 text-[#c6f554] shrink-0 mt-0.5" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
 
-                <p className="text-sm text-zinc-300 font-medium mb-3">
-                  {service.tagline}
-                </p>
-                <p className="text-xs text-zinc-400 leading-relaxed mb-6">
-                  {service.description}
-                </p>
-
-                <div className="border-t border-white/[0.08] pt-5 mb-8">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300 mb-3.5">
-                    What's included:
-                  </h3>
-                  <ul className="space-y-2.5">
-                    {service.features.map((feature, fIdx) => (
-                      <li key={fIdx} className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
-                        <CheckCircle2 className="w-4 h-4 text-[#c6f554] shrink-0 mt-0.5" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                <div style={{ transform: 'translateZ(25px)' }} className="pt-2 transition-transform">
+                  <button
+                    type="button"
+                    onClick={() => onSelectService(service.title)}
+                    className="w-full py-3 px-4 rounded-xl font-semibold text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.3)] hover:shadow-[0_0_30px_rgba(198,245,84,0.5)] transition-all flex items-center justify-center gap-2 cursor-pointer group/btn"
+                  >
+                    <span>Book Project &bull; {service.title} ({service.price})</span>
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                  </button>
                 </div>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => onSelectService(service.title)}
-                  className="w-full py-3 px-4 rounded-xl font-semibold text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.3)] hover:shadow-[0_0_30px_rgba(198,245,84,0.5)] transition-all flex items-center justify-center gap-2 cursor-pointer group/btn"
-                >
-                  <span>Book Project &bull; {service.title} ({service.price})</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                </button>
-              </div>
+              </Card3D>
             </motion.div>
           );
         })}

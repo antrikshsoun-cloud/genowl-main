@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, CheckCircle2, Clock } from 'lucide-react';
+import Hero3DObject from './Hero3DObject.tsx';
 
 interface HeroProps {
   onStartTrial?: () => void;
@@ -77,8 +78,13 @@ export default function Hero({ onStartTrial }: HeroProps) {
         High-converting 2D websites, cinema-grade 3D WebGL experiences, and custom AI production — engineered for visionary brands.
       </motion.p>
 
+      {/* Interactive 3D WebGL Cyber-Emblem */}
+      <motion.div variants={itemVariants} className="w-full flex justify-center">
+        <Hero3DObject />
+      </motion.div>
+
       {/* CTA Button */}
-      <motion.div variants={itemVariants} className="mt-8 flex flex-col items-center">
+      <motion.div variants={itemVariants} className="mt-4 sm:mt-6 flex flex-col items-center">
         <motion.button
           whileHover={{ scale: 1.04, y: -2 }}
           whileTap={{ scale: 0.96 }}

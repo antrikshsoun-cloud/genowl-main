@@ -1,7 +1,44 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowRight, Sparkles, CheckCircle2, ShieldCheck, Zap, Layers, Mail, Instagram } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
+import Card3D from './Card3D.tsx';
+
+function KineticWord({ word, progress, range }: { word: string; progress: any; range: [number, number] }) {
+  const opacity = useTransform(progress, range, [0.25, 1]);
+  const color = useTransform(progress, range, ['rgba(161, 161, 170, 0.35)', 'rgba(255, 255, 255, 1)']);
+  return (
+    <motion.span style={{ opacity, color }} className="inline-block mr-[0.28em] transition-colors duration-150">
+      {word}
+    </motion.span>
+  );
+}
+
+function KineticQuote({ text }: { text: string }) {
+  const containerRef = useRef<HTMLParagraphElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start 85%', 'end 50%'],
+  });
+  const words = text.split(' ');
+
+  return (
+    <p ref={containerRef} className="text-sm sm:text-base md:text-lg leading-relaxed font-normal italic">
+      {words.map((word, i) => {
+        const start = i / words.length;
+        const end = Math.min(1, start + 1.8 / words.length);
+        return (
+          <KineticWord
+            key={i}
+            word={word}
+            progress={scrollYProgress}
+            range={[start, end]}
+          />
+        );
+      })}
+    </p>
+  );
+}
 
 interface AboutPageProps {
   onNavigateServices: () => void;
@@ -63,19 +100,25 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
           Intelligence that <span className="text-[#c6f554] font-serif-italic">delivers</span> without the headache.
         </h1>
 
-        {/* The Core Mission Statement / Prompt Quote */}
+        {/* The Core Mission Statement / Prompt Quote with 3D Tilt and Kinetic Scroll Scrub */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="p-5 sm:p-8 rounded-3xl bg-[#0e1610]/90 border border-[#c6f554]/20 shadow-[0_0_30px_rgba(198,245,84,0.08)] text-left relative overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#c6f554]/10 rounded-full blur-2xl pointer-events-none" />
-          <h2 className="text-xs uppercase tracking-widest text-[#c6f554] font-bold mb-3">Our Core Philosophy</h2>
-          <p className="text-sm sm:text-base md:text-lg text-zinc-200 leading-relaxed font-normal italic">
-            "In today's world, everybody knows that for almost every service possible there is an AI tool. But of course they don't have much time to use and master every tool. That is exactly why you choose Genowl: all you have to do is buy our service and tell us what to build — the rest is on us."
-          </p>
+          <Card3D className="p-5 sm:p-8 rounded-3xl bg-[#0e1610]/95 border border-[#c6f554]/25 shadow-[0_0_30px_rgba(198,245,84,0.08)] text-left relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#c6f554]/10 rounded-full blur-2xl pointer-events-none" />
+            <h2
+              style={{ transform: 'translateZ(20px)' }}
+              className="text-xs uppercase tracking-widest text-[#c6f554] font-bold mb-3"
+            >
+              Our Core Philosophy
+            </h2>
+            <div style={{ transform: 'translateZ(25px)' }}>
+              <KineticQuote text="&quot;In today's world, everybody knows that for almost every service possible there is an AI tool. But of course they don't have much time to use and master every tool. That is exactly why you choose Genowl: all you have to do is buy our service and tell us what to build — the rest is on us.&quot;" />
+            </div>
+          </Card3D>
         </motion.div>
       </div>
 
