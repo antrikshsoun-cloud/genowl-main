@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 
 interface Card3DProps {
   children: React.ReactNode;
@@ -12,38 +12,38 @@ export default function Card3D({ children, className = '', hasLaserBeam = false 
   const [rotateY, setRotateY] = useState(0);
   const [spotlightPos, setSpotlightPos] = useState({ x: -1000, y: -1000 });
   const [isHovered, setIsHovered] = useState(false);
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isTouch = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
-      setIsTouchDevice(Boolean(isTouch));
-    }
-  }, []);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isTouchDevice) return;
+  const updateCoords = (clientX: number, clientY: number) => {
     const card = cardRef.current;
     if (!card) return;
 
     const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
 
     setSpotlightPos({ x, y });
+    setIsHovered(true);
 
-    // Calculate rotation (-8deg to +8deg)
+    // Calculate rotation (-12deg to +12deg for crisp, tangible 3D feel)
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    const rX = ((y - centerY) / centerY) * -8;
-    const rY = ((x - centerX) / centerX) * 8;
+    const rX = Math.max(-12, Math.min(12, ((y - centerY) / centerY) * -12));
+    const rY = Math.max(-12, Math.min(12, ((x - centerX) / centerX) * 12));
 
     setRotateX(rX);
     setRotateY(rY);
   };
 
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'touch') return;
+    updateCoords(e.clientX, e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    updateCoords(e.clientX, e.clientY);
+  };
+
   const handleMouseEnter = () => {
-    if (isTouchDevice) return;
     setIsHovered(true);
   };
 
@@ -64,15 +64,16 @@ export default function Card3D({ children, className = '', hasLaserBeam = false 
   return (
     <div
       ref={cardRef}
+      onPointerMove={handlePointerMove}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
       style={{
-        perspective: 1000,
+        perspective: '1200px',
       }}
-      className="relative rounded-3xl group h-full w-full flex flex-col"
+      className="relative rounded-3xl group h-full w-full flex flex-col cursor-default"
     >
       {/* Continuous Orbiting Laser Border Beam (Flagship Tier only) */}
       {hasLaserBeam && (
@@ -85,30 +86,31 @@ export default function Card3D({ children, className = '', hasLaserBeam = false 
       <div
         style={{
           transform: isHovered
-            ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.015, 1.015, 1.015)`
-            : 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
+            ? `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.018, 1.018, 1.018)`
+            : 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
           transformStyle: 'preserve-3d',
+          willChange: 'transform',
           transition: isHovered
-            ? 'transform 0.1s ease-out'
+            ? 'transform 0.08s ease-out'
             : 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
-        className={`relative z-10 w-full h-full flex flex-col flex-1 rounded-3xl overflow-hidden will-change-transform ${className}`}
+        className={`relative z-10 w-full h-full flex flex-col flex-1 rounded-3xl overflow-hidden ${className}`}
       >
         {/* Real-time Cursor-Tracking Specular Spotlight Mask */}
         <div
-          className="pointer-events-none absolute -inset-px transition-opacity duration-300 z-30"
+          className="pointer-events-none absolute -inset-px transition-opacity duration-200 z-30"
           style={{
             opacity: isHovered ? 1 : 0,
-            background: `radial-gradient(400px circle at ${spotlightPos.x}px ${spotlightPos.y}px, rgba(198, 245, 84, 0.15), transparent 80%)`,
+            background: `radial-gradient(500px circle at ${spotlightPos.x}px ${spotlightPos.y}px, rgba(198, 245, 84, 0.22), rgba(247, 204, 70, 0.08) 35%, transparent 75%)`,
           }}
         />
 
         {/* Specular Edge Glow on Border */}
         <div
-          className="pointer-events-none absolute -inset-px rounded-3xl transition-opacity duration-300 z-30"
+          className="pointer-events-none absolute -inset-px rounded-3xl transition-opacity duration-200 z-30"
           style={{
             opacity: isHovered ? 1 : 0,
-            background: `radial-gradient(280px circle at ${spotlightPos.x}px ${spotlightPos.y}px, rgba(198, 245, 84, 0.35), transparent 70%)`,
+            background: `radial-gradient(350px circle at ${spotlightPos.x}px ${spotlightPos.y}px, rgba(198, 245, 84, 0.8), rgba(247, 204, 70, 0.45) 40%, transparent 75%)`,
             mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
             WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
             maskComposite: 'exclude',
