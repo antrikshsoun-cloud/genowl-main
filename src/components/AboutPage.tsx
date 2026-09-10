@@ -18,7 +18,7 @@ function KineticQuote({ text }: { text: string }) {
   const containerRef = useRef<HTMLParagraphElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ['start 85%', 'end 50%'],
+    offset: ['start 90%', 'end 45%'],
   });
   const words = text.split(' ');
 

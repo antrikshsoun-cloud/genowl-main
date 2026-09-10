@@ -42,13 +42,13 @@ export default function Hero({ onStartTrial }: HeroProps) {
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[480px] h-[300px] bg-[#c6f554]/[0.07] rounded-full blur-3xl pointer-events-none" />
 
       {/* Announcement & YZER AI Guide Highlight Badge */}
-      <motion.div variants={itemVariants} className="inline-flex flex-wrap items-center justify-center gap-2 mb-6 sm:mb-8">
+      <motion.div variants={itemVariants} className="inline-flex flex-wrap items-center justify-center gap-2 mb-6 sm:mb-8 max-w-full px-1">
         <div
           id="hero-yzer-badge"
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#121c13]/90 border border-[#c6f554]/30 shadow-[0_0_20px_rgba(198,245,84,0.15)] backdrop-blur-md"
+          className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-[#121c13]/90 border border-[#c6f554]/30 shadow-[0_0_20px_rgba(198,245,84,0.15)] backdrop-blur-md max-w-full"
         >
-          <span className="w-2 h-2 rounded-full bg-[#c6f554] animate-pulse" />
-          <span className="text-xs text-zinc-300 font-normal">
+          <span className="w-2 h-2 rounded-full bg-[#c6f554] animate-pulse shrink-0" />
+          <span className="text-[11px] sm:text-xs text-zinc-300 font-normal leading-relaxed text-center sm:text-left">
             Meet <strong className="text-[#c6f554] font-semibold">YZER</strong> — Your Interactive AI Voice Guide • Tap the mic or ask <span className="text-white italic">"Navigate me for a tour"</span>
           </span>
         </div>

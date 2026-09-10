@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 interface Card3DProps {
   children: React.ReactNode;
@@ -12,8 +12,17 @@ export default function Card3D({ children, className = '', hasLaserBeam = false 
   const [rotateY, setRotateY] = useState(0);
   const [spotlightPos, setSpotlightPos] = useState({ x: -1000, y: -1000 });
   const [isHovered, setIsHovered] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isTouch = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+      setIsTouchDevice(Boolean(isTouch));
+    }
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isTouchDevice) return;
     const card = cardRef.current;
     if (!card) return;
 
@@ -34,10 +43,18 @@ export default function Card3D({ children, className = '', hasLaserBeam = false 
   };
 
   const handleMouseEnter = () => {
+    if (isTouchDevice) return;
     setIsHovered(true);
   };
 
   const handleMouseLeave = () => {
+    setIsHovered(false);
+    setRotateX(0);
+    setRotateY(0);
+    setSpotlightPos({ x: -1000, y: -1000 });
+  };
+
+  const handleTouchEnd = () => {
     setIsHovered(false);
     setRotateX(0);
     setRotateY(0);
@@ -50,6 +67,8 @@ export default function Card3D({ children, className = '', hasLaserBeam = false 
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
       style={{
         perspective: 1000,
       }}
