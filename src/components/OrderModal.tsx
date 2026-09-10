@@ -108,15 +108,9 @@ export default function OrderModal({
       const orders = JSON.parse(existingRaw);
       if (!Array.isArray(orders)) return null;
       return orders.find((o: any) => {
-        const orderSrv = (o.service || '').toLowerCase();
-        const targetSrv = srvTitle.toLowerCase();
-        const matchesService =
-          orderSrv === targetSrv ||
-          (targetSrv.includes('2d') && orderSrv.includes('2d')) ||
-          (targetSrv.includes('3d') && orderSrv.includes('3d')) ||
-          ((targetSrv.includes('agent') || targetSrv.includes('ai')) &&
-            (orderSrv.includes('agent') || orderSrv.includes('ai'))) ||
-          (targetSrv.includes('video') && orderSrv.includes('video'));
+        const orderNormalized = normalizeService(o.service || '');
+        const targetNormalized = normalizeService(srvTitle || '');
+        const matchesService = orderNormalized.toLowerCase() === targetNormalized.toLowerCase();
         const matchesEmail = !userEmail || (o.email && o.email.toLowerCase() === userEmail);
         return matchesService && matchesEmail;
       });
@@ -394,7 +388,7 @@ export default function OrderModal({
                         onClick={() => {
                           setSelectedService(s.title);
                           const styles = getStylesForService(s.title);
-                          setSelectedStyle(styles[0]?.name || '');
+                          setSelectedStyle(styles[0]?.title || styles[0]?.name || '');
                           setAllowRebooking(false);
                           setSubmitError(null);
                         }}
@@ -498,31 +492,33 @@ export default function OrderModal({
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {availableStyles.map((st) => {
-                          const isSelected = (selectedStyle || availableStyles[0]?.name) === st.name;
+                          const styleTitle = st.title || (st as any).name || "";
+                          const isSelected = (selectedStyle || availableStyles[0]?.title || availableStyles[0]?.name) === styleTitle;
+                          const highlights = st.visualHighlights || (st as any).vibeTags || [];
                           return (
                             <button
                               key={st.id}
                               type="button"
-                              onClick={() => setSelectedStyle(st.name)}
+                              onClick={() => setSelectedStyle(styleTitle)}
                               className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                                 isSelected
-                                  ? 'bg-[#18291b] border-[#c6f554] shadow-[0_0_12px_rgba(198,245,84,0.22)]'
-                                  : 'bg-white/[0.03] border-white/10 hover:border-white/20 text-zinc-300'
+                                  ? "bg-[#18291b] border-[#c6f554] shadow-[0_0_12px_rgba(198,245,84,0.22)]"
+                                  : "bg-white/[0.03] border-white/10 hover:border-white/20 text-zinc-300"
                               }`}
                             >
                               <div>
                                 <div className="flex items-center justify-between gap-1 mb-1">
-                                  <span className={`text-xs font-bold ${isSelected ? 'text-[#c6f554]' : 'text-white'}`}>
-                                    {st.name}
+                                  <span className={`text-xs font-bold ${isSelected ? "text-[#c6f554]" : "text-white"}`}>
+                                    {styleTitle}
                                   </span>
                                   {isSelected && <Check className="w-3.5 h-3.5 text-[#c6f554] shrink-0" />}
                                 </div>
                                 <p className="text-[10.5px] text-zinc-400 line-clamp-2 leading-snug">
-                                  {st.tagline}
+                                  {st.description || st.vibe || (st as any).tagline || ""}
                                 </p>
                               </div>
                               <div className="mt-2 flex flex-wrap gap-1">
-                                {st.vibeTags.slice(0, 2).map((tag, idx) => (
+                                {highlights.slice(0, 2).map((tag, idx) => (
                                   <span
                                     key={idx}
                                     className="px-1.5 py-0.5 rounded text-[8.5px] font-mono bg-white/5 text-zinc-300 border border-white/5"
