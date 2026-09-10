@@ -15,6 +15,7 @@ import ProfileModal from './components/ProfileModal.tsx';
 import BackgroundScrollCanvas from './components/BackgroundScrollCanvas.tsx';
 import MobileBottomNav from './components/MobileBottomNav.tsx';
 import VoiceAssistant from './components/VoiceAssistant.tsx';
+import VapiVoiceCallModal from './components/VapiVoiceCallModal.tsx';
 
 export default function App() {
   const [activeSection, setActiveSection] = useState<'home' | 'services' | 'about' | 'contact'>('home');
@@ -59,6 +60,9 @@ export default function App() {
 
   // Client Profile & Projects Hub Modal
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+
+  // Vapi AI Voice Call Modal (WebRTC Direct Free Calling)
+  const [vapiCallModalOpen, setVapiCallModalOpen] = useState(false);
 
   // Smooth scroll to requested section with floating navbar offset
   const handleNavigate = (sectionId: string) => {
@@ -189,7 +193,10 @@ export default function App() {
         
         {/* PAGE 1: Home (Hero & FeatureCards) */}
         <section id="home" className="w-full flex flex-col justify-between pt-6 sm:pt-8 pb-10 sm:pb-16 overflow-x-hidden">
-          <Hero onStartTrial={() => handleOpenOrder('2D Website')} />
+          <Hero
+            onStartTrial={() => handleOpenOrder('2D Website')}
+            onOpenBrowserCall={() => setVapiCallModalOpen(true)}
+          />
           <div className="pt-2 sm:pt-4">
             <FeatureCards />
           </div>
@@ -222,6 +229,7 @@ export default function App() {
               setAuthMode(mode);
               setAuthModalOpen(true);
             }}
+            onOpenBrowserCall={() => setVapiCallModalOpen(true)}
           />
         </section>
 
@@ -311,6 +319,12 @@ export default function App() {
         currentUser={currentUser}
         onSignOut={handleSignOut}
         onOpenOrder={handleOpenOrder}
+      />
+
+      {/* 100% Free Live In-Browser WebRTC Voice Call with YZER (Vapi SDK) */}
+      <VapiVoiceCallModal
+        isOpen={vapiCallModalOpen}
+        onClose={() => setVapiCallModalOpen(false)}
       />
     </div>
   );

@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2, Clock } from 'lucide-react';
 
 interface HeroProps {
   onStartTrial?: () => void;
+  onOpenBrowserCall?: () => void;
 }
 
 const containerVariants = {
@@ -29,7 +30,7 @@ const itemVariants = {
   },
 };
 
-export default function Hero({ onStartTrial }: HeroProps) {
+export default function Hero({ onStartTrial, onOpenBrowserCall }: HeroProps) {
   return (
     <motion.section
       variants={containerVariants}
@@ -45,11 +46,15 @@ export default function Hero({ onStartTrial }: HeroProps) {
       <motion.div variants={itemVariants} className="inline-flex flex-wrap items-center justify-center gap-2 mb-6 sm:mb-8 max-w-full px-1">
         <div
           id="hero-yzer-badge"
-          className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-[#121c13]/90 border border-[#c6f554]/30 shadow-[0_0_20px_rgba(198,245,84,0.15)] backdrop-blur-md max-w-full"
+          onClick={onOpenBrowserCall}
+          className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-[#121c13]/90 border border-[#c6f554]/30 shadow-[0_0_20px_rgba(198,245,84,0.15)] backdrop-blur-md max-w-full ${
+            onOpenBrowserCall ? 'cursor-pointer hover:border-[#c6f554] hover:shadow-[0_0_25px_rgba(198,245,84,0.3)] transition-all' : ''
+          }`}
+          title={onOpenBrowserCall ? 'Click to call YZER directly from your browser' : undefined}
         >
           <span className="w-2 h-2 rounded-full bg-[#c6f554] animate-pulse shrink-0" />
           <span className="text-[11px] sm:text-xs text-zinc-300 font-normal leading-relaxed text-center sm:text-left">
-            Meet <strong className="text-[#c6f554] font-semibold">YZER</strong> — Your Interactive AI Voice Guide • Tap the mic or ask <span className="text-white italic">"Navigate me for a tour"</span>
+            Meet <strong className="text-[#c6f554] font-semibold">YZER</strong> — Your AI Creative Director • <span className="underline decoration-[#c6f554]/70 underline-offset-2 text-white font-medium hover:text-[#c6f554]">Call Live from Browser (Free)</span>
           </span>
         </div>
       </motion.div>

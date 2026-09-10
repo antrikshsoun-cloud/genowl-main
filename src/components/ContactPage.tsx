@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, ShieldCheck, Sparkles, AlertCircle, FileText, HelpCircle, Lock, Phone, ExternalLink, RefreshCw } from 'lucide-react';
+import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, ShieldCheck, Sparkles, AlertCircle, FileText, HelpCircle, Lock, Phone, ExternalLink, RefreshCw, Mic } from 'lucide-react';
 import { sendProblemOrInquiryEmail, OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM, OFFICIAL_X, OFFICIAL_X_URL, OFFICIAL_PHONE_DISPLAY, OFFICIAL_PHONE_TEL } from '../services/emailService.ts';
 import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
 import { syncInquiryToSupabase } from '../services/supabaseClient.ts';
@@ -12,6 +12,7 @@ interface ContactPageProps {
   onNavigateServices?: () => void;
   currentUser?: UserProfile | null;
   onOpenAuth?: (mode: 'signin' | 'signup') => void;
+  onOpenBrowserCall?: () => void;
 }
 
 export default function ContactPage({
@@ -19,6 +20,7 @@ export default function ContactPage({
   onNavigateServices,
   currentUser,
   onOpenAuth,
+  onOpenBrowserCall,
 }: ContactPageProps) {
   const [copiedHostinger, setCopiedHostinger] = useState(false);
   const [copiedGmail, setCopiedGmail] = useState(false);
@@ -273,11 +275,24 @@ export default function ContactPage({
 
           <a
             href={`tel:${OFFICIAL_PHONE_TEL}`}
-            className="px-5 py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.35)] transition-all flex items-center gap-2 cursor-pointer shrink-0"
+            className="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-white/10 hover:bg-white/15 border border-white/20 transition-all flex items-center gap-2 cursor-pointer shrink-0"
+            title="Dial US phone line directly"
           >
-            <Phone className="w-3.5 h-3.5 fill-black" />
-            <span>Call Now</span>
+            <Phone className="w-3.5 h-3.5" />
+            <span>Dial US Line</span>
           </a>
+
+          {onOpenBrowserCall && (
+            <button
+              type="button"
+              onClick={onOpenBrowserCall}
+              className="px-5 py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-110 shadow-[0_0_20px_rgba(198,245,84,0.4)] transition-all flex items-center gap-2 cursor-pointer shrink-0"
+              title="Talk to YZER live right inside your browser for free"
+            >
+              <Mic className="w-3.5 h-3.5 text-black animate-pulse" />
+              <span>Call from Browser (Free)</span>
+            </button>
+          )}
         </div>
       </motion.div>
 
