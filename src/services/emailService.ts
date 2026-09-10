@@ -4,6 +4,8 @@ import { GENOWL_LOGO_BASE64 } from './logoAsset.ts';
 
 export const OFFICIAL_GENOWL_GMAIL = 'genowlai@gmail.com';
 export const OFFICIAL_HOSTINGER_EMAIL = 'support@genowl.tech';
+export const OFFICIAL_PHONE_DISPLAY = '+1 (628) 245-9578';
+export const OFFICIAL_PHONE_TEL = '+16282459578';
 export const OFFICIAL_INSTAGRAM = 'genowl_tech';
 export const OFFICIAL_X = 'GENOWL_TECH';
 export const OFFICIAL_X_URL = 'https://x.com/GENOWL_TECH';

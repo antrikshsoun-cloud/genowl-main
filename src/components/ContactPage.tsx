@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Instagram, Send, Check, Copy, ArrowRight, MessageSquare, ShieldCheck, Sparkles, AlertCircle, FileText, HelpCircle, Lock, Phone, ExternalLink, RefreshCw } from 'lucide-react';
-import { sendProblemOrInquiryEmail, OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM, OFFICIAL_X, OFFICIAL_X_URL } from '../services/emailService.ts';
+import { sendProblemOrInquiryEmail, OFFICIAL_HOSTINGER_EMAIL, OFFICIAL_GENOWL_GMAIL, OFFICIAL_INSTAGRAM, OFFICIAL_X, OFFICIAL_X_URL, OFFICIAL_PHONE_DISPLAY, OFFICIAL_PHONE_TEL } from '../services/emailService.ts';
 import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
 import { syncInquiryToSupabase } from '../services/supabaseClient.ts';
 import { submitContactToHostinger } from '../services/hostingerDbService.ts';
@@ -22,6 +22,7 @@ export default function ContactPage({
 }: ContactPageProps) {
   const [copiedHostinger, setCopiedHostinger] = useState(false);
   const [copiedGmail, setCopiedGmail] = useState(false);
+  const [copiedPhone, setCopiedPhone] = useState(false);
   const [copiedInsta, setCopiedInsta] = useState(false);
   const [copiedX, setCopiedX] = useState(false);
   const [copiedTicket, setCopiedTicket] = useState(false);
@@ -76,6 +77,12 @@ export default function ContactPage({
     navigator.clipboard.writeText(`@${xHandle}`);
     setCopiedX(true);
     setTimeout(() => setCopiedX(false), 2000);
+  };
+
+  const handleCopyPhone = () => {
+    navigator.clipboard.writeText(OFFICIAL_PHONE_DISPLAY);
+    setCopiedPhone(true);
+    setTimeout(() => setCopiedPhone(false), 2000);
   };
 
   const handleCopyTicketId = () => {
@@ -225,6 +232,54 @@ export default function ContactPage({
           Submit an official project brief, report a technical issue, or issue an inquiry. Every ticket is logged into our central cloud queue and forwarded directly to our Hostinger and Gmail engineering desks.
         </p>
       </div>
+
+      {/* 24/7 AI Voice Hotline Banner (Powered by YZER) */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mb-8 p-5 sm:p-7 rounded-3xl bg-gradient-to-r from-[#0e1710] via-[#122115] to-[#0e1710] border border-[#c6f554]/30 shadow-[0_0_35px_rgba(198,245,84,0.12)] flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#c6f554]/[0.08] rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="flex items-center gap-4 text-center sm:text-left flex-col sm:flex-row">
+          <div className="w-12 h-12 rounded-2xl bg-[#172318] border border-[#c6f554]/50 flex items-center justify-center text-[#c6f554] shadow-[0_0_20px_rgba(198,245,84,0.3)] shrink-0">
+            <Phone className="w-6 h-6 animate-pulse" />
+          </div>
+          <div>
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#c6f554]/15 border border-[#c6f554]/30 text-[#c6f554] text-[10px] font-mono font-bold mb-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#c6f554] animate-pulse" />
+              LIVE 24/7 AI PHONE HOTLINE
+            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+              Talk Directly to <span className="text-[#c6f554]">YZER</span> • Genowl AI Creative Director
+            </h2>
+            <p className="text-xs text-zinc-400 mt-1 max-w-xl">
+              Dial our official line anytime from anywhere in the world to explore project tiers, verify custom requirements, or schedule a strategy call.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto shrink-0 justify-center">
+          <button
+            type="button"
+            onClick={handleCopyPhone}
+            className="px-3.5 py-2.5 rounded-xl text-xs font-mono font-bold text-white bg-black/50 border border-white/15 hover:border-[#c6f554]/50 transition-all flex items-center gap-2 cursor-pointer"
+            title="Copy phone number"
+          >
+            <span>{OFFICIAL_PHONE_DISPLAY}</span>
+            {copiedPhone ? <Check className="w-3.5 h-3.5 text-[#c6f554]" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
+          </button>
+
+          <a
+            href={`tel:${OFFICIAL_PHONE_TEL}`}
+            className="px-5 py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.35)] transition-all flex items-center gap-2 cursor-pointer shrink-0"
+          >
+            <Phone className="w-3.5 h-3.5 fill-black" />
+            <span>Call Now</span>
+          </a>
+        </div>
+      </motion.div>
 
       {/* Direct Contact Channels: Hostinger Mail, Operations Gmail, Instagram & X */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">

@@ -1,10 +1,12 @@
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { Instagram, Mail, ArrowUpRight, ShieldCheck, ArrowUp, Sparkles, ArrowRight } from 'lucide-react';
+import { Instagram, Mail, ArrowUpRight, ShieldCheck, ArrowUp, Sparkles, ArrowRight, Phone } from 'lucide-react';
 import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
 import {
   OFFICIAL_HOSTINGER_EMAIL,
   OFFICIAL_GENOWL_GMAIL,
+  OFFICIAL_PHONE_DISPLAY,
+  OFFICIAL_PHONE_TEL,
   OFFICIAL_INSTAGRAM,
   OFFICIAL_X,
   OFFICIAL_X_URL,
@@ -198,6 +200,18 @@ export default function Footer({
                   Direct Inquiries
                 </span>
                 <div className="flex flex-col gap-2">
+                  <a
+                    href={`tel:${OFFICIAL_PHONE_TEL}`}
+                    title="24/7 AI Voice Hotline"
+                    className="flex items-center justify-between p-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-[#c6f554]/40 text-zinc-300 hover:text-white transition-all group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-3.5 h-3.5 text-[#c6f554]" />
+                      <span className="font-mono text-[11px]">{OFFICIAL_PHONE_DISPLAY}</span>
+                    </div>
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#c6f554]/10 text-[#c6f554] border border-[#c6f554]/20">24/7 AI</span>
+                  </a>
+
                   <a
                     href={`mailto:${hostingerEmail}`}
                     title="Official Hostinger Support"

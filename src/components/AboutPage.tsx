@@ -201,7 +201,7 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
         <div className="text-center md:text-left">
           <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Connect with the Genowl Team</h2>
           <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed break-words">
-            Reach out via Hostinger <span className="text-[#c6f554] font-semibold font-mono">support@genowl.tech</span>, Gmail <span className="text-[#f7cc46] font-semibold font-mono">genowlai@gmail.com</span>, Instagram <span className="text-zinc-300 font-semibold">@genowl_tech</span>, or X <span className="text-[#c6f554] font-semibold font-mono">@GENOWL_TECH</span>.
+            Reach out via 24/7 AI Phone <a href="tel:+16282459578" className="text-[#c6f554] font-semibold font-mono hover:underline">+1 (628) 245-9578</a>, Hostinger <span className="text-[#c6f554] font-semibold font-mono">support@genowl.tech</span>, Gmail <span className="text-[#f7cc46] font-semibold font-mono">genowlai@gmail.com</span>, Instagram <span className="text-zinc-300 font-semibold">@genowl_tech</span>, or X <span className="text-[#c6f554] font-semibold font-mono">@GENOWL_TECH</span>.
           </p>
         </div>
 
