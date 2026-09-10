@@ -186,6 +186,7 @@ export default function App() {
         }}
         onSignOut={handleSignOut}
         onOpenProfile={() => setProfileModalOpen(true)}
+        onOpenBrowserCall={() => setVapiCallModalOpen(true)}
       />
 
       {/* 3. Sequential Scroll-Based Pages */}
@@ -240,6 +241,7 @@ export default function App() {
           onOpenLegal={handleOpenLegal}
           onOpenAdmin={() => setAdminModalOpen(true)}
           onOpenOrder={handleOpenOrder}
+          onOpenBrowserCall={() => setVapiCallModalOpen(true)}
         />
 
         {/* Mobile Floating Thumb Navigation Dock (Hidden on PC, active on Mobile) */}
@@ -249,6 +251,7 @@ export default function App() {
           onOpenOrder={handleOpenOrder}
           currentUser={currentUser}
           onOpenProfile={() => setProfileModalOpen(true)}
+          onOpenBrowserCall={() => setVapiCallModalOpen(true)}
         />
 
         {/* Non-Intrusive Floating AI Voice Navigation Guide */}
@@ -265,6 +268,7 @@ export default function App() {
           onOpenProfile={() => setProfileModalOpen(true)}
           onOpenLegal={handleOpenLegal}
           onOpenAdmin={() => setAdminModalOpen(true)}
+          onOpenBrowserCall={() => setVapiCallModalOpen(true)}
         />
       </main>
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Menu, X } from 'lucide-react';
+import { ArrowRight, Menu, X, Mic, Phone } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
 
@@ -14,6 +14,7 @@ interface NavbarProps {
   onOpenAuth?: (mode: 'signin' | 'signup') => void;
   onSignOut?: () => void;
   onOpenProfile?: () => void;
+  onOpenBrowserCall?: () => void;
 }
 
 export default function Navbar({
@@ -24,6 +25,7 @@ export default function Navbar({
   onOpenAuth,
   onSignOut,
   onOpenProfile,
+  onOpenBrowserCall,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -248,6 +250,20 @@ export default function Navbar({
               </ul>
 
               <div className="pt-2 border-t border-white/10 space-y-2">
+                {onOpenBrowserCall && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenBrowserCall();
+                    }}
+                    className="w-full py-2.5 px-3 rounded-full text-xs font-bold text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(198,245,84,0.35)]"
+                  >
+                    <Mic className="w-3.5 h-3.5 text-black animate-pulse" />
+                    <span>Call YZER Live (100% Free)</span>
+                  </button>
+                )}
+
                 {!currentUser && (
                   <button
                     type="button"

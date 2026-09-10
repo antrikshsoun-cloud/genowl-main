@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Phone, PhoneOff, Mic, MicOff, Volume2, Sparkles, X, ShieldCheck } from 'lucide-react';
 import Vapi from '@vapi-ai/web';
 import OwlLogo from './OwlLogo.tsx';
+import { OFFICIAL_PHONE_DISPLAY, OFFICIAL_PHONE_TEL } from '../services/emailService.ts';
 
 const VAPI_PUBLIC_KEY = '985f0bb7-f6a5-4c59-95cb-eb346e331609';
 const VAPI_ASSISTANT_ID = '9facf4ab-efc8-45f4-a270-50713b8d4592';
@@ -134,7 +135,7 @@ export default function VapiVoiceCallModal({ isOpen, onClose }: VapiVoiceCallMod
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         {/* Backdrop blur */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -150,7 +151,7 @@ export default function VapiVoiceCallModal({ isOpen, onClose }: VapiVoiceCallMod
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.92, y: 20 }}
           transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-          className="relative w-full max-w-md rounded-3xl bg-gradient-to-b from-[#0f1a11] via-[#09110a] to-[#040805] border border-[#c6f554]/40 shadow-[0_0_60px_rgba(198,245,84,0.25)] p-6 sm:p-8 flex flex-col items-center text-center overflow-hidden z-10"
+          className="relative w-full max-w-md my-auto max-h-[92vh] overflow-y-auto rounded-3xl bg-gradient-to-b from-[#0f1a11] via-[#09110a] to-[#040805] border border-[#c6f554]/40 shadow-[0_0_60px_rgba(198,245,84,0.25)] p-5 sm:p-8 flex flex-col items-center text-center z-10"
         >
           {/* Ambient top light */}
           <div className="absolute top-0 inset-x-0 h-32 bg-radial from-[#c6f554]/15 via-transparent to-transparent pointer-events-none" />
@@ -168,7 +169,7 @@ export default function VapiVoiceCallModal({ isOpen, onClose }: VapiVoiceCallMod
           </button>
 
           {/* Assistant Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#162618] border border-[#c6f554]/40 text-[#c6f554] text-xs font-mono font-semibold mb-6 shadow-[0_0_15px_rgba(198,245,84,0.2)]">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#162618] border border-[#c6f554]/40 text-[#c6f554] text-xs font-mono font-semibold mb-4 sm:mb-6 shadow-[0_0_15px_rgba(198,245,84,0.2)]">
             <OwlLogo className="w-3.5 h-3.5 text-[#f7cc46]" />
             <span>GENOWL AI VOICE HOTLINE</span>
           </div>
@@ -182,7 +183,7 @@ export default function VapiVoiceCallModal({ isOpen, onClose }: VapiVoiceCallMod
           </p>
 
           {/* Call Status Indicator */}
-          <div className="mt-4 mb-8">
+          <div className="mt-3 sm:mt-4 mb-5 sm:mb-8">
             {callStatus === 'connecting' && (
               <div className="inline-flex items-center gap-2 text-xs font-medium text-[#f7cc46]">
                 <span className="w-2 h-2 rounded-full bg-[#f7cc46] animate-ping" />
@@ -216,7 +217,7 @@ export default function VapiVoiceCallModal({ isOpen, onClose }: VapiVoiceCallMod
           </div>
 
           {/* Animated Audio Wave Visualizer */}
-          <div className="relative w-44 h-44 rounded-full flex items-center justify-center mb-8">
+          <div className="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full flex items-center justify-center mb-5 sm:mb-8">
             {/* Outer pulsating aura rings based on real volume */}
             <motion.div
               animate={{
@@ -228,7 +229,7 @@ export default function VapiVoiceCallModal({ isOpen, onClose }: VapiVoiceCallMod
             />
 
             {/* Inner Core Disc */}
-            <div className="relative z-10 w-28 h-28 rounded-full bg-gradient-to-b from-[#192b1b] to-[#0a140b] border-2 border-[#c6f554]/60 flex items-center justify-center shadow-[0_0_30px_rgba(198,245,84,0.35)]">
+            <div className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-b from-[#192b1b] to-[#0a140b] border-2 border-[#c6f554]/60 flex items-center justify-center shadow-[0_0_30px_rgba(198,245,84,0.35)]">
               {callStatus === 'connected' ? (
                 <div className="flex items-center gap-1">
                   {[40, 70, 100, 70, 40].map((h, i) => (
@@ -295,10 +296,20 @@ export default function VapiVoiceCallModal({ isOpen, onClose }: VapiVoiceCallMod
           </div>
 
           {/* Bottom Security / 100% Free info note */}
-          <div className="mt-6 text-[11px] text-zinc-500 flex items-center gap-1.5">
+          <div className="mt-5 text-[11px] text-zinc-500 flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-[#c6f554]" />
             <span>Direct WebRTC stream &bull; 100% Free browser voice call</span>
           </div>
+
+          {/* Direct Cellular Phone Call Fallback for Mobile */}
+          <a
+            href={`tel:${OFFICIAL_PHONE_TEL}`}
+            className="mt-3 text-[11px] text-zinc-400 hover:text-[#c6f554] underline decoration-zinc-600 hover:decoration-[#c6f554] underline-offset-2 flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Dial direct from your phone's cellular carrier"
+          >
+            <Phone className="w-3 h-3 text-[#c6f554]" />
+            <span>Or dial official line from phone: {OFFICIAL_PHONE_DISPLAY}</span>
+          </a>
         </motion.div>
       </div>
     </AnimatePresence>

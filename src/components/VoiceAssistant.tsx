@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2, UserCheck, LogIn, Play } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2, UserCheck, LogIn, Play, Phone } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 
 interface VoiceAssistantProps {
@@ -11,6 +11,7 @@ interface VoiceAssistantProps {
   onOpenProfile?: () => void;
   onOpenLegal?: (tab: 'terms' | 'privacy' | 'refund') => void;
   onOpenAdmin?: () => void;
+  onOpenBrowserCall?: () => void;
 }
 
 // Phonetic text sanitizer to completely eliminate pronunciation flutter/stutter
@@ -45,6 +46,7 @@ export default function VoiceAssistant({
   onOpenProfile,
   onOpenLegal,
   onOpenAdmin,
+  onOpenBrowserCall,
 }: VoiceAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -798,6 +800,25 @@ export default function VoiceAssistant({
       return;
     }
 
+    // 28b. CALL YZER LIVE INTENT
+    if (
+      text.includes('call') ||
+      text.includes('phone') ||
+      text.includes('voice call') ||
+      text.includes('talk live') ||
+      text.includes('hotline')
+    ) {
+      if (onOpenBrowserCall) {
+        speak('Connecting you to live voice call right now.', () => {
+          setIsOpen(false);
+          onOpenBrowserCall();
+        });
+      } else {
+        speak('Our 24/7 AI hotline is active at plus one, six two eight, two four five, nine five seven eight.');
+      }
+      return;
+    }
+
     // 29. OUT-OF-SCOPE GUARDRAIL
     speak(
       'I am YZER, Genowl’s AI guide. I am trained on our web services, 3D interactive engineering, video generation, and project booking. How can our team build for you today?'
@@ -812,10 +833,10 @@ export default function VoiceAssistant({
   };
 
   return (
-    <div id="genowl-voice-assistant" className="fixed bottom-20 right-3.5 sm:bottom-6 sm:right-6 z-40 select-none">
+    <div id="genowl-voice-assistant" className="fixed bottom-20 right-3 sm:bottom-6 sm:right-6 z-40 select-none">
       {/* EXPANDED INTERACTIVE CONTROL DIALOG */}
       {isOpen && (
-        <div className="mb-3 w-[330px] sm:w-[380px] p-4 rounded-3xl bg-[#0c130e]/95 border border-[#c6f554]/30 backdrop-blur-2xl shadow-[0_16px_50px_rgba(0,0,0,0.9)] flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
+        <div className="mb-3 w-[calc(100vw-24px)] max-w-[360px] sm:max-w-[380px] p-4 rounded-3xl bg-[#0c130e]/95 border border-[#c6f554]/30 backdrop-blur-2xl shadow-[0_16px_50px_rgba(0,0,0,0.9)] flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
           
           {/* Header Row */}
           <div className="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
@@ -849,7 +870,22 @@ export default function VoiceAssistant({
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
+              {onOpenBrowserCall && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopAll();
+                    setIsOpen(false);
+                    onOpenBrowserCall();
+                  }}
+                  className="px-2 py-1 rounded-lg text-[10px] font-bold text-black bg-[#c6f554] hover:bg-[#d6fa66] flex items-center gap-1 shadow-[0_0_10px_rgba(198,245,84,0.3)] transition-all cursor-pointer"
+                  title="Switch to full-duplex live voice call"
+                >
+                  <Phone className="w-2.5 h-2.5 fill-black" />
+                  <span>Call Live</span>
+                </button>
+              )}
               {isSpeaking && (
                 <button
                   type="button"
@@ -965,6 +1001,7 @@ export default function VoiceAssistant({
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="text-[10px] text-zinc-400">Quick:</span>
             {[
+              { label: '📞 Call YZER Live', cmd: 'call yzer live' },
               { label: 'Navigate me for a tour 🚀', cmd: 'navigate me for a tour' },
               { label: 'After Sign Up?', cmd: 'what should I do after signing up?' },
               { label: 'About Genowl', cmd: 'tell me about genowl' },

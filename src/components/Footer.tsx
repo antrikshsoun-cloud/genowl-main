@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { Instagram, Mail, ArrowUpRight, ShieldCheck, ArrowUp, Sparkles, ArrowRight, Phone } from 'lucide-react';
+import { Instagram, Mail, ArrowUpRight, ShieldCheck, ArrowUp, Sparkles, ArrowRight, Phone, Mic } from 'lucide-react';
 import { GENOWL_LOGO_BASE64 } from '../services/logoAsset.ts';
 import {
   OFFICIAL_HOSTINGER_EMAIL,
@@ -18,6 +18,7 @@ interface FooterProps {
   onOpenLegal?: (tab: 'terms' | 'privacy' | 'refund') => void;
   onOpenAdmin?: () => void;
   onOpenOrder?: (service?: string) => void;
+  onOpenBrowserCall?: () => void;
 }
 
 export default function Footer({
@@ -26,6 +27,7 @@ export default function Footer({
   onOpenLegal,
   onOpenAdmin,
   onOpenOrder,
+  onOpenBrowserCall,
 }: FooterProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -211,6 +213,21 @@ export default function Footer({
                     </div>
                     <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#c6f554]/10 text-[#c6f554] border border-[#c6f554]/20">24/7 AI</span>
                   </a>
+
+                  {onOpenBrowserCall && (
+                    <button
+                      type="button"
+                      onClick={onOpenBrowserCall}
+                      title="Call YZER AI Voice Guide Live (Free)"
+                      className="flex items-center justify-between p-2 rounded-lg bg-[#c6f554]/10 hover:bg-[#c6f554]/15 border border-[#c6f554]/30 hover:border-[#c6f554]/60 text-[#c6f554] transition-all group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Mic className="w-3.5 h-3.5 text-[#c6f554] animate-pulse" />
+                        <span className="font-semibold text-[11px]">Call YZER Live</span>
+                      </div>
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#c6f554] text-black">FREE</span>
+                    </button>
+                  )}
 
                   <a
                     href={`mailto:${hostingerEmail}`}

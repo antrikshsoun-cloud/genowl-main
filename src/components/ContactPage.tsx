@@ -262,11 +262,11 @@ export default function ContactPage({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto shrink-0 justify-center">
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0 justify-center">
           <button
             type="button"
             onClick={handleCopyPhone}
-            className="px-3.5 py-2.5 rounded-xl text-xs font-mono font-bold text-white bg-black/50 border border-white/15 hover:border-[#c6f554]/50 transition-all flex items-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-3.5 py-2.5 rounded-xl text-xs font-mono font-bold text-white bg-black/50 border border-white/15 hover:border-[#c6f554]/50 transition-all flex items-center justify-center gap-2 cursor-pointer"
             title="Copy phone number"
           >
             <span>{OFFICIAL_PHONE_DISPLAY}</span>
@@ -275,8 +275,8 @@ export default function ContactPage({
 
           <a
             href={`tel:${OFFICIAL_PHONE_TEL}`}
-            className="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-white/10 hover:bg-white/15 border border-white/20 transition-all flex items-center gap-2 cursor-pointer shrink-0"
-            title="Dial US phone line directly"
+            className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-white/10 hover:bg-white/15 border border-white/20 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+            title="Dial US phone line directly from phone dialer"
           >
             <Phone className="w-3.5 h-3.5" />
             <span>Dial US Line</span>
@@ -286,7 +286,7 @@ export default function ContactPage({
             <button
               type="button"
               onClick={onOpenBrowserCall}
-              className="px-5 py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-110 shadow-[0_0_20px_rgba(198,245,84,0.4)] transition-all flex items-center gap-2 cursor-pointer shrink-0"
+              className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-110 shadow-[0_0_20px_rgba(198,245,84,0.4)] transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
               title="Talk to YZER live right inside your browser for free"
             >
               <Mic className="w-3.5 h-3.5 text-black animate-pulse" />
