@@ -196,7 +196,7 @@ export default function App() {
         </section>
 
         {/* PAGE 4: Contact & Direct Inquiries */}
-        <section id="contact" className="w-full py-6 sm:py-10 md:py-16 md:min-h-screen flex flex-col justify-center overflow-x-hidden">
+        <section id="contact" className="w-full py-6 sm:py-10 md:py-16 md:min-h-screen flex flex-col justify-center overflow-x-hidden relative z-10 bg-gradient-to-b from-transparent via-[#070a07]/60 to-[#070a07] shadow-[0_30px_60px_rgba(0,0,0,0.95)] pb-12">
           <ContactPage
             initialService={selectedService}
             onNavigateServices={() => handleNavigate('services')}
@@ -215,6 +215,7 @@ export default function App() {
           onNavigate={handleNavigate}
           onOpenLegal={handleOpenLegal}
           onOpenAdmin={() => setAdminModalOpen(true)}
+          onOpenOrder={handleOpenOrder}
         />
 
         {/* Mobile Floating Thumb Navigation Dock (Hidden on PC, active on Mobile) */}
