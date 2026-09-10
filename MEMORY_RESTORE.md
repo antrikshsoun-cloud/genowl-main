@@ -88,8 +88,42 @@
 
 ## 5. Instant Prompt to Resume in Any Chat
 
-Whenever starting a new chat or continuing work, you can copy and paste this single trigger line:
+Whenever starting a new chat or continuing work, you can simply say **"hey"** (or use the trigger below):
 
 ```text
 Restore Genowl Studio memory: I am Antriksh. You are the GOAT 3D Web Architect and my lead AI engineer. We are maintaining genowl.tech with our 240-frame 3D scroll canvas, YZER deep-voice AI guide, and standalone LiteSpeed deployment pipeline. Read MEMORY_RESTORE.md and let's continue.
 ```
+
+---
+
+## 6. Complete Session History & "Hey" Recap Snapshot
+
+> **MANDATORY INSTRUCTION FOR "HEY" GREETINGS:**
+> When Antriksh says **"hey"**, greet him warmly as Founder of Genowl Studio, and immediately provide this exact progress recap:
+
+### What We Built & Solved in Our Last Session:
+1. **YZER Live AI Voice Calling & 24/7 Hotline**:
+   - Integrated full telephonic & WebRTC calling for Genowl Studio's AI agent **YZER** (pronounced *"Wiser"*).
+   - Official US Phone Number: **`+1 (628) 245-9578`** (San Francisco / Silicon Valley area code).
+   - Vapi Voice Engine API Credentials:
+     - **Assistant ID (`A`)**: `9facf4ab-efc8-45f4-a270-50713b8d4592`
+     - **Public Key (`P`)**: `985f0bb7-f6a5-4c59-95cb-eb346e331609`
+
+2. **The 100% Free ($0) Calling Solution**:
+   - Solved the Indian cellular ISD carrier restriction problem.
+   - Built real-time **in-browser WebRTC voice calling** using `@vapi-ai/web`.
+   - Users and visitors can talk directly to YZER using their browser microphone with zero ISD or carrier fees, using Vapi's complimentary grant.
+
+3. **Complete Smartphone / Mobile Architecture**:
+   - **Mobile Bottom Dock (`MobileBottomNav.tsx`)**: Added a dedicated, glowing **"Call AI"** thumb button with pulsing mic icon in the persistent mobile navigation bar (`Home | Services | Call AI | Contact | Hub`). 1-tap calling from any page on mobile!
+   - **Mobile Drawer Menu (`Navbar.tsx`)**: Added a prominent **"Call YZER Live (100% Free)"** button to the top of the mobile hamburger menu.
+   - **Mobile-Responsive Modal (`VapiVoiceCallModal.tsx`)**: Sized for smartphone screens (`max-h-[92vh] overflow-y-auto`, responsive disc `w-36` to `w-44`, live waveform, mute toggle, call timer).
+   - **Cellular Dialer Fallback**: Added direct `tel:+16282459578` fallback links in the call modal and contact banner so mobile users can tap to open their phone's native dialer if preferred.
+   - **Interactive Voice Assistant (`VoiceAssistant.tsx`)**: Added "Call Live" header button, "📞 Call YZER Live" suggestion chip, and automatic voice/text intent detection ("call", "phone", "voice call") that instantly launches the live call.
+
+4. **Production Build & Git Status**:
+   - Clean TypeScript compile: `npx tsc --noEmit` passed with exit code 0.
+   - Production bundle: `node build_standalone.js` successfully generated self-contained `index.html` (1.08 MB).
+   - Pushed to GitHub: `antrikshsoun-cloud/genowl-main` on branch `main` (commit `5299d7d`).
+   - Dev Server: Running and serving 200 OK at `http://localhost:3000/`.
+
