@@ -5,7 +5,7 @@ import Vapi from '@vapi-ai/web';
 import OwlLogo from './OwlLogo.tsx';
 import { UserProfile } from './AuthModal.tsx';
 import { OFFICIAL_PHONE_DISPLAY, OFFICIAL_PHONE_TEL, sendSlotBookingEmail } from '../services/emailService.ts';
-import { submitProjectLeadToHostinger, submitBookingToHostinger, extractKeywordsFromText } from '../services/hostingerDbService.ts';
+import { submitProjectLeadToHostinger, submitServiceBookingToHostinger, parseSpelledEmail, extractKeywordsFromText } from '../services/hostingerDbService.ts';
 import { syncOrderToSupabase } from '../services/supabaseClient.ts';
 
 const VAPI_PUBLIC_KEY = '985f0bb7-f6a5-4c59-95cb-eb346e331609';
@@ -99,7 +99,9 @@ export default function VapiVoiceCallModal({
   const [detectedPhone, setDetectedPhone] = useState('');
   const [detectedName, setDetectedName] = useState(currentUser?.name || '');
   const [detectedService, setDetectedService] = useState('2D High-Converting Web ($500)');
+  const [detectedCustomizations, setDetectedCustomizations] = useState('');
   const [detectedMeetingSlot, setDetectedMeetingSlot] = useState('');
+  const [hasBookingIntent, setHasBookingIntent] = useState(false);
   
   // Database submission state
   const [isSavedToDb, setIsSavedToDb] = useState(false);
@@ -120,121 +122,63 @@ export default function VapiVoiceCallModal({
     }
   }, [currentUser]);
 
-  // Master function: Persists the call transcript, extracted email/phone, and booking slot to Hostinger MySQL
+  // Master function: Persists ONLY confirmed service bookings with Service, Customizations, Slot, and Spelled Email
   const persistCallToHostinger = async (overrideData?: {
     email?: string;
     phone?: string;
     name?: string;
     service?: string;
+    customizations?: string;
     meetingSlot?: string;
   }) => {
     if (hasSavedRef.current && !overrideData) return;
-    hasSavedRef.current = true;
 
-    const emailToSave = (overrideData?.email ?? detectedEmail).trim();
-    const phoneToSave = (overrideData?.phone ?? detectedPhone).trim();
-    const nameToSave = (overrideData?.name ?? detectedName).trim() || (emailToSave ? emailToSave.split('@')[0] : 'Voice Caller');
+    const emailToSave = (overrideData?.email ?? detectedEmail).trim().toLowerCase();
     const serviceToSave = overrideData?.service ?? detectedService;
-    const slotToSave = (overrideData?.meetingSlot ?? detectedMeetingSlot).trim() || 'Immediate Call Follow-Up';
-    const transcriptToSave = fullTranscriptRef.current.trim();
-    const summaryToSave = callSummaryRef.current.trim();
+    const customizationsToSave = (overrideData?.customizations ?? detectedCustomizations).trim() || callSummaryRef.current.trim() || 'Custom specifications discussed during voice call';
+    const slotToSave = (overrideData?.meetingSlot ?? detectedMeetingSlot).trim() || 'Consultation Slot Requested';
+    const phoneToSave = (overrideData?.phone ?? detectedPhone).trim() || 'Captured via Voice Call';
 
-    // If caller spoke nothing and provided no details, skip
-    if (!transcriptToSave && !emailToSave && !phoneToSave) {
+    // STRICT GATE: Only save if an actual booking was conducted AND a verified customer email was given!
+    // Never record casual questions, greetings, or dummy emails!
+    if (!emailToSave || !emailToSave.includes('@') || emailToSave.includes('@client.genowl.tech') || emailToSave.includes('voice_caller')) {
       return;
     }
 
-    const ticketId = dbReceiptId || `GENOWL-VOICE-${Math.floor(100000 + Math.random() * 900000)}`;
+    hasSavedRef.current = true;
+    const ticketId = dbReceiptId || `GENOWL-BOOK-${Math.floor(100000 + Math.random() * 900000)}`;
     setDbReceiptId(ticketId);
 
-    const projectScope = summaryToSave
-      ? `YZER Voice Call Summary: ${summaryToSave}\n\nFull Call Transcript:\n${transcriptToSave}`
-      : `YZER In-Browser Voice Call Transcript:\n${transcriptToSave || 'Client consulted live with YZER AI Assistant.'}`;
-
-    const keywords = extractKeywordsFromText(`${serviceToSave} ${projectScope}`);
-
     try {
-      // 1. Primary Sync: Hostinger MySQL genowl_project_leads
-      const leadResult = await submitProjectLeadToHostinger({
+      const res = await submitServiceBookingToHostinger({
         receipt_id: ticketId,
-        customer_name: nameToSave,
-        customer_email: emailToSave,
-        customer_phone: phoneToSave || 'Captured via WebRTC Voice Call',
         service_type: serviceToSave,
-        turnaround_speed: 'standard',
-        quoted_price: serviceToSave.includes('2,500') ? '$2,500' : (serviceToSave.includes('200') ? '$200' : '$500'),
-        payment_status: 'pending',
-        meeting_time_slot: slotToSave,
-        meeting_platform: 'WebRTC AI Voice Call / Google Meet',
-        project_scope: projectScope,
-        extracted_keywords: keywords,
-        voice_transcript: transcriptToSave,
-        lead_source: 'YZER AI In-Browser Voice Call',
-        project_metadata: {
-          call_duration_seconds: callDuration,
-          has_spoken_email: !!emailToSave,
-          has_spoken_phone: !!phoneToSave,
-          submitted_at: new Date().toISOString(),
-        },
+        customizations: customizationsToSave,
+        booked_slot: slotToSave,
+        customer_email: emailToSave,
+        customer_phone: phoneToSave,
       });
 
-      // 2. Legacy Redundancy: Hostinger bookings table
-      submitBookingToHostinger({
-        name: nameToSave,
-        email: emailToSave || `voice_call_${ticketId.toLowerCase()}@client.genowl.tech`,
-        service_type: serviceToSave,
-        budget: '$500',
-        preferred_time: slotToSave,
-        project_scope: projectScope,
-      }).catch(() => {});
-
-      // 3. Local Client Hub Store so visitor sees it in their Profile Hub
-      try {
-        const rawExisting = localStorage.getItem('genowl_client_orders');
-        const orders = rawExisting ? JSON.parse(rawExisting) : [];
-        const newOrder = {
-          id: ticketId,
-          service: serviceToSave,
-          name: nameToSave,
-          email: emailToSave || 'Voice Call Lead',
-          phone: phoneToSave,
-          details: projectScope,
-          preferredTime: slotToSave,
-          speed: 'standard',
-          amount: serviceToSave.includes('2,500') ? '$2,500' : '$500',
-          status: 'pending_slot_call',
-          createdAt: new Date().toISOString(),
-        };
-        orders.unshift(newOrder);
-        localStorage.setItem('genowl_client_orders', JSON.stringify(orders));
-        window.dispatchEvent(new Event('storage'));
-
-        // Supabase Cloud Sync
-        syncOrderToSupabase(newOrder).catch(() => {});
-      } catch (storageErr) {
-        console.warn('Local client orders note:', storageErr);
+      if (res.success) {
+        setIsSavedToDb(true);
       }
 
-      // 4. Email notification to client & founders if email was provided
-      if (emailToSave && emailToSave.includes('@') && !emailToSave.includes('@client.genowl.tech')) {
-        sendSlotBookingEmail(
-          nameToSave,
-          emailToSave,
-          phoneToSave || '+1 628 245 9578 (Voice Call)',
-          serviceToSave,
-          '$500',
-          `Voice Consultation with YZER AI. Slot: ${slotToSave}\n\n${projectScope}`,
-          'standard',
-          ticketId,
-          'https://genowl.tech',
-          slotToSave,
-          'YZER Voice Consultation'
-        ).catch(() => {});
-      }
-
-      setIsSavedToDb(true);
+      // Email confirmation if real email provided
+      sendSlotBookingEmail(
+        emailToSave.split('@')[0],
+        emailToSave,
+        phoneToSave,
+        serviceToSave,
+        serviceToSave.includes('3D') ? '$1,000' : '$500',
+        `Service Booking with YZER AI. Slot: ${slotToSave}\n\nCustomizations: ${customizationsToSave}`,
+        'standard',
+        ticketId,
+        'https://genowl.tech',
+        slotToSave,
+        'YZER Voice Consultation'
+      ).catch(() => {});
     } catch (err: any) {
-      console.warn('Could not complete automated lead sync:', err);
+      console.warn('Could not complete automated booking sync:', err);
     }
   };
 
@@ -271,54 +215,73 @@ export default function VapiVoiceCallModal({
             if (message.transcriptType === 'final') {
               fullTranscriptRef.current += `\n[${role}]: ${text}`;
 
-              // If the user spoke, automatically detect email, phone, slot, service
+              // If the user spoke, automatically detect spelled email, slot, service, customizations
               if (message.role === 'user') {
-                let hasNewContactInfo = false;
-                const foundEmail = parseSpokenEmail(text);
-                if (foundEmail) {
-                  setDetectedEmail(foundEmail);
-                  hasNewContactInfo = true;
+                const lower = text.toLowerCase();
+                if (
+                  lower.includes('book') ||
+                  lower.includes('order') ||
+                  lower.includes('hire') ||
+                  lower.includes('schedule') ||
+                  lower.includes('reserve') ||
+                  lower.includes('slot')
+                ) {
+                  setHasBookingIntent(true);
                 }
+
+                const spelledEmail = parseSpelledEmail(text);
+                if (spelledEmail) {
+                  setDetectedEmail(spelledEmail);
+                }
+
                 const foundPhone = parseSpokenPhone(text);
                 if (foundPhone) {
                   setDetectedPhone(foundPhone);
-                  hasNewContactInfo = true;
                 }
+
                 const foundSlot = parseSpokenMeetingSlot(text);
                 if (foundSlot) {
                   setDetectedMeetingSlot(foundSlot);
-                  hasNewContactInfo = true;
                 }
+
                 const foundSrv = parseSpokenService(text);
                 if (foundSrv) {
                   setDetectedService(foundSrv);
-                }
-
-                // MOBILE SPECIAL: Immediate live sync as soon as an email or slot is spoken!
-                // Eliminates data loss if a mobile user closes the browser or locks their phone screen.
-                if (hasNewContactInfo) {
-                  persistCallToHostinger({
-                    email: foundEmail || detectedEmail,
-                    phone: foundPhone || detectedPhone,
-                    meetingSlot: foundSlot || detectedMeetingSlot,
-                  });
                 }
               }
             }
           }
         }
 
-        // B. Function/Tool Call capture from Vapi
+        // B. Function/Tool Call capture from Vapi: record_service_booking
         if (message.type === 'function-call' || message.type === 'tool-calls') {
-          const args = message.functionCall?.parameters || message.toolCalls?.[0]?.function?.arguments;
-          if (args) {
-            if (typeof args === 'object') {
-              if (args.email) setDetectedEmail(args.email);
-              if (args.phone) setDetectedPhone(args.phone);
-              if (args.name) setDetectedName(args.name);
-              if (args.meeting_date || args.slot || args.time) {
-                setDetectedMeetingSlot(`${args.meeting_date || ''} ${args.slot || args.time || ''}`.trim());
-              }
+          const functionName = message.functionCall?.name || message.toolCalls?.[0]?.function?.name;
+          const rawArgs = message.functionCall?.parameters || message.toolCalls?.[0]?.function?.arguments;
+          let args: any = {};
+          try {
+            args = typeof rawArgs === 'string' ? JSON.parse(rawArgs) : (rawArgs || {});
+          } catch {}
+
+          if (functionName === 'record_service_booking' || args.service_type || args.customer_email) {
+            setHasBookingIntent(true);
+            if (args.service_type) setDetectedService(args.service_type);
+            if (args.customizations) setDetectedCustomizations(args.customizations);
+            if (args.booked_slot || args.slot || args.time) {
+              setDetectedMeetingSlot((args.booked_slot || args.slot || args.time || '').trim());
+            }
+            if (args.customer_email) {
+              const clean = parseSpelledEmail(args.customer_email) || args.customer_email;
+              setDetectedEmail(clean);
+            }
+
+            // Immediately persist this verified booking to Hostinger MySQL
+            if (args.customer_email) {
+              persistCallToHostinger({
+                email: args.customer_email,
+                service: args.service_type,
+                customizations: args.customizations,
+                meetingSlot: args.booked_slot,
+              });
             }
           }
         }
@@ -331,7 +294,7 @@ export default function VapiVoiceCallModal({
           if (message.summary || message.analysis?.summary) {
             callSummaryRef.current = message.summary || message.analysis?.summary || '';
           }
-          // Immediately save to Hostinger database!
+          // Only saves if a real customer email & booking was established
           persistCallToHostinger();
         }
       });
@@ -341,7 +304,6 @@ export default function VapiVoiceCallModal({
         setIsSpeaking(false);
         setVolumeLevel(0);
         if (timerRef.current) clearInterval(timerRef.current);
-        // Automatically persist call to database on hang-up
         setTimeout(() => {
           persistCallToHostinger();
         }, 300);
@@ -364,7 +326,6 @@ export default function VapiVoiceCallModal({
         setErrorMessage(err?.message || 'Connection error. Please check your mic permissions.');
         setCallStatus('ended');
         if (timerRef.current) clearInterval(timerRef.current);
-        persistCallToHostinger();
       });
     } catch (err: any) {
       console.error('Failed to initialize Vapi:', err);
@@ -398,7 +359,62 @@ export default function VapiVoiceCallModal({
     hasSavedRef.current = false;
     setIsSavedToDb(false);
     try {
-      await vapiRef.current.start(VAPI_ASSISTANT_ID);
+      const assistantOverrides = {
+        variableValues: {
+          official_phone: '+1 (628) 245-9578',
+          founding_team: 'Antriksh, Bilal, Maulik, Jaywardhan, and Ritesh',
+        },
+        model: {
+          provider: 'openai',
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: `You are YZER (pronounced Wiser), the authoritative and charismatic Executive AI Creative Director of Genowl Studio (founded by Antriksh, Bilal, Maulik, Jaywardhan, and Ritesh).
+Slogan: "Genowl is a platform that provides you multiple services according to your requirements, basically we build for you."
+Official US Phone Hotline: +1 (628) 245-9578.
+
+CORE SERVICES:
+1. 2D Web Architecture: $500 (3-5 days delivery, clean SEO, zero bloat).
+2. Interactive 3D WebGL Experiences: $1,000 (60 FPS Three.js, shaders, retina canvas).
+3. Autonomous AI Agents: $200 (Custom tools, workflows, bots).
+4. AI Video Commercials: $100 (4K marketing spots).
+
+CONVERSATION & TALKING GUIDELINES:
+- You do all the talks naturally and charismatically. Speak with confident authority.
+- Answer questions freely, but WHEN the customer asks to book a service or order:
+  STEP 1 (Which Service): Confirm which service they want.
+  STEP 2 (Customizations): Ask what extra details, customizations, specific features, or design styles they want us to build into their project.
+  STEP 3 (Booked Slot): Ask what date and time slot works best for our team to hold the kickoff consultation.
+  STEP 4 (Email with Spelling): Ask for their email address and explicitly say: "Please spell out your email address letter-by-letter so I record your exact email address without any mistake."
+  STEP 5 (Confirm & Record): Confirm the spelled email, and trigger the tool 'record_service_booking' with the parameters: service_type, customizations, booked_slot, and customer_email.
+
+IMPORTANT: Do not submit non-booking calls or casual chats to the database. Only record confirmed bookings with the 4 items.`,
+            },
+          ],
+          tools: [
+            {
+              type: 'function',
+              function: {
+                name: 'record_service_booking',
+                description: 'Record a customer service booking with their custom specifications, booked slot, and verified spelled email into the Genowl database.',
+                parameters: {
+                  type: 'object',
+                  properties: {
+                    service_type: { type: 'string', description: 'The service being booked.' },
+                    customizations: { type: 'string', description: 'Extra details and customizations requested by the customer.' },
+                    booked_slot: { type: 'string', description: 'The preferred consultation or kickoff date and time slot.' },
+                    customer_email: { type: 'string', description: 'The customer email address, spelled letter-by-letter.' },
+                  },
+                  required: ['service_type', 'customizations', 'booked_slot', 'customer_email'],
+                },
+              },
+            },
+          ],
+        },
+      };
+
+      await vapiRef.current.start(VAPI_ASSISTANT_ID, assistantOverrides);
     } catch (err: any) {
       console.error('Start call error:', err);
       setErrorMessage(err?.message || 'Could not access microphone.');
@@ -458,8 +474,8 @@ export default function VapiVoiceCallModal({
     await persistCallToHostinger({
       email: detectedEmail,
       phone: detectedPhone,
-      name: detectedName,
       service: detectedService,
+      customizations: detectedCustomizations,
       meetingSlot: detectedMeetingSlot,
     });
     setIsManualSaving(false);
@@ -618,11 +634,57 @@ export default function VapiVoiceCallModal({
                 </span>
               </div>
 
-              {/* Interactive Confirmation Form for Contact Info */}
+              {/* Interactive Confirmation Form for Verified Booking */}
               <form onSubmit={handleManualSave} className="space-y-2.5">
+                {/* 1. Which Service */}
                 <div>
                   <label className="block text-[10px] uppercase font-mono text-zinc-400 mb-1">
-                    Your Email (For Meeting Invite &amp; Confirmation)
+                    1. Service Booked
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={detectedService}
+                    onChange={(e) => setDetectedService(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white/[0.05] border border-white/10 focus:border-[#c6f554] text-xs text-[#c6f554] font-semibold outline-none transition-colors"
+                  />
+                </div>
+
+                {/* 2. Extra Details / Customizations */}
+                <div>
+                  <label className="block text-[10px] uppercase font-mono text-zinc-400 mb-1">
+                    2. Extra Details &amp; Customizations
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. 60fps WebGL canvas, dark obsidian luxury theme, client dashboard"
+                    value={detectedCustomizations}
+                    onChange={(e) => setDetectedCustomizations(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white/[0.05] border border-white/10 focus:border-[#c6f554] text-xs text-white outline-none transition-colors resize-none"
+                  />
+                </div>
+
+                {/* 3. Booked Slot */}
+                <div>
+                  <label className="block text-[10px] uppercase font-mono text-zinc-400 mb-1">
+                    3. Booked Slot / Consultation Timing
+                  </label>
+                  <div className="relative">
+                    <Calendar className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="e.g. Tomorrow 4:00 PM IST"
+                      value={detectedMeetingSlot}
+                      onChange={(e) => setDetectedMeetingSlot(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-white/[0.05] border border-white/10 focus:border-[#c6f554] text-xs text-white outline-none transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Verified Spelled Email */}
+                <div>
+                  <label className="block text-[10px] uppercase font-mono text-zinc-400 mb-1">
+                    4. Verified Customer Email (Spelled Out)
                   </label>
                   <div className="relative">
                     <Mail className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
@@ -637,52 +699,6 @@ export default function VapiVoiceCallModal({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[10px] uppercase font-mono text-zinc-400 mb-1">
-                      Phone / WhatsApp
-                    </label>
-                    <div className="relative">
-                      <Phone className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        placeholder="e.g. +1 (555) 000-0000"
-                        value={detectedPhone}
-                        onChange={(e) => setDetectedPhone(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-white/[0.05] border border-white/10 focus:border-[#c6f554] text-xs text-white outline-none transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] uppercase font-mono text-zinc-400 mb-1">
-                      Service Discussed
-                    </label>
-                    <input
-                      type="text"
-                      value={detectedService}
-                      onChange={(e) => setDetectedService(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-white/[0.05] border border-white/10 focus:border-[#c6f554] text-xs text-white outline-none transition-colors font-medium text-[#c6f554]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase font-mono text-zinc-400 mb-1">
-                    Meeting Slot / Timing Preference
-                  </label>
-                  <div className="relative">
-                    <Calendar className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      placeholder="e.g. Tomorrow 4:00 PM IST or As Soon As Possible"
-                      value={detectedMeetingSlot}
-                      onChange={(e) => setDetectedMeetingSlot(e.target.value)}
-                      className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-white/[0.05] border border-white/10 focus:border-[#c6f554] text-xs text-white outline-none transition-colors"
-                    />
-                  </div>
-                </div>
-
                 <div className="flex items-center gap-2 pt-1">
                   <button
                     type="submit"
@@ -690,7 +706,7 @@ export default function VapiVoiceCallModal({
                     className="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#baf345] to-[#d6fa66] text-black font-bold text-xs flex items-center justify-center gap-1.5 hover:brightness-105 shadow-[0_0_15px_rgba(198,245,84,0.3)] transition-all cursor-pointer disabled:opacity-50"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>{isManualSaving ? 'Updating...' : 'Save & Confirm Lead in Database'}</span>
+                    <span>{isManualSaving ? 'Updating...' : 'Confirm & Save Booking in Database'}</span>
                   </button>
                   {onOpenOrder && (
                     <button

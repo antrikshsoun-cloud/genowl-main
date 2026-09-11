@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2, UserCheck, LogIn, Play, Phone } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2, UserCheck, LogIn, Play, Phone, Calendar, Mail, Check } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
-import { submitProjectLeadToHostinger } from '../services/hostingerDbService.ts';
+import { submitServiceBookingToHostinger, parseSpelledEmail } from '../services/hostingerDbService.ts';
 
 interface VoiceAssistantProps {
   onNavigate: (page: string) => void;
@@ -58,6 +58,21 @@ export default function VoiceAssistant({
     'I am YZER, your Genowl AI guide. Ask me anything, or tap "Give me a tour"!'
   );
   const [isSupported, setIsSupported] = useState(true);
+
+  // Interactive Voice Booking State Machine ("Let AI do all the talks")
+  type BookingStep = 'idle' | 'awaiting_service' | 'awaiting_customizations' | 'awaiting_slot' | 'awaiting_email';
+  const [bookingStep, setBookingStep] = useState<BookingStep>('idle');
+  const [bookedService, setBookedService] = useState('2D Website');
+  const [bookedCustomizations, setBookedCustomizations] = useState('');
+  const [bookedSlot, setBookedSlot] = useState('');
+  const [bookedEmail, setBookedEmail] = useState(currentUser?.email || '');
+  const [confirmedBooking, setConfirmedBooking] = useState<{
+    service: string;
+    customizations: string;
+    slot: string;
+    email: string;
+    receiptId: string;
+  } | null>(null);
 
   const activeRecognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
@@ -323,6 +338,84 @@ export default function VoiceAssistant({
     const text = rawInput.trim().toLowerCase();
     if (!text) return;
 
+    // 0. ACTIVE VOICE BOOKING FLOW ("Let AI do all the talks")
+    if (bookingStep !== 'idle') {
+      if (text.includes('cancel') || text.includes('abort') || text.includes('stop booking') || text.includes('never mind')) {
+        setBookingStep('idle');
+        speak('Booking session cancelled. How else can YZER assist you today?');
+        return;
+      }
+
+      // STEP 1: Which Service
+      if (bookingStep === 'awaiting_service') {
+        let chosenService = '2D Website';
+        if (text.includes('3d') || text.includes('webgl') || text.includes('interactive')) {
+          chosenService = '3D WebGL Experience ($1,000)';
+        } else if (text.includes('agent') || text.includes('ai agent') || text.includes('bot')) {
+          chosenService = 'Autonomous AI Agent ($200)';
+        } else if (text.includes('video') || text.includes('commercial') || text.includes('ad')) {
+          chosenService = 'AI Video Commercial ($100)';
+        } else {
+          chosenService = '2D High-Converting Web ($500)';
+        }
+        setBookedService(chosenService);
+        setBookingStep('awaiting_customizations');
+        speak(`Excellent choice for ${chosenService}! What extra details and customizations would you like us to build into your project? Tell me about any features, design styles, or specific requirements.`);
+        return;
+      }
+
+      // STEP 2: Extra Details / Customizations
+      if (bookingStep === 'awaiting_customizations') {
+        const customDetails = rawInput.trim();
+        setBookedCustomizations(customDetails);
+        setBookingStep('awaiting_slot');
+        speak(`Understood, noted those specifications! What date and time slot works best for our team to hold our kickoff consultation with you?`);
+        return;
+      }
+
+      // STEP 3: Booked Slot
+      if (bookingStep === 'awaiting_slot') {
+        const slotChoice = rawInput.trim();
+        setBookedSlot(slotChoice);
+        setBookingStep('awaiting_email');
+        speak(`Slot reserved for ${slotChoice}! Now, please tell me your email address and spell it out letter by letter so I can record your exact email address without any mistake.`);
+        return;
+      }
+
+      // STEP 4: Verified Spelled Email
+      if (bookingStep === 'awaiting_email') {
+        const parsedEmail = parseSpelledEmail(rawInput) || (currentUser?.email ? currentUser.email : null);
+        if (parsedEmail) {
+          setBookedEmail(parsedEmail);
+          setBookingStep('idle');
+          const receiptId = 'GENOWL-VOICE-' + Math.floor(100000 + Math.random() * 900000);
+
+          // STRICT GATE: Record ONLY the 4 items: Service, Customizations, Booked Slot, and Spelled Email
+          submitServiceBookingToHostinger({
+            receipt_id: receiptId,
+            service_type: bookedService,
+            customizations: bookedCustomizations,
+            booked_slot: bookedSlot,
+            customer_email: parsedEmail,
+          }).catch((err) => console.warn('Booking sync note:', err));
+
+          setConfirmedBooking({
+            service: bookedService,
+            customizations: bookedCustomizations,
+            slot: bookedSlot,
+            email: parsedEmail,
+            receiptId: receiptId,
+          });
+
+          speak(`Thank you! I have verified and recorded your email: ${parsedEmail}. Your booking for ${bookedService} on ${bookedSlot} is confirmed with your custom specifications. All details have been recorded into our database.`);
+          return;
+        } else {
+          speak(`I couldn't verify that email format. Please spell out your email address slowly, letter by letter, including the domain, like: n-a-m-e at domain dot com.`);
+          return;
+        }
+      }
+    }
+
     // 1. Audio Silence / Stop Command
     if (
       text.includes('stop') ||
@@ -506,7 +599,7 @@ export default function VoiceAssistant({
       return;
     }
 
-    // 10. BOOKING, ORDERING & SLOT RESERVATION
+    // 10. BOOKING, ORDERING & SLOT RESERVATION INITIATION ("Let AI do all the talks")
     if (
       text.includes('book') ||
       text.includes('order') ||
@@ -521,30 +614,25 @@ export default function VoiceAssistant({
       text.includes('slot') ||
       text.includes('schedule')
     ) {
-      let chosenService = '2D Website';
+      let chosenService = '';
       if (text.includes('3d') || text.includes('webgl') || text.includes('interactive')) {
-        chosenService = '3D Website';
-      } else if (text.includes('ai') || text.includes('video') || text.includes('ad') || text.includes('commercial')) {
-        chosenService = 'AI Video & Prompts';
+        chosenService = '3D WebGL Experience ($1,000)';
+      } else if (text.includes('agent') || text.includes('ai agent') || text.includes('bot')) {
+        chosenService = 'Autonomous AI Agent ($200)';
+      } else if (text.includes('video') || text.includes('ad') || text.includes('commercial')) {
+        chosenService = 'AI Video Commercial ($100)';
+      } else if (text.includes('2d') || text.includes('website') || text.includes('web')) {
+        chosenService = '2D High-Converting Web ($500)';
       }
 
-      // Auto-save lead intelligence to Hostinger database
-      if (currentUser?.email || text.includes('@')) {
-        const foundEmail = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0] || currentUser?.email || '';
-        submitProjectLeadToHostinger({
-          customer_name: currentUser?.name || (foundEmail ? foundEmail.split('@')[0] : 'Voice Client'),
-          customer_email: foundEmail,
-          customer_phone: 'Voice Assistant Lead',
-          service_type: chosenService,
-          meeting_time_slot: 'Slot requested via YZER Voice Guide',
-          project_scope: `YZER Voice interaction: ${rawInput}`,
-          voice_transcript: rawInput,
-          lead_source: 'YZER Voice Assistant Guide',
-        }).catch(() => {});
+      if (chosenService) {
+        setBookedService(chosenService);
+        setBookingStep('awaiting_customizations');
+        speak(`I can take care of your booking for ${chosenService} right now! What extra details and customizations would you like us to build into your project? Tell me about your specific features, design preferences, or requirements.`);
+      } else {
+        setBookingStep('awaiting_service');
+        speak(`I can take care of your booking right now! Which service would you like to build? We offer 2D Websites for $500, 3D WebGL experiences for $1,000, Autonomous AI Agents for $200, or AI Video production for $100.`);
       }
-
-      onOpenOrder(chosenService);
-      speak(`Opening your project reservation desk for ${chosenService}. Choose your preferred date, and our team will confirm your slot.`);
       return;
     }
 
@@ -954,6 +1042,63 @@ export default function VoiceAssistant({
               {assistantMessage}
             </p>
           </div>
+
+          {/* ACTIVE VOICE BOOKING FLOW STEP INDICATOR */}
+          {bookingStep !== 'idle' && (
+            <div className="p-2.5 rounded-2xl bg-[#162318] border border-[#c6f554]/40 flex flex-col gap-1.5 animate-in fade-in">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-[#c6f554] font-bold uppercase tracking-wider flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#c6f554] animate-ping" />
+                  YZER Live Booking Guide
+                </span>
+                <span className="text-zinc-400 font-mono">
+                  {bookingStep === 'awaiting_service' && 'Step 1/4: Choose Service'}
+                  {bookingStep === 'awaiting_customizations' && 'Step 2/4: Customizations'}
+                  {bookingStep === 'awaiting_slot' && 'Step 3/4: Booked Slot'}
+                  {bookingStep === 'awaiting_email' && 'Step 4/4: Spell Your Email'}
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-1">
+                <div className={`h-1 rounded-full ${bookingStep === 'awaiting_service' ? 'bg-[#c6f554] animate-pulse' : 'bg-[#c6f554]'}`} />
+                <div className={`h-1 rounded-full ${bookingStep === 'awaiting_customizations' ? 'bg-[#c6f554] animate-pulse' : bookingStep === 'awaiting_slot' || bookingStep === 'awaiting_email' ? 'bg-[#c6f554]' : 'bg-white/10'}`} />
+                <div className={`h-1 rounded-full ${bookingStep === 'awaiting_slot' ? 'bg-[#c6f554] animate-pulse' : bookingStep === 'awaiting_email' ? 'bg-[#c6f554]' : 'bg-white/10'}`} />
+                <div className={`h-1 rounded-full ${bookingStep === 'awaiting_email' ? 'bg-[#c6f554] animate-pulse' : 'bg-white/10'}`} />
+              </div>
+            </div>
+          )}
+
+          {/* CONFIRMED BOOKING RECORD CARD (Hostinger MySQL) */}
+          {confirmedBooking && (
+            <div className="p-3 rounded-2xl bg-[#0d170e] border border-[#c6f554]/40 text-left flex flex-col gap-1.5 shadow-[0_0_20px_rgba(198,245,84,0.15)] animate-in fade-in">
+              <div className="flex items-center justify-between pb-1.5 border-b border-white/[0.08]">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#c6f554]" />
+                  <span>Booking Recorded</span>
+                </div>
+                <span className="text-[9px] font-mono text-[#c6f554] bg-[#c6f554]/10 px-1.5 py-0.5 rounded border border-[#c6f554]/30">
+                  {confirmedBooking.receiptId}
+                </span>
+              </div>
+              <div className="space-y-1 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-zinc-400">Service:</span>
+                  <span className="text-[#c6f554] font-medium">{confirmedBooking.service}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-400">Customizations:</span>
+                  <span className="text-white text-right font-normal max-w-[180px] truncate">{confirmedBooking.customizations}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-400">Slot:</span>
+                  <span className="text-white font-medium">{confirmedBooking.slot}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-400">Verified Email:</span>
+                  <span className="text-[#c6f554] font-mono">{confirmedBooking.email}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ACTIVE MIC STATUS BAR */}
           {isListening && (

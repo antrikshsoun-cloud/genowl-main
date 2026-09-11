@@ -37,8 +37,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customer_email = trim($data['customer_email'] ?? ($data['email'] ?? ''));
     $customer_phone = trim($data['customer_phone'] ?? ($data['phone'] ?? ''));
 
-    // 2. Service & Styling
+    // Reject dummy or missing email - ONLY genuine bookings with verified customer email are recorded!
+    if (empty($customer_email) || !filter_var($customer_email, FILTER_VALIDATE_EMAIL) || strpos($customer_email, '@client.genowl.tech') !== false || strpos($customer_email, 'voice_caller') !== false) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'A verified customer email address is required to record a service booking.'
+        ]);
+        exit;
+    }
+
+    // 2. Service & Customizations
     $service_type = trim($data['service_type'] ?? ($data['service'] ?? '2D Website'));
+    $customizations = trim($data['customizations'] ?? ($data['extra_details'] ?? ($data['details'] ?? ($data['project_scope'] ?? ''))));
     $service_style = trim($data['service_style'] ?? ($data['style'] ?? ''));
     $turnaround_speed = trim($data['turnaround_speed'] ?? ($data['speed'] ?? 'standard'));
     if (!in_array($turnaround_speed, ['standard', 'priority', 'urgent'])) {
@@ -46,60 +57,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // 3. Commercials
-    $quoted_price = trim($data['quoted_price'] ?? ($data['price'] ?? '$99'));
+    $quoted_price = trim($data['quoted_price'] ?? ($data['price'] ?? '$500'));
     $payment_status = trim($data['payment_status'] ?? 'pending');
     if (!in_array($payment_status, ['pending', 'deposit_paid', 'fully_paid', 'refunded'])) {
         $payment_status = 'pending';
     }
 
-    // 4. Meeting & Scheduling
+    // 4. Meeting & Booked Slot
     $meeting_date = !empty($data['meeting_date']) ? trim($data['meeting_date']) : null;
-    $meeting_time_slot = trim($data['meeting_time_slot'] ?? ($data['preferred_time'] ?? ''));
-    $meeting_platform = trim($data['meeting_platform'] ?? 'Google Meet');
+    $meeting_time_slot = trim($data['booked_slot'] ?? ($data['meeting_time_slot'] ?? ($data['preferred_time'] ?? 'Kickoff Consultation')));
+    $meeting_platform = trim($data['meeting_platform'] ?? 'Google Meet / Studio Desk');
 
-    // 5. Assets & Project Brief
+    // 5. Project Scope (Mirrors Customizations)
+    $project_scope = !empty($customizations) ? $customizations : trim($data['project_scope'] ?? 'Client requested custom build.');
     $reference_url = trim($data['reference_url'] ?? '');
-    $project_scope = trim($data['project_scope'] ?? ($data['details'] ?? ($data['notes'] ?? '')));
 
-    // 6. Keywords & Voice Intelligence
+    // 6. Voice & Source
+    $voice_transcript = trim($data['voice_transcript'] ?? ($data['transcript'] ?? ''));
     $extracted_keywords = is_array($data['extracted_keywords'] ?? null) 
         ? implode(', ', $data['extracted_keywords']) 
         : trim($data['extracted_keywords'] ?? '');
-    $voice_transcript = trim($data['voice_transcript'] ?? ($data['transcript'] ?? ''));
-    $lead_source = trim($data['lead_source'] ?? 'Order Modal');
+    $lead_source = trim($data['lead_source'] ?? 'AI Voice Agent Service Booking');
 
-    // 7. Project Metadata JSON (Flexible minor details store)
-    $project_metadata = isset($data['project_metadata']) && is_array($data['project_metadata'])
-        ? json_encode($data['project_metadata'], JSON_UNESCAPED_UNICODE)
-        : (isset($data['project_metadata']) && is_string($data['project_metadata']) ? $data['project_metadata'] : null);
-
-    // 8. Foundry Workflow
-    $status = trim($data['status'] ?? 'new');
-    if (!in_array($status, ['new', 'meeting_scheduled', 'in_progress', 'client_review', 'completed', 'cancelled'])) {
-        $status = 'new';
-    }
+    // 7. Workflow
+    $status = trim($data['status'] ?? 'meeting_scheduled');
     $assigned_founder = trim($data['assigned_founder'] ?? 'Unassigned');
-    if (!in_array($assigned_founder, ['Antriksh', 'Bilal', 'Maulik', 'Jaywardhan', 'Ritesh', 'Unassigned'])) {
-        $assigned_founder = 'Unassigned';
-    }
     $founder_notes = trim($data['founder_notes'] ?? '');
 
-    // Resilient Voice Call & Form Validation
     if (empty($customer_name)) {
-        $customer_name = !empty($customer_email) ? ucfirst(explode('@', $customer_email)[0]) : 'Voice Caller (YZER)';
+        $customer_name = ucfirst(explode('@', $customer_email)[0]);
     }
     if (empty($customer_phone)) {
-        $customer_phone = 'Not Provided (WebRTC Call)';
-    }
-    if (empty($customer_email)) {
-        $customer_email = 'voice_caller_' . strtolower(substr($receipt_id, -6)) . '@client.genowl.tech';
-    }
-    if (empty($project_scope)) {
-        $project_scope = !empty($voice_transcript) ? "Voice Call with YZER: " . mb_substr($voice_transcript, 0, 800) : "Direct Voice Inquiry with YZER";
+        $customer_phone = 'Captured via AI Voice Booking';
     }
 
     try {
         $pdo = getDbConnection();
+
+        // Auto-migration: ensure customizations column exists in Hostinger MySQL
+        try {
+            $pdo->exec("ALTER TABLE genowl_project_leads ADD COLUMN IF NOT EXISTS customizations TEXT NULL");
+        } catch (Exception $colEx) {
+            // Ignore if column already exists or MySQL version doesn't support IF NOT EXISTS
+        }
+
         $stmt = $pdo->prepare("
             INSERT INTO genowl_project_leads (
                 receipt_id,
@@ -115,11 +116,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 meeting_time_slot,
                 meeting_platform,
                 reference_url,
+                customizations,
                 project_scope,
                 extracted_keywords,
                 voice_transcript,
                 lead_source,
-                project_metadata,
                 status,
                 assigned_founder,
                 founder_notes,
@@ -138,11 +139,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 :meeting_time_slot,
                 :meeting_platform,
                 :reference_url,
+                :customizations,
                 :project_scope,
                 :extracted_keywords,
                 :voice_transcript,
                 :lead_source,
-                :project_metadata,
                 :status,
                 :assigned_founder,
                 :founder_notes,
@@ -152,14 +153,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 customer_name = VALUES(customer_name),
                 customer_phone = VALUES(customer_phone),
                 service_type = VALUES(service_type),
-                service_style = VALUES(service_style),
-                turnaround_speed = VALUES(turnaround_speed),
-                quoted_price = VALUES(quoted_price),
+                customizations = VALUES(customizations),
                 meeting_time_slot = VALUES(meeting_time_slot),
-                reference_url = VALUES(reference_url),
-                project_scope = VALUES(project_scope),
-                extracted_keywords = VALUES(extracted_keywords),
-                project_metadata = VALUES(project_metadata)
+                project_scope = VALUES(project_scope)
         ");
 
         $stmt->execute([
@@ -176,11 +172,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':meeting_time_slot' => $meeting_time_slot,
             ':meeting_platform' => $meeting_platform,
             ':reference_url' => $reference_url,
+            ':customizations' => $customizations,
             ':project_scope' => $project_scope,
             ':extracted_keywords' => $extracted_keywords,
             ':voice_transcript' => $voice_transcript,
             ':lead_source' => $lead_source,
-            ':project_metadata' => $project_metadata,
             ':status' => $status,
             ':assigned_founder' => $assigned_founder,
             ':founder_notes' => $founder_notes,
@@ -222,6 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 meeting_time_slot,
                 meeting_platform,
                 reference_url,
+                customizations,
                 project_scope,
                 extracted_keywords,
                 voice_transcript,

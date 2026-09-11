@@ -55,67 +55,120 @@ if (empty($transcript) && empty($summary)) {
     exit;
 }
 
-// Parse email from transcript if not provided
+// Extract tool/function call parameters if present
+$toolArgs = null;
+if (isset($message['toolCalls'][0]['function']['arguments'])) {
+    $toolArgs = is_array($message['toolCalls'][0]['function']['arguments']) 
+        ? $message['toolCalls'][0]['function']['arguments']
+        : json_decode($message['toolCalls'][0]['function']['arguments'], true);
+} elseif (isset($message['functionCall']['parameters'])) {
+    $toolArgs = is_array($message['functionCall']['parameters'])
+        ? $message['functionCall']['parameters']
+        : json_decode($message['functionCall']['parameters'], true);
+}
+
+// 1. Identify Service Type
+$serviceType = '';
+if (!empty($toolArgs['service_type'])) {
+    $serviceType = trim($toolArgs['service_type']);
+} else {
+    $lower = strtolower($transcript . ' ' . $summary);
+    if (strpos($lower, '3d') !== false || strpos($lower, 'webgl') !== false) {
+        $serviceType = '3D WebGL Experience ($1,000)';
+    } elseif (strpos($lower, 'video') !== false || strpos($lower, 'commercial') !== false || strpos($lower, 'ad') !== false) {
+        $serviceType = 'AI Video Commercial ($100)';
+    } elseif (strpos($lower, 'agent') !== false || strpos($lower, 'yzer') !== false) {
+        $serviceType = 'Autonomous AI Agent ($200)';
+    } elseif (strpos($lower, '2d') !== false || strpos($lower, 'website') !== false || strpos($lower, 'web') !== false) {
+        $serviceType = '2D High-Converting Web ($500)';
+    }
+}
+
+// 2. Extract Customer Email (direct, function call, or spelled letter-by-letter)
 $customerEmail = '';
-if (preg_match('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $transcript, $matches)) {
+if (!empty($toolArgs['customer_email']) && filter_var($toolArgs['customer_email'], FILTER_VALIDATE_EMAIL)) {
+    $customerEmail = strtolower(trim($toolArgs['customer_email']));
+}
+
+if (empty($customerEmail) && preg_match('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $transcript, $matches)) {
     $customerEmail = strtolower($matches[0]);
 }
 
-// Parse spoken email format (e.g., "john at gmail dot com")
-if (empty($customerEmail) && preg_match('/([a-zA-Z0-9._%+-]+)\s*(?:at|@)\s*([a-zA-Z0-9.-]+)\s*(?:dot|\.)\s*([a-zA-Z]{2,})/i', $transcript, $spokenMatches)) {
-    $user = str_replace(' ', '', preg_replace('/\s*dot\s*/i', '.', $spokenMatches[1]));
-    $domain = str_replace(' ', '', $spokenMatches[2]);
-    $tld = str_replace(' ', '', $spokenMatches[3]);
-    $customerEmail = strtolower("{$user}@{$domain}.{$tld}");
-}
-
-// Fallback email and names
-$receipt_id = 'GENOWL-VAPI-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 6));
+// Check spelled phonetic email format (e.g. "a n t r i k s h at g m a i l dot com" or "john at gmail dot com")
 if (empty($customerEmail)) {
-    $customerEmail = 'voice_caller_' . strtolower(substr($receipt_id, -6)) . '@client.genowl.tech';
-}
-if (empty($customerName)) {
-    $customerName = !empty($customerEmail) && strpos($customerEmail, '@client.genowl.tech') === false
-        ? ucfirst(explode('@', $customerEmail)[0])
-        : 'Voice Hotline Caller';
-}
-if (empty($customerNumber)) {
-    $customerNumber = 'Captured via Vapi Voice';
-}
+    $cleanText = strtolower($transcript);
+    // Convert digit words to numbers
+    $numMap = ['zero'=>'0','one'=>'1','two'=>'2','three'=>'3','four'=>'4','five'=>'5','six'=>'6','seven'=>'7','eight'=>'8','nine'=>'9'];
+    foreach ($numMap as $w => $n) {
+        $cleanText = preg_replace("/\b{$w}\b/", $n, $cleanText);
+    }
+    $cleanText = preg_replace('/\s*(?:at the rate|at sign|\bat\b|@)\s*/i', '@', $cleanText);
+    $cleanText = preg_replace('/\s*(?:dot|period|\.)\s*/i', '.', $cleanText);
+    $cleanText = preg_replace('/\s*(?:underscore)\s*/i', '_', $cleanText);
+    $cleanText = preg_replace('/\s*(?:dash|hyphen|minus)\s*/i', '-', $cleanText);
 
-// Service detection from transcript
-$serviceType = '2D High-Converting Web ($500)';
-$lower = strtolower($transcript . ' ' . $summary);
-if (strpos($lower, '3d') !== false || strpos($lower, 'webgl') !== false) {
-    $serviceType = '3D WebGL Experience ($2,500)';
-} elseif (strpos($lower, 'video') !== false || strpos($lower, 'commercial') !== false || strpos($lower, 'ad') !== false) {
-    $serviceType = 'AI Video Commercial ($99)';
-} elseif (strpos($lower, 'agent') !== false || strpos($lower, 'yzer') !== false) {
-    $serviceType = 'Autonomous AI Agent ($200)';
-}
-
-// Meeting slot detection
-$meetingSlot = 'Consultation Call Requested';
-if (preg_match('/(?:meeting|slot|call|schedule|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)[^.!?]{5,60}/i', $transcript, $slotMatch)) {
-    $meetingSlot = trim($slotMatch[0]);
-}
-
-// Keyword extraction
-$keywords = [];
-$dict = ['3d', 'webgl', 'three.js', '60fps', '2d', 'saas', 'agent', 'voice', 'video', 'commercial', 'urgent', 'meeting', 'stripe', 'hostinger'];
-foreach ($dict as $word) {
-    if (strpos($lower, $word) !== false) {
-        $keywords[] = $word;
+    if (preg_match('/([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})/i', $cleanText, $spokenMatch)) {
+        $u = str_replace(' ', '', $spokenMatch[1]);
+        $d = str_replace(' ', '', $spokenMatch[2]);
+        $t = str_replace(' ', '', $spokenMatch[3]);
+        $candidate = strtolower("{$u}@{$d}.{$t}");
+        if (filter_var($candidate, FILTER_VALIDATE_EMAIL)) {
+            $customerEmail = $candidate;
+        }
     }
 }
-$extractedKeywords = implode(', ', $keywords);
 
-$projectScope = !empty($summary) 
-    ? "YZER Call Summary: {$summary}\n\nFull Transcript:\n{$transcript}" 
-    : "YZER Call Transcript:\n{$transcript}";
+// STRICT GATE: If the customer did not ask to book or did not provide a real email, DO NOT record!
+$hasBookingIntent = !empty($toolArgs['booked_slot']) || 
+    !empty($toolArgs['service_type']) || 
+    preg_match('/\b(book|booking|order|hire|reserve|slot|schedule|kickoff)\b/i', $transcript . ' ' . $summary);
+
+if (!$hasBookingIntent || empty($customerEmail) || strpos($customerEmail, '@client.genowl.tech') !== false || strpos($customerEmail, 'voice_caller') !== false) {
+    echo json_encode([
+        'success' => true,
+        'message' => 'Phone call acknowledged. No service booking recorded (inquiry only or no verified email).'
+    ]);
+    exit;
+}
+
+// 3. Extract Extra Details / Customizations
+$customizations = !empty($toolArgs['customizations']) 
+    ? trim($toolArgs['customizations']) 
+    : '';
+
+if (empty($customizations)) {
+    // Extract customizations from summary or transcript
+    if (!empty($summary)) {
+        $customizations = $summary;
+    } else {
+        $customizations = 'Phone consultation booking via +1 (628) 245-9578';
+    }
+}
+
+// 4. Extract Booked Slot
+$bookedSlot = !empty($toolArgs['booked_slot']) 
+    ? trim($toolArgs['booked_slot']) 
+    : '';
+
+if (empty($bookedSlot)) {
+    if (preg_match('/(?:meeting|slot|call|schedule|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)[^.!?]{5,60}/i', $transcript, $slotMatch)) {
+        $bookedSlot = trim($slotMatch[0]);
+    } else {
+        $bookedSlot = 'Phone Kickoff Consultation';
+    }
+}
+
+$receipt_id = 'GENOWL-PHONE-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 6));
+$customerName = ucfirst(explode('@', $customerEmail)[0]);
 
 try {
     $pdo = getDbConnection();
+
+    // Ensure customizations column exists
+    try {
+        $pdo->exec("ALTER TABLE genowl_project_leads ADD COLUMN IF NOT EXISTS customizations TEXT NULL");
+    } catch (Exception $e) {}
+
     $stmt = $pdo->prepare("
         INSERT INTO genowl_project_leads (
             receipt_id,
@@ -127,6 +180,7 @@ try {
             quoted_price,
             meeting_time_slot,
             meeting_platform,
+            customizations,
             project_scope,
             extracted_keywords,
             voice_transcript,
@@ -141,14 +195,15 @@ try {
             :customer_phone,
             :service_type,
             'standard',
-            '$99',
+            '$500',
             :meeting_time_slot,
-            'YZER AI Voice Hotline',
+            'Official Phone Line (+1 628 245-9578)',
+            :customizations,
             :project_scope,
             :extracted_keywords,
             :voice_transcript,
-            'Vapi Voice Hotline / Webhook',
-            'new',
+            'Phone Hotline Call (+1 628 245-9578)',
+            'meeting_scheduled',
             'Unassigned',
             NOW()
         )
@@ -158,20 +213,28 @@ try {
         ':receipt_id' => $receipt_id,
         ':customer_name' => $customerName,
         ':customer_email' => $customerEmail,
-        ':customer_phone' => $customerNumber,
-        ':service_type' => $serviceType,
-        ':meeting_time_slot' => $meetingSlot,
-        ':project_scope' => $projectScope,
-        ':extracted_keywords' => $extractedKeywords,
+        ':customer_phone' => !empty($customerNumber) ? $customerNumber : '+1 (628) 245-9578 (Phone Caller)',
+        ':service_type' => !empty($serviceType) ? $serviceType : '2D High-Converting Web ($500)',
+        ':meeting_time_slot' => $bookedSlot,
+        ':customizations' => $customizations,
+        ':project_scope' => $customizations,
+        ':extracted_keywords' => 'phone call, official hotline, booking, verified email',
         ':voice_transcript' => $transcript,
     ]);
 
     echo json_encode([
         'success' => true,
-        'message' => 'Vapi call lead successfully recorded in Hostinger Database',
+        'message' => 'Phone booking successfully recorded in Hostinger Database!',
         'receipt_id' => $receipt_id,
+        'booking' => [
+            'service_type' => $serviceType,
+            'customizations' => $customizations,
+            'booked_slot' => $bookedSlot,
+            'customer_email' => $customerEmail,
+        ]
     ]);
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
 }
+
