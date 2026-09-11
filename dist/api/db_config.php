@@ -1,18 +1,24 @@
 <?php
 /**
  * Hostinger MySQL Database Configuration for Genowl Studio
+ * Table: genowl_project_leads, bookings, contacts
  */
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
-// Database Credentials
-// Replace with your Hostinger database details:
-define('DB_HOST', 'localhost');
-define('DB_NAME', getenv('HOSTINGER_DB_NAME') ?: 'u123456789_genowldb');
-define('DB_USER', getenv('HOSTINGER_DB_USER') ?: 'u123456789_genowluser');
-define('DB_PASS', getenv('HOSTINGER_DB_PASS') ?: 'YOUR_DATABASE_PASSWORD');
+// 1. Check for a permanent local credentials file (IMMUNE TO GIT DEPLOYS)
+// Git will NEVER overwrite db_credentials.php during pulls or auto-deploys
+$localCredentials = __DIR__ . '/db_credentials.php';
+if (file_exists($localCredentials)) {
+    require_once $localCredentials;
+}
+
+// 2. Set default fallbacks if not defined in db_credentials.php
+if (!defined('DB_HOST')) define('DB_HOST', getenv('HOSTINGER_DB_HOST') ?: 'localhost');
+if (!defined('DB_NAME')) define('DB_NAME', getenv('HOSTINGER_DB_NAME') ?: 'u123456789_genowldb');
+if (!defined('DB_USER')) define('DB_USER', getenv('HOSTINGER_DB_USER') ?: 'u123456789_genowluser');
+if (!defined('DB_PASS')) define('DB_PASS', getenv('HOSTINGER_DB_PASS') ?: 'YOUR_DATABASE_PASSWORD');
 
 function getDbConnection() {
     static $pdo = null;
@@ -29,7 +35,7 @@ function getDbConnection() {
             http_response_code(500);
             echo json_encode([
                 'success' => false,
-                'error' => 'Database connection failed. Please update database credentials in public/api/db_config.php'
+                'error' => 'Database connection failed. Please verify credentials in api/db_credentials.php or api/db_config.php'
             ]);
             exit;
         }

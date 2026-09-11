@@ -6,3 +6,5 @@ coverage/
 *.zip
 .env*
 !.env.example
+*db_credentials.php
+!api/db_credentials.example.php
