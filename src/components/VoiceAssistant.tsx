@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Volume2, VolumeX, X, Send, Sparkles, Compass, HelpCircle, CheckCircle2, UserCheck, LogIn, Play, Phone } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
+import { submitProjectLeadToHostinger } from '../services/hostingerDbService.ts';
 
 interface VoiceAssistantProps {
   onNavigate: (page: string) => void;
@@ -516,7 +517,9 @@ export default function VoiceAssistant({
       text.includes('consultation') ||
       text.includes('get started') ||
       text.includes('deal') ||
-      text.includes('contract')
+      text.includes('contract') ||
+      text.includes('slot') ||
+      text.includes('schedule')
     ) {
       let chosenService = '2D Website';
       if (text.includes('3d') || text.includes('webgl') || text.includes('interactive')) {
@@ -524,6 +527,22 @@ export default function VoiceAssistant({
       } else if (text.includes('ai') || text.includes('video') || text.includes('ad') || text.includes('commercial')) {
         chosenService = 'AI Video & Prompts';
       }
+
+      // Auto-save lead intelligence to Hostinger database
+      if (currentUser?.email || text.includes('@')) {
+        const foundEmail = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0] || currentUser?.email || '';
+        submitProjectLeadToHostinger({
+          customer_name: currentUser?.name || (foundEmail ? foundEmail.split('@')[0] : 'Voice Client'),
+          customer_email: foundEmail,
+          customer_phone: 'Voice Assistant Lead',
+          service_type: chosenService,
+          meeting_time_slot: 'Slot requested via YZER Voice Guide',
+          project_scope: `YZER Voice interaction: ${rawInput}`,
+          voice_transcript: rawInput,
+          lead_source: 'YZER Voice Assistant Guide',
+        }).catch(() => {});
+      }
+
       onOpenOrder(chosenService);
       speak(`Opening your project reservation desk for ${chosenService}. Choose your preferred date, and our team will confirm your slot.`);
       return;

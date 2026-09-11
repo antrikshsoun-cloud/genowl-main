@@ -84,11 +84,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $founder_notes = trim($data['founder_notes'] ?? '');
 
-    // Validation
-    if (empty($customer_name) || empty($customer_email) || empty($customer_phone)) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Name, email, and phone number are required.']);
-        exit;
+    // Resilient Voice Call & Form Validation
+    if (empty($customer_name)) {
+        $customer_name = !empty($customer_email) ? ucfirst(explode('@', $customer_email)[0]) : 'Voice Caller (YZER)';
+    }
+    if (empty($customer_phone)) {
+        $customer_phone = 'Not Provided (WebRTC Call)';
+    }
+    if (empty($customer_email)) {
+        $customer_email = 'voice_caller_' . strtolower(substr($receipt_id, -6)) . '@client.genowl.tech';
+    }
+    if (empty($project_scope)) {
+        $project_scope = !empty($voice_transcript) ? "Voice Call with YZER: " . mb_substr($voice_transcript, 0, 800) : "Direct Voice Inquiry with YZER";
     }
 
     try {

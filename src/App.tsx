@@ -329,6 +329,8 @@ export default function App() {
       <VapiVoiceCallModal
         isOpen={vapiCallModalOpen}
         onClose={() => setVapiCallModalOpen(false)}
+        currentUser={currentUser}
+        onOpenOrder={handleOpenOrder}
       />
     </div>
   );
