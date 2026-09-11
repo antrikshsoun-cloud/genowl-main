@@ -23,7 +23,7 @@ import OwlLogo from './OwlLogo.tsx';
 import { UserProfile } from './AuthModal.tsx';
 import { sendSlotBookingEmail } from '../services/emailService.ts';
 import { syncOrderToSupabase } from '../services/supabaseClient.ts';
-import { submitBookingToHostinger } from '../services/hostingerDbService.ts';
+import { submitBookingToHostinger, submitProjectLeadToHostinger } from '../services/hostingerDbService.ts';
 import { getStylesForService } from '../data/serviceStyles.ts';
 
 interface OrderModalProps {
@@ -199,7 +199,32 @@ export default function OrderModal({
       console.warn('Supabase cloud sync background note:', err);
     });
 
-    // 3. Sync to Hostinger LiteSpeed MySQL Database
+    // 3. Sync comprehensive project lead with every minor detail into Hostinger MySQL genowl_project_leads
+    submitProjectLeadToHostinger({
+      receipt_id: ticketId,
+      customer_name: newOrder.name,
+      customer_email: newOrder.email,
+      customer_phone: newOrder.phone,
+      service_type: newOrder.service,
+      service_style: newOrder.styleReference,
+      turnaround_speed: newOrder.speed as any,
+      quoted_price: newOrder.amount,
+      payment_status: 'pending',
+      meeting_time_slot: newOrder.preferredTime,
+      meeting_platform: 'Google Meet',
+      reference_url: newOrder.referenceUrl,
+      project_scope: newOrder.details,
+      lead_source: 'Order Modal',
+      project_metadata: {
+        raw_price: services.find((s) => s.title.toLowerCase() === newOrder.service.toLowerCase())?.rawPrice || 99,
+        speed_label: speedLabels[speed],
+        submitted_at_utc: new Date().toISOString(),
+      },
+    }).catch((err) => {
+      console.warn('Hostinger Project Leads sync note:', err);
+    });
+
+    // Also sync to legacy bookings table for backwards redundancy
     submitBookingToHostinger({
       name: newOrder.name,
       email: newOrder.email,
