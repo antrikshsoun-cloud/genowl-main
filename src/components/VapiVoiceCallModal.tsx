@@ -273,21 +273,35 @@ export default function VapiVoiceCallModal({
 
               // If the user spoke, automatically detect email, phone, slot, service
               if (message.role === 'user') {
+                let hasNewContactInfo = false;
                 const foundEmail = parseSpokenEmail(text);
                 if (foundEmail) {
                   setDetectedEmail(foundEmail);
+                  hasNewContactInfo = true;
                 }
                 const foundPhone = parseSpokenPhone(text);
                 if (foundPhone) {
                   setDetectedPhone(foundPhone);
+                  hasNewContactInfo = true;
                 }
                 const foundSlot = parseSpokenMeetingSlot(text);
                 if (foundSlot) {
                   setDetectedMeetingSlot(foundSlot);
+                  hasNewContactInfo = true;
                 }
                 const foundSrv = parseSpokenService(text);
                 if (foundSrv) {
                   setDetectedService(foundSrv);
+                }
+
+                // MOBILE SPECIAL: Immediate live sync as soon as an email or slot is spoken!
+                // Eliminates data loss if a mobile user closes the browser or locks their phone screen.
+                if (hasNewContactInfo) {
+                  persistCallToHostinger({
+                    email: foundEmail || detectedEmail,
+                    phone: foundPhone || detectedPhone,
+                    meetingSlot: foundSlot || detectedMeetingSlot,
+                  });
                 }
               }
             }
@@ -422,6 +436,21 @@ export default function VapiVoiceCallModal({
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  // Mobile lifecycle safeguard: Save immediately if user switches app or locks phone
+  useEffect(() => {
+    const handleMobileExit = () => {
+      if (fullTranscriptRef.current && callStatus === 'connected') {
+        persistCallToHostinger();
+      }
+    };
+    document.addEventListener('visibilitychange', handleMobileExit);
+    window.addEventListener('pagehide', handleMobileExit);
+    return () => {
+      document.removeEventListener('visibilitychange', handleMobileExit);
+      window.removeEventListener('pagehide', handleMobileExit);
+    };
+  }, [callStatus, detectedEmail, detectedPhone, detectedMeetingSlot, detectedService]);
 
   const handleManualSave = async (e: React.FormEvent) => {
     e.preventDefault();
