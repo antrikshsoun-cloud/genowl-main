@@ -10,6 +10,7 @@
 - **Project Name:** Genowl Studio Flagship Web Application
 - **Live Production URL:** `https://genowl.tech`
 - **Primary Domain & Host:** Hostinger LiteSpeed Web Server
+- **Founding Team & Leadership:** **Antriksh**, **Bilal**, **Maulik**, **Jaywardhan**, and **Ritesh** (Co-Founders of Genowl).
 - **Core Value Proposition / Philosophy:**
   > *"Genowl is a platform that provides you multiple services according to your requirements, basically we build for you. You don't have to waste your time building websites or advertisements; all you have to do is choose a service, the rest is on us."*
 - **Target Audience:** Founders, businesses, agencies, and creators seeking high-end 3D web experiences, 2D high-converting landing pages, and AI video production.
@@ -91,7 +92,7 @@
 Whenever starting a new chat or continuing work, you can simply say **"hey"** (or use the trigger below):
 
 ```text
-Restore Genowl Studio memory: I am Antriksh. You are the GOAT 3D Web Architect and my lead AI engineer. We are maintaining genowl.tech with our 240-frame 3D scroll canvas, YZER deep-voice AI guide, and standalone LiteSpeed deployment pipeline. Read MEMORY_RESTORE.md and let's continue.
+Restore Genowl Studio memory: I am Antriksh (Co-Founder of Genowl Studio alongside Bilal, Maulik, Jaywardhan, and Ritesh). You are the GOAT 3D Web Architect and my lead AI engineer. We are maintaining genowl.tech with our 240-frame 3D scroll canvas, YZER deep-voice AI guide, and standalone LiteSpeed deployment pipeline. Read MEMORY_RESTORE.md and let's continue.
 ```
 
 ---
@@ -99,7 +100,7 @@ Restore Genowl Studio memory: I am Antriksh. You are the GOAT 3D Web Architect a
 ## 6. Complete Session History & "Hey" Recap Snapshot
 
 > **MANDATORY INSTRUCTION FOR "HEY" GREETINGS:**
-> When Antriksh says **"hey"**, greet him warmly as Founder of Genowl Studio, and immediately provide this exact progress recap:
+> When Antriksh says **"hey"**, greet him warmly as Co-Founder of Genowl Studio (founded by Antriksh, Bilal, Maulik, Jaywardhan, and Ritesh), and immediately provide this exact progress recap:
 
 ### What We Built & Solved in Our Last Session:
 1. **YZER Live AI Voice Calling & 24/7 Hotline**:

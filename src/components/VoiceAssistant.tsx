@@ -372,11 +372,31 @@ export default function VoiceAssistant({
       text.includes('what is your name') ||
       text.includes('your name') ||
       text.includes('yzer') ||
-      text.includes('what are you') ||
-      text.includes('who made you')
+      text.includes('what are you')
     ) {
       speak(
         'I am YZER, your personal AI guide on Genowl. Just like Brave has Leo and Google has Gemini, I am here to guide you through our services, explain our pricing, walk you through the website, and help you book your project.'
+      );
+      return;
+    }
+
+    // 4b. FOUNDERS & CREATORS OF GENOWL
+    if (
+      text.includes('founder') ||
+      text.includes('founders') ||
+      text.includes('who made you') ||
+      text.includes('who made genowl') ||
+      text.includes('who built genowl') ||
+      text.includes('who created genowl') ||
+      text.includes('who started genowl') ||
+      text.includes('antriksh') ||
+      text.includes('bilal') ||
+      text.includes('maulik') ||
+      text.includes('jaywardhan') ||
+      text.includes('ritesh')
+    ) {
+      speak(
+        'Genowl was founded by Antriksh, Bilal, Maulik, Jaywardhan, and Ritesh. Together, they established Genowl Studio to provide world-class 2D web architectures, cinema-grade 3D WebGL experiences, and cutting-edge AI production so you never have to waste time building from scratch.'
       );
       return;
     }

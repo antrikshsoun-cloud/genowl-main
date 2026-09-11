@@ -196,6 +196,103 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
         </div>
       </div>
 
+      {/* The Founding Team */}
+      <div className="mb-16 sm:mb-20">
+        <div className="text-center mb-8 sm:mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121c13]/90 border border-[#c6f554]/20 text-[#c6f554] text-xs font-mono mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#c6f554] animate-pulse" />
+            <span>LEADERSHIP &amp; VISION</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">The Founding Team</h2>
+          <p className="text-xs sm:text-sm text-zinc-400 mt-1">The five minds driving Genowl Studio's mission and architecture</p>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          {[
+            {
+              name: 'Antriksh',
+              role: 'Co-Founder',
+              tag: 'Architecture & Vision',
+              accent: '#c6f554',
+              badge: 'AS',
+            },
+            {
+              name: 'Bilal',
+              role: 'Co-Founder',
+              tag: 'Strategy & Execution',
+              accent: '#f7cc46',
+              badge: 'B',
+            },
+            {
+              name: 'Maulik',
+              role: 'Co-Founder',
+              tag: 'Design & Systems',
+              accent: '#c6f554',
+              badge: 'M',
+            },
+            {
+              name: 'Jaywardhan',
+              role: 'Co-Founder',
+              tag: 'Operations & Scale',
+              accent: '#f7cc46',
+              badge: 'J',
+            },
+            {
+              name: 'Ritesh',
+              role: 'Co-Founder',
+              tag: 'Tech & Innovation',
+              accent: '#c6f554',
+              badge: 'R',
+            },
+          ].map((founder, idx) => (
+            <motion.div
+              key={founder.name}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-20px' }}
+              transition={{
+                duration: 0.45,
+                delay: idx * 0.08,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              whileHover={{
+                y: -4,
+                transition: { type: 'spring', stiffness: 350, damping: 25 },
+              }}
+              className="p-4 sm:p-5 rounded-2xl bg-[#0c130d]/80 border border-white/10 hover:border-[#c6f554]/40 transition-all flex flex-col items-center text-center relative group overflow-hidden"
+            >
+              {/* Subtle Ambient Glow */}
+              <div
+                className="absolute top-0 inset-x-0 h-1 rounded-t-2xl opacity-75 transition-opacity group-hover:opacity-100"
+                style={{ backgroundColor: founder.accent }}
+              />
+
+              {/* Avatar Pill */}
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm mb-3 shadow-lg border transition-transform group-hover:scale-105"
+                style={{
+                  backgroundColor: '#121c13',
+                  borderColor: `${founder.accent}55`,
+                  color: founder.accent,
+                  boxShadow: `0 0 16px ${founder.accent}22`,
+                }}
+              >
+                {founder.badge}
+              </div>
+
+              <h3 className="text-sm sm:text-base font-bold text-white tracking-wide">{founder.name}</h3>
+              <span
+                className="text-[11px] font-mono font-semibold uppercase tracking-wider mt-0.5"
+                style={{ color: founder.accent }}
+              >
+                {founder.role}
+              </span>
+              <p className="text-[11px] text-zinc-400 mt-2 font-light leading-snug">{founder.tag}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
       {/* Direct Contact Banner */}
       <div className="rounded-3xl bg-[#0c130d] border border-white/10 p-5 sm:p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
         <div className="text-center md:text-left">

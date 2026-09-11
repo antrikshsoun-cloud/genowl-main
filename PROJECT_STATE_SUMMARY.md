@@ -1,7 +1,7 @@
 # PROJECT STATE & RESUMPTION CHECKPOINT
 
 **Timestamp:** 2026-09-07T01:02:00+05:30  
-**Founder:** Antriksh Soun (Genowl Studio)  
+**Founders:** Antriksh Soun, Bilal, Maulik, Jaywardhan, and Ritesh (Genowl Studio)  
 **Lead AI Engineer:** Antigravity (GOAT 3D Web Architect)  
 **Target Domain:** `https://genowl.tech` (Hostinger LiteSpeed)  
 **Git Branch:** `main` (Repository: `antrikshsoun-cloud/genowl-main`)
