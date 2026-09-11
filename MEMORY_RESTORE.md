@@ -125,6 +125,8 @@ Restore Genowl Studio memory: I am Antriksh (Co-Founder of Genowl Studio alongsi
 4. **Production Build & Git Status**:
    - Clean TypeScript compile: `npx tsc --noEmit` passed with exit code 0.
    - Production bundle: `node build_standalone.js` successfully generated self-contained `index.html` (1.08 MB).
-   - Pushed to GitHub: `antrikshsoun-cloud/genowl-main` on branch `main` (commit `5299d7d`).
+   - Database Intelligence: Live table `genowl_project_leads` integrated with `api/leads.php` capturing all customer keywords, meeting slots, reference links, and minor project parameters across all services.
+   - Founding Team: Co-Founders **Antriksh**, **Bilal**, **Maulik**, **Jaywardhan**, and **Ritesh** recognized across leadership, YZER AI voice, and memory directives.
+   - Pushed to GitHub: `antrikshsoun-cloud/genowl-main` on branch `main` (latest commit `2875ef4`).
    - Dev Server: Running and serving 200 OK at `http://localhost:3000/`.
 
