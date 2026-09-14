@@ -8,3 +8,5 @@ coverage/
 !.env.example
 *db_credentials.php
 !api/db_credentials.example.php
+lab-award-site/
+luxury-watch-showcase/
