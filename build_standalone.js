@@ -13,6 +13,7 @@ const html = `<!doctype html>
     <link rel="canonical" href="https://genowl.tech/" />
 
     <!-- Google Search & Desktop Browser Tab Favicons -->
+    <meta name="google-site-verification" content="7W7u1FClacGfGr1N7M2t4qxijoU6jRt-UkbU1nfWXow" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
