@@ -144,3 +144,9 @@ Restore Genowl Studio memory: I am Antriksh (Co-Founder of Genowl Studio alongsi
    - **Asset Pipeline**: 480 clean, watermark-free 4K frames (`frame_001.jpg` to `frame_480.jpg`) with cubic Hermite smoothstep optical zoom cross-dissolve (Frames 236–243).
    - **Active Dev Server**: Running on port `5190` via `npm run dev` (`http://localhost:5190/` and `http://10.61.226.104:5190/`).
    - **Next Phase**: Ready to build floating editorial typography, component callouts, and luxury navigation overlay.
+
+8. **Google Search Branding, Favicon Resolution & GSC Ownership (Today)**:
+   - **Root Cause Eliminated**: Fixed the 404 error on Google favicon requests caused by legacy `/dist/` prefixes and premature `.htaccess` rewrite rules.
+   - **1:1 Square Multi-Resolution Suite Generated**: Vector-sampled 512x512 master badge with Golden Owl silhouette, `#070908` obsidian squircle, cyber gold gradient, and safe-zone padding. Generated `favicon.svg`, `favicon.ico` (16/32/48), `favicon-48x48.png` (Google standard), `icon-192x192.png` (Android/mobile), `icon-512x512.png` (HD Schema), `apple-touch-icon.png` (iOS), and `og-image.png` (1200x630 cinema social preview).
+   - **Google Search Console Ownership Verified**: Added DNS TXT token (`google-site-verification=7W7u1FClacGfGr1N7M2t4qxijoU6jRt-UkbU1nfWXow`) in Hostinger DNS and baked it into `index.html`. Domain ownership verified in GSC and live re-crawl requested.
+   - **Production Confirmed**: All assets live at `https://genowl.tech` returning HTTP 200 OK with CORS (`*`) and 1-year CDN caching.
