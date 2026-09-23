@@ -21,14 +21,17 @@
 
 ---
 
-## 2. Core Service Catalog & Pricing
+## 2. Core Service Catalog & "We Book • We Build" Model
 
-1. **High-Converting 2D Architecture ($500)**:
-   - Ultra-fast, zero-bloat responsive business sites, lead-generation pages, full IP transfer, and SEO optimization.
-2. **Interactive 3D WebGL Experiences ($2,500)**:
+Genowl Studio operates on a bespoke **"We Book • We Build"** appointment booking model. All fixed pricing packages have been eliminated from the platform in favor of tailored technical consultation and custom build quotes with 100% intellectual property transfer:
+1. **High-Converting 2D Responsive Architecture**:
+   - Ultra-fast, zero-bloat responsive business sites, lead-generation pages, full IP transfer, fluid typography, and SEO optimization.
+2. **Interactive 3D WebGL Experiences**:
    - Cinema-grade 3D scroll canvas, custom WebGL/Three.js shaders, 60 FPS motion, high-DPI retina rendering.
-3. **AI Video & Advertisement Production ($99)**:
-   - High-impact promotional video spots, AI voiceovers, multi-format exports for social media campaigns.
+3. **Autonomous AI Voice & Operational Agents**:
+   - Intelligent conversational agents, WebRTC voice hotlines, automated customer qualification, and real-time CRM database synchronization.
+4. **4K Commercial AI Video & Advertisement Production**:
+   - High-impact promotional video spots, AI voiceovers, multi-format exports for social media campaigns, investor pitch decks.
 
 ---
 
@@ -150,3 +153,20 @@ Restore Genowl Studio memory: I am Antriksh (Co-Founder of Genowl Studio alongsi
    - **1:1 Square Multi-Resolution Suite Generated**: Vector-sampled 512x512 master badge with Golden Owl silhouette, `#070908` obsidian squircle, cyber gold gradient, and safe-zone padding. Generated `favicon.svg`, `favicon.ico` (16/32/48), `favicon-48x48.png` (Google standard), `icon-192x192.png` (Android/mobile), `icon-512x512.png` (HD Schema), `apple-touch-icon.png` (iOS), and `og-image.png` (1200x630 cinema social preview).
    - **Google Search Console Ownership Verified**: Added DNS TXT token (`google-site-verification=7W7u1FClacGfGr1N7M2t4qxijoU6jRt-UkbU1nfWXow`) in Hostinger DNS and baked it into `index.html`. Domain ownership verified in GSC and live re-crawl requested.
    - **Production Confirmed**: All assets live at `https://genowl.tech` returning HTTP 200 OK with CORS (`*`) and 1-year CDN caching.
+
+9. **Complete Price Elimination & Advanced SEO / AEO / GEO Architecture (September 23, 2026)**:
+   - **"We Book • We Build" Paradigm Shift**:
+     - Completely removed all fixed price figures (`$500`, `$2,500`, `$99`, `$1,000`, etc.) across all components (`ServicesPage`, `ServicesFAQ`, `OrderModal`, `TrustMetrics`, `AboutPage`, `Footer`, `Hero`, `serviceStyles`, `VoiceAssistant`, `VapiVoiceCallModal`, `emailService`, and database services).
+     - Prominently integrated signature tagline **"We Book • We Build"** across the Hero banner, service headers, trust metric badges, and footer.
+     - CTAs transitioned to pure appointment booking: *"Book Appointment"*, *"Book Slot"*, *"Reserve Project"*.
+   - **Advanced GEO (Generative Engine Optimization)**:
+     - Whitelisted all major AI crawlers in `robots.txt` (`GPTBot`, `ChatGPT-User`, `ClaudeBot`, `anthropic-ai`, `PerplexityBot`, `Google-Extended`, `Applebot-Extended`, `Amazonbot`, `Bytespider`, `Meta-ExternalAgent`).
+     - Injected comprehensive JSON-LD `@graph` with **Founders Entity Schema**: Antriksh (Co-Founder), Bilal (Co-Founder), Maulik (Co-Founder), Jaywardhan (Co-Founder), and Ritesh (Co-Founder).
+     - Injected `knowsAbout` topical authority entities: WebGL, Three.js, Canvas Sequences, AI Agents, 4K Video Production.
+   - **AEO (Answer Engine Optimization)**:
+     - Injected 5-question `FAQPage` Schema for Google Position Zero featured snippets and voice assistants.
+   - **SEO & Production Deployment**:
+     - Enriched title: `Genowl Studio — Bespoke 3D WebGL, Next-Gen Web Development & AI Production`.
+     - Rebuilt standalone production bundle `index.html` (1.12 MB) via `node build_standalone.js`.
+     - Committed and pushed to GitHub `main` (commit `c42625a`).
+     - Verified live deployment on Hostinger LiteSpeed Edge CDN (`https://genowl.tech/`) returning `HTTP 200 OK` with all new metadata, schema, and robots directives live.
