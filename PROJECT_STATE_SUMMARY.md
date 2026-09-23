@@ -1,43 +1,40 @@
 # PROJECT STATE & RESUMPTION CHECKPOINT
 
-**Timestamp:** 2026-09-13T15:20:00+05:30  
+**Timestamp:** 2026-09-24T01:10:00+05:30  
 **Founders:** Antriksh Soun, Bilal, Maulik, Jaywardhan, and Ritesh (Co-Founders of Genowl Studio)  
 **Lead AI Engineer:** Antigravity (GOAT 3D Web Architect)  
-**Target Domain:** `https://genowl.tech` (Hostinger LiteSpeed)  
+**Target Domain:** `https://genowl.tech` (Hostinger LiteSpeed Web Server)  
 **Git Branch:** `main` (Repository: `antrikshsoun-cloud/genowl-main`)  
-**Current Git Status:** Clean (`nothing to commit, working tree clean`, up to date with `origin/main` commit `26bd65a`)
+**Current Git Status:** Clean (`nothing to commit, working tree clean`, up to date with `origin/main` commit `e5a3c35`)
 
 ---
 
-## 1. What We Analyzed & Documented Today:
+## 1. What We Built & Accomplished Today:
 
-1. **Lusion.co Award-Winning WebGL Architecture Reverse-Engineered**:
-   - Analyzed how `lusion.co` runs silky-smooth 60 FPS animations on computers without dedicated GPUs.
-   - Identified the 4 core pillars:
-     - **GPGPU Ping-Pong FBOs & 3D Curl Noise**: Hardware-parallel vertex math on integrated GPU execution cores instead of single-threaded JavaScript.
-     - **1 Draw Call Batching**: `THREE.InstancedMesh` / single continuous geometries eliminating CPU-GPU driver bottlenecks.
-     - **Procedural PBR & MatCap Lighting**: Faked high-end studio lighting (Fresnel rim math) without heavy 2048x2048 real-time shadow maps.
-     - **Resolution Throttling (DPR Capping)**: `Math.min(window.devicePixelRatio, 1.5 - 2)` reducing pixel fill rate overhead by up to 75%.
-   - Clarified the difference between Genowl's 240-frame scrubbed canvas (Apple-style photorealistic sequence) and Lusion's real-time WebGL code.
+1. **Google OAuth 2.0 Web Client Integration**:
+   - Web Client ID: `651977285691-0p0bhei1nvotuf4jql8iu43fs2g5drq4.apps.googleusercontent.com`
+   - Configured in `.env` and hardcoded as permanent fallback in `AuthModal.tsx`.
+   - Dual-engine integration: Google Identity Services (GIS) + Google OAuth2 Token Client popup flow.
 
-2. **Complete YZER AI Voice Guide Architectural Breakdown**:
-   - Documented the exact reason why YZER in `src/components/VoiceAssistant.tsx` runs **100% free with ZERO API keys**:
-     - Uses native browser **W3C Web Speech API** (`SpeechRecognition` for listening, `SpeechSynthesis` for talking).
-     - Relies entirely on the visitor's local operating system / browser engines (zero OpenAI/ElevenLabs fees).
-     - Timbre tuning: `pitch = 0.88` (deep, resonant masculine tone), `rate = 1.10` (dynamic natural pace).
-     - Zero audio hardware starvation: releases microphone immediately to prevent Chromium locks.
-     - Event-driven tour chaining: uses `utterance.onend` + 1.0s natural breathing pauses so speech never cuts off mid-sentence across the 4-page automated tour.
+2. **Permanent Vector SVG "Continue with Google" Button**:
+   - Replaced fragile blank async iframe mounts with a permanent Obsidian glassmorphic button.
+   - Injected the official 4-color Google "G" vector SVG icon (`#4285F4`, `#34A853`, `#FBBC05`, `#EA4335`).
+   - Dynamic labeling: "Continue with Google" (Login) vs "Sign up with Google" (Sign-up).
 
-3. **Workspace Integrity & Clean State Safeguard**:
-   - All experimental watch assets and codes were completely removed.
-   - `src/App.tsx`, `src/components/Navbar.tsx`, `src/components/VoiceAssistant.tsx`, and `vite.config.ts` are 100% restored.
-   - Re-verified Git status: `nothing to commit, working tree clean`.
-   - Production standalone bundle `index.html` (1.12 MB) and dev server are perfectly intact.
+3. **Hostinger MySQL Backend Authentication Pipeline (`api/users.php`)**:
+   - Auto-provisions and manages two dedicated Hostinger MySQL tables:
+     - `genowl_users`: Master registry storing `id`, `name`, `email`, `avatar`, `provider`, `login_count`, `last_login_at`, and `created_at`.
+     - `genowl_login_logs`: Granular security audit trail recording every login event with IP address, user agent, and timestamp.
+   - Client service: `recordUserLoginToHostinger()` in `src/services/hostingerDbService.ts`.
+   - Connected across all auth pathways: Google OAuth popup, Google credential callback, email sign-in, and email sign-up.
+
+4. **Production Build & Deployment Readiness**:
+   - Rebuilt standalone inlined single-bundle `index.html` (1.13 MB) via `node build_standalone.js`.
+   - Updated complete Hostinger production deploy package: `deploy_hostinger_latest.zip` (includes updated `index.html` and `api/users.php`).
+   - Git tree clean, committed, and pushed to GitHub `origin/main`.
 
 ---
 
-## 2. Status & Next Steps for Later:
+## 2. Resumption Protocol:
 
-- **Local Dev Server**: Active on `http://localhost:3000/`.
-- **Genowl Studio Vault**: Fully intact locally and synced on GitHub `origin/main`.
-- Whenever you return, simply say **"hey"** to resume pairing!
+Whenever you return tomorrow, simply say **"hey"** and our full context, memory anchors, and technical pipelines will resume instantly!
