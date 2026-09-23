@@ -170,3 +170,11 @@ Restore Genowl Studio memory: I am Antriksh (Co-Founder of Genowl Studio alongsi
      - Rebuilt standalone production bundle `index.html` (1.12 MB) via `node build_standalone.js`.
      - Committed and pushed to GitHub `main` (commit `c42625a`).
      - Verified live deployment on Hostinger LiteSpeed Edge CDN (`https://genowl.tech/`) returning `HTTP 200 OK` with all new metadata, schema, and robots directives live.
+
+10. **Google Identity & OAuth 2.0 1-Click Sign-In (September 24, 2026)**:
+    - **Google Cloud Web OAuth Client ID**: 651977285691-0p0bhei1nvotuf4jql8iu43fs2g5drq4.apps.googleusercontent.com configured in .env and hardcoded as permanent fallback in AuthModal.tsx.
+    - **Prominent Vector SVG Button**: Replaced fragile async iframe-only container with an obsidian-glass button equipped with the official 4-color Google 'G' vector SVG icon (Blue #4285F4, Green #34A853, Yellow #FBBC05, Red #EA4335).
+    - **Universal OAuth2 Popup Client**: Integrated window.google.accounts.oauth2.initTokenClient with Google Userinfo API (/oauth2/v3/userinfo) alongside Google Identity Services (/gsi/client) for 1-click cross-platform Google account selection.
+    - **Session & Avatar Synchronization**: Automatically pulls verified Google name, email, profile picture (picture), and Google sub ID; saves 7-day session (genowl_current_session); dynamically renders real Google profile photos in Navbar.tsx and ProfileModal.tsx; syncs user to Supabase in the background.
+    - **Production Compilation**: Rebuilt standalone single-bundle index.html (1.13 MB) via 
+ode build_standalone.js and updated deploy_hostinger_latest.zip.

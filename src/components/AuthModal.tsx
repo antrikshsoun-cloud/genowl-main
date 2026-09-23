@@ -8,11 +8,36 @@ import { validateLegalEmail } from '../utils/emailValidator.ts';
 import { sendWelcomeEmail, sendVerificationCodeEmail } from '../services/emailService.ts';
 import { syncUserToSupabase } from '../services/supabaseClient.ts';
 
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
 export interface UserProfile {
   name: string;
   email: string;
   avatar?: string;
-  provider: 'email';
+  provider: 'email' | 'google';
+}
+
+function decodeGoogleJwt(token: string): any {
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (err) {
+    console.error('Failed to parse Google JWT credential:', err);
+    return null;
+  }
 }
 
 interface AuthModalProps {
@@ -58,8 +83,14 @@ export default function AuthModal({
     }
   };
 
+  // Google OAuth button ref & client ID
+  const googleBtnRef = React.useRef<HTMLDivElement>(null);
+  const GOOGLE_CLIENT_ID =
+    (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID ||
+    '651977285691-0p0bhei1nvotuf4jql8iu43fs2g5drq4.apps.googleusercontent.com';
+
   // Helper to establish a 7-day session (1 week = 7 * 24 * 60 * 60 * 1000 ms)
-  const saveSevenDaySession = (userObj: { name: string; email: string }) => {
+  const saveSevenDaySession = (userObj: UserProfile) => {
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
     const sessionData = {
       user: userObj,
@@ -67,8 +98,237 @@ export default function AuthModal({
       expiresAt: Date.now() + sevenDaysMs,
     };
     localStorage.setItem('genowl_current_session', JSON.stringify(sessionData));
-    localStorage.setItem('genowl_user', JSON.stringify({ ...userObj, provider: 'email' }));
+    localStorage.setItem('genowl_user', JSON.stringify(userObj));
   };
+
+  // Google Credential Response Handler
+  const handleGoogleCredentialResponse = (response: any) => {
+    if (!response?.credential) {
+      setErrorMessage('Google authentication could not be completed.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const payload = decodeGoogleJwt(response.credential);
+      if (!payload || !payload.email) {
+        throw new Error('Google account email could not be verified.');
+      }
+
+      const cleanEmail = String(payload.email).toLowerCase().trim();
+      const cleanName = payload.name || payload.given_name || 'Genowl Member';
+      const avatarUrl = payload.picture || '';
+
+      const users = getRegisteredUsers();
+      let userRecord = users.find((u: any) => u.email.toLowerCase() === cleanEmail);
+
+      if (!userRecord) {
+        userRecord = {
+          id: 'usr_goog_' + (payload.sub || Date.now().toString(36)),
+          name: cleanName,
+          email: cleanEmail,
+          avatar: avatarUrl,
+          provider: 'google',
+          verified: true,
+          createdAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+        };
+        users.push(userRecord);
+      } else {
+        userRecord.lastLoginAt = new Date().toISOString();
+        if (avatarUrl) userRecord.avatar = avatarUrl;
+        userRecord.provider = 'google';
+        userRecord.verified = true;
+      }
+
+      localStorage.setItem('genowl_registered_users', JSON.stringify(users));
+      if (avatarUrl) {
+        localStorage.setItem(`genowl_avatar_${cleanEmail}`, avatarUrl);
+      }
+
+      const profile: UserProfile = {
+        name: cleanName,
+        email: cleanEmail,
+        avatar: avatarUrl,
+        provider: 'google',
+      };
+
+      saveSevenDaySession(profile);
+
+      // Background cloud sync to Supabase
+      syncUserToSupabase({
+        id: userRecord.id,
+        name: cleanName,
+        email: cleanEmail,
+        verified: true,
+      }).catch(() => {});
+
+      setIsLoading(false);
+      setSuccess(true);
+
+      setTimeout(() => {
+        setSuccess(false);
+        onLoginSuccess(profile);
+        onClose();
+      }, 600);
+    } catch (err: any) {
+      setIsLoading(false);
+      setErrorMessage(err?.message || 'Failed to authenticate with Google.');
+    }
+  };
+
+  // Custom Google Button Click Trigger (Popup Flow)
+  const handleGoogleCustomButtonClick = () => {
+    setErrorMessage(null);
+
+    // Flow 1: OAuth2 Token Client (Standard Cross-Device Popup)
+    if (typeof window !== 'undefined' && window.google?.accounts?.oauth2) {
+      try {
+        setIsLoading(true);
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'email profile openid',
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse.error) {
+              setIsLoading(false);
+              setErrorMessage('Google authorization was cancelled or closed.');
+              return;
+            }
+
+            try {
+              const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+              });
+              const data = await res.json();
+
+              if (!data.email) {
+                throw new Error('No verified email returned from Google.');
+              }
+
+              const cleanEmail = String(data.email).toLowerCase().trim();
+              const cleanName = data.name || data.given_name || 'Genowl Member';
+              const avatarUrl = data.picture || '';
+
+              const users = getRegisteredUsers();
+              let userRecord = users.find((u: any) => u.email.toLowerCase() === cleanEmail);
+
+              if (!userRecord) {
+                userRecord = {
+                  id: 'usr_goog_' + (data.sub || Date.now().toString(36)),
+                  name: cleanName,
+                  email: cleanEmail,
+                  avatar: avatarUrl,
+                  provider: 'google',
+                  verified: true,
+                  createdAt: new Date().toISOString(),
+                  lastLoginAt: new Date().toISOString(),
+                };
+                users.push(userRecord);
+              } else {
+                userRecord.lastLoginAt = new Date().toISOString();
+                if (avatarUrl) userRecord.avatar = avatarUrl;
+                userRecord.provider = 'google';
+                userRecord.verified = true;
+              }
+
+              localStorage.setItem('genowl_registered_users', JSON.stringify(users));
+              if (avatarUrl) {
+                localStorage.setItem(`genowl_avatar_${cleanEmail}`, avatarUrl);
+              }
+
+              const profile: UserProfile = {
+                name: cleanName,
+                email: cleanEmail,
+                avatar: avatarUrl,
+                provider: 'google',
+              };
+
+              saveSevenDaySession(profile);
+
+              syncUserToSupabase({
+                id: userRecord.id,
+                name: cleanName,
+                email: cleanEmail,
+                verified: true,
+              }).catch(() => {});
+
+              setIsLoading(false);
+              setSuccess(true);
+
+              setTimeout(() => {
+                setSuccess(false);
+                onLoginSuccess(profile);
+                onClose();
+              }, 600);
+            } catch (err: any) {
+              setIsLoading(false);
+              setErrorMessage(err?.message || 'Failed to fetch Google profile.');
+            }
+          },
+        });
+
+        tokenClient.requestAccessToken({ prompt: 'select_account' });
+      } catch (err: any) {
+        setIsLoading(false);
+        setErrorMessage(err?.message || 'Google Sign-In is unavailable right now.');
+      }
+    } else if (typeof window !== 'undefined' && window.google?.accounts?.id) {
+      try {
+        window.google.accounts.id.prompt();
+      } catch {
+        setErrorMessage('Google Sign-In prompt unavailable. Please use email credentials.');
+      }
+    } else {
+      setErrorMessage('Google Authentication service is loading or blocked by your browser extensions. Please sign in below.');
+    }
+  };
+
+  // Initialize and Render Google Sign In Button
+  useEffect(() => {
+    if (!isOpen || isVerifyingEmail) return;
+
+    let timer: any = null;
+
+    const renderGoogleBtn = () => {
+      if (typeof window !== 'undefined' && window.google?.accounts?.id && googleBtnRef.current) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleCredentialResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
+
+          googleBtnRef.current.innerHTML = '';
+          const containerWidth = googleBtnRef.current.parentElement?.clientWidth || 340;
+          const btnWidth = Math.max(260, Math.min(containerWidth, 380));
+
+          window.google.accounts.id.renderButton(googleBtnRef.current, {
+            type: 'standard',
+            theme: 'filled_black',
+            size: 'large',
+            text: mode === 'signup' ? 'signup_with' : 'signin_with',
+            shape: 'pill',
+            width: btnWidth,
+            logo_alignment: 'left',
+          });
+        } catch (e) {
+          console.warn('Google Identity button initialization notice:', e);
+        }
+      }
+    };
+
+    renderGoogleBtn();
+    timer = setInterval(() => {
+      if (window.google?.accounts?.id && googleBtnRef.current && !googleBtnRef.current.hasChildNodes()) {
+        renderGoogleBtn();
+      }
+    }, 300);
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isOpen, mode, isVerifyingEmail]);
 
   // Step 1: Handle Initial Form Submit (Sign Up or Sign In)
   const handleSubmit = (e: React.FormEvent) => {
@@ -149,14 +409,24 @@ export default function AuthModal({
       }).catch(() => {});
 
       // Refresh 7-day session
-      saveSevenDaySession({ name: existingUser.name, email: existingUser.email });
+      saveSevenDaySession({
+        name: existingUser.name,
+        email: existingUser.email,
+        avatar: existingUser.avatar,
+        provider: 'email',
+      });
 
       setIsLoading(false);
       setSuccess(true);
 
       setTimeout(() => {
         setSuccess(false);
-        onLoginSuccess({ name: existingUser.name, email: existingUser.email, provider: 'email' });
+        onLoginSuccess({
+          name: existingUser.name,
+          email: existingUser.email,
+          avatar: existingUser.avatar,
+          provider: 'email',
+        });
         onClose();
       }, 800);
     }
@@ -184,6 +454,7 @@ export default function AuthModal({
       email: cleanEmail,
       password: password,
       verified: true,
+      provider: 'email' as const,
       createdAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
     };
@@ -205,7 +476,7 @@ export default function AuthModal({
     });
 
     // Establish 7-day session
-    saveSevenDaySession({ name: newUser.name, email: newUser.email });
+    saveSevenDaySession({ name: newUser.name, email: newUser.email, provider: 'email' });
 
     setIsLoading(false);
     setSuccess(true);
@@ -455,6 +726,49 @@ export default function AuthModal({
                 </div>
               </div>
             )}
+
+            {/* Google 1-Click Sign-In */}
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={handleGoogleCustomButtonClick}
+                disabled={isLoading}
+                className="w-full py-2.5 px-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.10] border border-white/15 hover:border-white/30 text-white text-xs font-semibold flex items-center justify-center gap-3 transition-all duration-200 cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_4px_16px_rgba(255,255,255,0.06)] active:scale-[0.99] disabled:opacity-50"
+              >
+                {/* Official Multi-Colored Google "G" Icon */}
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  />
+                </svg>
+                <span>{mode === 'signup' ? 'Sign up with Google' : 'Continue with Google'}</span>
+              </button>
+
+              {/* Hidden Google iframe mount point */}
+              <div ref={googleBtnRef} className="hidden" />
+
+              <div className="relative my-3.5 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10" />
+                </div>
+                <div className="relative px-3 bg-[#0c120e] text-[10px] uppercase tracking-wider text-zinc-400 font-medium">
+                  or continue with email
+                </div>
+              </div>
+            </div>
 
             {/* Registration / Sign-In Form */}
             <form onSubmit={handleSubmit} className="space-y-3.5">
