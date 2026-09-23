@@ -10,3 +10,4 @@ coverage/
 !api/db_credentials.example.php
 lab-award-site/
 luxury-watch-showcase/
+*.code-workspace

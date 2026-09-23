@@ -35,7 +35,7 @@ export default function ContactPage({
   const [email, setEmail] = useState(currentUser?.email || '');
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [category, setCategory] = useState(initialService || '2D Website ($500)');
+  const [category, setCategory] = useState(initialService || '2D Custom Website');
   const [priority, setPriority] = useState<'standard' | 'high' | 'urgent'>('standard');
   const [referenceUrl, setReferenceUrl] = useState('');
   const [description, setDescription] = useState('');
@@ -97,11 +97,11 @@ export default function ContactPage({
     switch (reportType) {
       case 'project':
         return [
-          '2D Custom Website ($500)',
-          '3D WebGL World ($1,000)',
-          'AI Agents Solution ($200)',
-          'AI Video Production ($100)',
-          'Content & Creative Sprint ($99)',
+          '2D Custom Website',
+          '3D WebGL World',
+          'AI Agents Solution',
+          'AI Video Production',
+          'Content & Creative Sprint',
           'Full Custom Architecture',
         ];
       case 'problem':
@@ -494,7 +494,7 @@ export default function ContactPage({
               type="button"
               onClick={() => {
                 setReportType('project');
-                setCategory('2D Custom Website ($500)');
+                setCategory('2D Custom Website');
               }}
               className={`relative flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 min-w-0 truncate ${
                 reportType === 'project' ? 'text-black' : 'text-zinc-400 hover:text-white'

@@ -47,10 +47,10 @@ export default function ServicesListVisual() {
               </span>
             </div>
 
-            {/* Price Badge and Trailing Icon */}
+            {/* Booking Badge and Trailing Icon */}
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold text-[#c6f554] bg-[#162417] border border-[#c6f554]/30">
-                $99
+                Book Slot
               </span>
               <div className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-500 group-hover/item:text-[#c6f554] transition-colors">
                 <Icon className="w-3.5 h-3.5" />

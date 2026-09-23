@@ -71,27 +71,15 @@ export default function OrderModal({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [allowRebooking, setAllowRebooking] = useState(false);
 
-  // New Pricing Structure: 2D ($500), 3D ($1,000), AI Agents ($200), Video ($100), Content ($99)
+  // Service Catalog: 2D Website, 3D Website, AI Agents, Video generation, Content creation
   const services = [
-    { title: '2D Website', price: '$500', rawPrice: 500, category: 'Website', icon: Layers },
-    { title: '3D Website', price: '$1,000', rawPrice: 1000, category: 'Website', icon: Box },
-    { title: 'AI Agents', price: '$200', rawPrice: 200, category: 'AI', icon: Sparkles },
-    { title: 'Video generation', price: '$100', rawPrice: 100, category: 'Media' },
-    { title: 'content creation', price: '$99', rawPrice: 99, category: 'Content' },
+    { title: '2D Website', category: 'Website', icon: Layers },
+    { title: '3D Website', category: 'Website', icon: Box },
+    { title: 'AI Agents', category: 'AI', icon: Sparkles },
+    { title: 'Video generation', category: 'Media' },
+    { title: 'content creation', category: 'Content' },
   ];
 
-  const getServicePrice = (srvTitle: string): string => {
-    const match = services.find((s) => s.title.toLowerCase() === srvTitle.toLowerCase());
-    if (match) return match.price;
-    const lower = srvTitle.toLowerCase();
-    if (lower.includes('3d')) return '$1,000';
-    if (lower.includes('agent') || lower.includes('ai')) return '$200';
-    if (lower.includes('video')) return '$100';
-    if (lower.includes('2d') || lower.includes('web')) return '$500';
-    return '$99';
-  };
-
-  const currentPrice = getServicePrice(selectedService);
   const availableStyles = getStylesForService(selectedService);
 
   const speedLabels = {
@@ -177,7 +165,7 @@ export default function OrderModal({
       details: details.trim(),
       referenceUrl: referenceUrl.trim(),
       speed: speedLabels[speed],
-      amount: currentPrice,
+      amount: 'We Book & Build',
       status: 'pending_slot_call',
       paymentMethod: 'Direct Studio Consultation (Discord / Zoom Meeting Agreement)',
       createdAt: new Date().toISOString(),
@@ -208,7 +196,7 @@ export default function OrderModal({
       service_type: newOrder.service,
       service_style: newOrder.styleReference,
       turnaround_speed: newOrder.speed as any,
-      quoted_price: newOrder.amount,
+      quoted_price: 'We Book & Build',
       payment_status: 'pending',
       meeting_time_slot: newOrder.preferredTime,
       meeting_platform: 'Google Meet',
@@ -216,7 +204,7 @@ export default function OrderModal({
       project_scope: newOrder.details,
       lead_source: 'Order Modal',
       project_metadata: {
-        raw_price: services.find((s) => s.title.toLowerCase() === newOrder.service.toLowerCase())?.rawPrice || 99,
+        model: 'We Book & Build',
         speed_label: speedLabels[speed],
         submitted_at_utc: new Date().toISOString(),
       },
@@ -344,8 +332,8 @@ export default function OrderModal({
                 <span className="font-semibold text-white">{selectedService}</span>
               </div>
               <div className="flex justify-between text-zinc-300">
-                <span className="text-zinc-500">Flat Rate:</span>
-                <span className="font-bold text-[#c6f554]">{currentPrice}</span>
+                <span className="text-zinc-500">Model:</span>
+                <span className="font-bold text-[#c6f554]">We Book &bull; We Build</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span className="text-zinc-500">Style Archetype:</span>
@@ -441,7 +429,7 @@ export default function OrderModal({
                             </span>
                           )}
                         </div>
-                        <span className="font-mono font-bold text-[#c6f554] shrink-0 ml-2">{s.price}</span>
+                        <span className="font-mono text-xs font-semibold text-[#c6f554] shrink-0 ml-2">Book Slot</span>
                       </button>
                     );
                   })}
@@ -475,8 +463,8 @@ export default function OrderModal({
                       <span className="text-white font-semibold">{existingBookingForSelected.service}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-500">Rate:</span>
-                      <span className="text-[#c6f554] font-semibold">{existingBookingForSelected.amount || currentPrice}</span>
+                      <span className="text-zinc-500">Model:</span>
+                      <span className="text-[#c6f554] font-semibold">We Book &bull; We Build</span>
                     </div>
                     {existingBookingForSelected.preferredTime && (
                       <div className="flex justify-between">
@@ -759,8 +747,8 @@ export default function OrderModal({
                       Booking a slot reserves your dedicated engineering sprint. You review the final scope and invoice terms directly with our team.
                     </p>
                     <div className="pt-1.5 border-t border-white/10 flex justify-between font-bold text-white text-xs">
-                      <span>Package Price:</span>
-                      <span className="text-[#c6f554] font-mono">{currentPrice} Flat &bull; 100% IP Transfer</span>
+                      <span>Studio Model:</span>
+                      <span className="text-[#c6f554] font-mono">We Book &bull; We Build &bull; 100% IP Transfer</span>
                     </div>
                   </div>
 
@@ -798,7 +786,7 @@ export default function OrderModal({
                       ) : isFormValid ? (
                         <>
                           <Check className="w-4 h-4" />
-                          <span>Book a Slot &bull; Reserve Project ({currentPrice})</span>
+                          <span>Book a Slot &bull; Reserve Project</span>
                           <ArrowRight className="w-4 h-4" />
                         </>
                       ) : (

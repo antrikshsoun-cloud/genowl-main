@@ -128,7 +128,7 @@ export const SERVICE_STYLES: Record<string, ServiceStyleArchetype[]> = {
       badge: '4K Commercial',
       vibe: 'Photorealistic studio lighting, dynamic camera reveals, and deep AI voiceover',
       description:
-        'High-impact video advertisements crafted for paid campaigns, homepage hero banners, and investor pitch decks that look like a $20K production.',
+        'High-impact video advertisements crafted for paid campaigns, homepage hero banners, and investor pitch decks that look like a cinema-grade studio production.',
       visualHighlights: ['Photorealistic 4K product motion sweeps', 'Hollywood-grade sound design & VO', 'Custom brand color grading and typography'],
       gradient: 'from-[#1e1511] via-[#160e0a] to-[#0d0705]',
       accentColor: '#fb923c',

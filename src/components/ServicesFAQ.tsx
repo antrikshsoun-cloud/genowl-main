@@ -6,14 +6,14 @@ export default function ServicesFAQ() {
 
   const faqs = [
     {
-      question: 'How does Genowl\'s transparent pricing model work?',
+      question: 'How does Genowl\'s "We Book, We Build" model work?',
       answer:
-        'We believe in absolute upfront transparency: $500 for high-converting 2D Websites, $1,000 for cutting-edge 3D WebGL interactive experiences, $200 for autonomous AI Agents, and $100 for Video Generation packages. There are zero surprise fees, no complex hourly billing, and no recurring subscriptions. You select your tier, submit your brief, and we execute.',
+        'We believe in streamlined, zero-bloat execution: you choose the service you need (2D Website, 3D WebGL, AI Agent, or Video Production), book an appointment slot with our team, and share your project brief. We evaluate your exact scope, provide bespoke terms, and build with 100% intellectual property ownership transferred directly to you. No surprise fees, no complex hourly billing, and no endless retainer bloat.',
     },
     {
       question: 'What is the difference between 2D and 3D Websites?',
       answer:
-        'Our 2D Websites ($500) are sleek, responsive, and mobile-optimized landing pages and multi-page sites with modern typography and fast load speeds. Our 3D Websites ($1,000) are cinema-grade interactive WebGL & Three.js experiences featuring custom 3D models, shaders, particle simulations, and scroll-driven camera movements for brands looking to stand out in the top 1% of the web.',
+        'Our 2D Websites are sleek, responsive, and mobile-optimized landing pages and corporate sites with modern typography, lightning-fast PageSpeed scores, and conversion-focused CTAs. Our 3D Websites are cinema-grade interactive WebGL & Three.js experiences featuring custom 3D models, shaders, particle dynamics, and scroll-driven camera movements for brands looking to stand out in the top 1% of the web.',
     },
     {
       question: 'What is the typical delivery turnaround time?',
@@ -44,8 +44,8 @@ export default function ServicesFAQ() {
 
   const comparisons = [
     {
-      feature: 'Pricing Model',
-      genowl: 'Transparent flat rates ($99 - $1,000)',
+      feature: 'Execution Model',
+      genowl: 'Bespoke "We Book & Build" model',
       traditional: '$3,000 - $10,000 monthly retainers',
       freelance: 'Unpredictable hourly rates ($50-$150/hr)',
     },
@@ -97,7 +97,7 @@ export default function ServicesFAQ() {
               <tr className="border-b border-white/10 bg-white/[0.02] text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
                 <th className="py-3.5 px-4">Dimension</th>
                 <th className="py-3.5 px-4 text-[#c6f554] font-bold bg-[#c6f554]/[0.06] rounded-t-xl">
-                  Genowl ($99 Flat)
+                  Genowl (We Book &bull; We Build)
                 </th>
                 <th className="py-3.5 px-4 text-zinc-400">Traditional Agencies</th>
                 <th className="py-3.5 px-4 text-zinc-400">Freelance Platforms</th>

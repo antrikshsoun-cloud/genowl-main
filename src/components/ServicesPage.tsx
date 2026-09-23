@@ -11,14 +11,13 @@ interface ServicesPageProps {
 }
 
 export default function ServicesPage({ onSelectService, onNavigateContact }: ServicesPageProps) {
-  // Website Tier Selection: '2d' ($500) vs '3d' ($2,500)
+  // Website Tier Selection: '2d' (Responsive) vs '3d' (WebGL 3D)
   const [webTier, setWebTier] = useState<'2d' | '3d'>('2d');
   const [webOptionsModalOpen, setWebOptionsModalOpen] = useState(false);
 
   const websiteTiers = {
     '2d': {
       title: '2D Website',
-      price: '$500',
       badge: 'High-Converting',
       tagline: 'Modern, high-converting responsive 2D websites engineered for business growth.',
       description:
@@ -34,7 +33,6 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
     },
     '3d': {
       title: '3D Website',
-      price: '$2,500',
       badge: 'Cinema-Grade WebGL',
       tagline: 'Immersive Three.js & WebGL 3D interactive digital worlds.',
       description:
@@ -58,8 +56,6 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
       category: 'video',
       number: '02',
       title: 'Video Generation',
-      price: '$99',
-      pricePeriod: 'per project',
       icon: Video,
       tagline: 'Stunning AI-powered promo videos, reels, and cinematic clips.',
       description:
@@ -79,8 +75,6 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
       category: 'ai',
       number: '03',
       title: 'Personalized AI',
-      price: '$99',
-      pricePeriod: 'per project',
       icon: Brain,
       tagline: 'Custom AI systems and intelligent workflow automation.',
       description:
@@ -100,8 +94,6 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
       category: 'content',
       number: '04',
       title: 'Content Creation',
-      price: '$99',
-      pricePeriod: 'per project',
       icon: PenTool,
       tagline: 'Engaging copy, branded visuals, and complete social packages.',
       description:
@@ -122,23 +114,23 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
     <div id="services-page" className="pt-4 sm:pt-6 pb-16 px-4 sm:px-6 md:px-8 max-w-6xl mx-auto w-full">
       {/* Header Section */}
       <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#121c13]/90 border border-white/10 shadow-lg mb-3">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#121c13]/90 border border-[#c6f554]/30 shadow-lg mb-3">
           <Sparkles className="w-3.5 h-3.5 text-[#c6f554]" />
-          <span className="text-xs text-zinc-300 font-medium">Transparent Upfront Pricing</span>
+          <span className="text-xs text-zinc-300 font-medium">We Book &bull; We Build</span>
         </div>
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">
-          Our Services &amp; <span className="text-[#c6f554] font-serif-italic">Pricing</span>
+          Our Services &amp; <span className="text-[#c6f554] font-serif-italic">Bespoke Builds</span>
         </h1>
         <p className="text-zinc-400 text-xs sm:text-sm md:text-base leading-relaxed">
-          From high-converting <span className="text-white font-semibold">2D Websites ($500)</span> and cinema-grade <span className="text-[#c6f554] font-semibold">3D WebGL ($2,500)</span>, to rapid <span className="text-white font-semibold">$99 packages</span> for AI, Video &amp; Content. 100% IP ownership guaranteed.
+          From high-converting <span className="text-white font-semibold">2D Websites</span> and cinema-grade <span className="text-[#c6f554] font-semibold">3D WebGL experiences</span>, to custom AI systems, Video &amp; Content. Basically, you choose, we book, and we build. 100% IP ownership guaranteed.
         </p>
       </div>
 
       {/* Services Grid with Symmetric 1fr Row/Column Sizing and Equal Gaps */}
       <div className="grid grid-cols-1 md:grid-cols-2 md:auto-rows-fr gap-6 lg:gap-8 mb-16 items-stretch">
         
-        {/* CARD 01: WEBSITE SERVICE WITH 2D ($500) & 3D ($2,500) OPTIONS */}
+        {/* CARD 01: WEBSITE SERVICE WITH 2D & 3D OPTIONS */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -174,17 +166,18 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                     </div>
                   </div>
 
-                  {/* Dynamic Price Display with Floating 3D Pop-out */}
+                  {/* Booking Badge Display with Floating 3D Pop-out */}
                   <div className="flex items-center sm:block justify-between sm:text-right">
                     <div
                       style={{ transform: 'translateZ(40px)' }}
-                      className="inline-flex items-baseline gap-1 px-3.5 py-1 rounded-xl bg-[#19271a] border border-[#c6f554]/50 shadow-[0_0_15px_rgba(198,245,84,0.25)] transition-transform"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#19271a] border border-[#c6f554]/50 shadow-[0_0_15px_rgba(198,245,84,0.25)] transition-transform"
                     >
-                      <span className="text-2xl sm:text-3xl font-black text-[#c6f554] tracking-tight font-mono transition-all">
-                        {currentWebConfig.price}
+                      <span className="w-2 h-2 rounded-full bg-[#c6f554] animate-pulse" />
+                      <span className="text-xs sm:text-sm font-bold text-[#c6f554] tracking-wide uppercase font-mono">
+                        Booking Open
                       </span>
                     </div>
-                    <span className="block text-[11px] text-zinc-400 sm:mt-1">flat project fee</span>
+                    <span className="block text-[11px] text-zinc-400 sm:mt-1 font-medium">We Book &bull; We Build</span>
                   </div>
                 </div>
 
@@ -201,7 +194,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                     </button>
                   </div>
                   <div className="grid grid-cols-2 gap-1.5">
-                    {/* 2D Option Button ($500) */}
+                    {/* 2D Option Button */}
                     <button
                       type="button"
                       onClick={() => setWebTier('2d')}
@@ -222,11 +215,11 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                           webTier === '2d' ? 'bg-black/20 text-black' : 'bg-white/10 text-zinc-300'
                         }`}
                       >
-                        $500
+                        Responsive
                       </span>
                     </button>
 
-                    {/* 3D Option Button ($2,500) */}
+                    {/* 3D Option Button */}
                     <button
                       type="button"
                       onClick={() => setWebTier('3d')}
@@ -250,7 +243,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                           webTier === '3d' ? 'bg-black/20 text-black' : 'bg-white/10 text-zinc-300'
                         }`}
                       >
-                        $2,500
+                        WebGL 3D
                       </span>
                     </button>
                   </div>
@@ -290,7 +283,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                   onClick={() => onSelectService(currentWebConfig.title)}
                   className="w-full py-3.5 px-4 rounded-xl font-bold text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.35)] hover:shadow-[0_0_30px_rgba(198,245,84,0.6)] transition-all flex items-center justify-center gap-2 cursor-pointer group/btn"
                 >
-                  <span>Book Project &bull; {currentWebConfig.title} ({currentWebConfig.price})</span>
+                  <span>Book Appointment &bull; {currentWebConfig.title}</span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
                 </button>
               </div>
@@ -339,16 +332,18 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                         </div>
                       </div>
 
+                      {/* Booking Open Badge */}
                       <div className="flex items-center sm:block justify-between sm:text-right">
                         <div
                           style={{ transform: 'translateZ(40px)' }}
-                          className="inline-flex items-baseline gap-1 px-3.5 py-1 rounded-xl bg-[#19271a] border border-[#c6f554]/40 shadow-[0_0_12px_rgba(198,245,84,0.2)] transition-transform"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#19271a] border border-[#c6f554]/40 shadow-[0_0_12px_rgba(198,245,84,0.2)] transition-transform"
                         >
-                          <span className="text-2xl sm:text-3xl font-black text-[#c6f554] tracking-tight font-mono">
-                            {service.price}
+                          <span className="w-2 h-2 rounded-full bg-[#c6f554] animate-pulse" />
+                          <span className="text-xs sm:text-sm font-bold text-[#c6f554] tracking-wide uppercase font-mono">
+                            Booking Open
                           </span>
                         </div>
-                        <span className="block text-[11px] text-zinc-400 sm:mt-1">flat rate</span>
+                        <span className="block text-[11px] text-zinc-400 sm:mt-1 font-medium">We Book &bull; We Build</span>
                       </div>
                     </div>
 
@@ -392,7 +387,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                       onClick={() => onSelectService(service.title)}
                       className="w-full py-3.5 px-4 rounded-xl font-bold text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.3)] hover:shadow-[0_0_30px_rgba(198,245,84,0.5)] transition-all flex items-center justify-center gap-2 cursor-pointer group/btn"
                     >
-                      <span>Book Project &bull; {service.title} ({service.price})</span>
+                      <span>Book Appointment &bull; {service.title}</span>
                       <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
                     </button>
                   </div>
@@ -463,12 +458,12 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Option 1: 2D Website ($500) */}
+                {/* Option 1: 2D Website */}
                 <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-[#c6f554]/50 transition-all flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-white">2D Architecture</span>
-                      <span className="text-xl font-black text-[#c6f554] font-mono">$500</span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#c6f554] bg-[#c6f554]/15 border border-[#c6f554]/30">We Book &bull; We Build</span>
                     </div>
                     <h3 className="text-lg font-bold text-white mb-1">2D Website</h3>
                     <p className="text-xs text-zinc-400 leading-relaxed mb-4">
@@ -501,16 +496,16 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                     }}
                     className="w-full py-2.5 rounded-xl font-bold text-xs text-black bg-[#c6f554] hover:brightness-105 transition-all cursor-pointer"
                   >
-                    Book 2D Website ($500)
+                    Book 2D Website Appointment
                   </button>
                 </div>
 
-                {/* Option 2: 3D Website ($2,500) */}
+                {/* Option 2: 3D Website */}
                 <div className="p-5 rounded-2xl bg-gradient-to-b from-[#142317] to-[#0a120b] border border-[#c6f554]/50 shadow-[0_0_25px_rgba(198,245,84,0.15)] flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#c6f554] text-black">Top 1% Immersive</span>
-                      <span className="text-xl font-black text-[#c6f554] font-mono">$2,500</span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#c6f554] bg-[#c6f554]/15 border border-[#c6f554]/30">We Book &bull; We Build</span>
                     </div>
                     <h3 className="text-lg font-bold text-white mb-1">3D Website</h3>
                     <p className="text-xs text-zinc-300 leading-relaxed mb-4">
@@ -543,7 +538,7 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
                     }}
                     className="w-full py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-[0_0_20px_rgba(198,245,84,0.4)] transition-all cursor-pointer"
                   >
-                    Book 3D Website ($2,500)
+                    Book 3D Website Appointment
                   </button>
                 </div>
               </div>

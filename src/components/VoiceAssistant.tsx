@@ -305,7 +305,7 @@ export default function VoiceAssistant({
       tourTimerRef.current = setTimeout(() => {
         onNavigate('services');
         const step2 =
-          'Here in our services catalog, we offer our core solutions: high-converting 2D websites at $500, interactive 3D WebGL experiences at $1,000, autonomous AI agents at $200, and AI video production for $100. Every service comes with full intellectual property transfer. Now let us look at our core philosophy.';
+          'Here in our services catalog, we offer our core solutions: high-converting 2D websites, interactive 3D WebGL experiences, autonomous AI agents, and custom AI video production. All services follow our We Book, We Build model with 100% intellectual property transfer. Now let us look at our core philosophy.';
         
         speak(step2, () => {
           // Step 3 triggers ONLY after Step 2 has 100% finished speaking!
@@ -350,13 +350,13 @@ export default function VoiceAssistant({
       if (bookingStep === 'awaiting_service') {
         let chosenService = '2D Website';
         if (text.includes('3d') || text.includes('webgl') || text.includes('interactive')) {
-          chosenService = '3D WebGL Experience ($1,000)';
+          chosenService = '3D WebGL Experience';
         } else if (text.includes('agent') || text.includes('ai agent') || text.includes('bot')) {
-          chosenService = 'Autonomous AI Agent ($200)';
+          chosenService = 'Autonomous AI Agent';
         } else if (text.includes('video') || text.includes('commercial') || text.includes('ad')) {
-          chosenService = 'AI Video Commercial ($100)';
+          chosenService = 'AI Video Commercial';
         } else {
-          chosenService = '2D High-Converting Web ($500)';
+          chosenService = '2D High-Converting Web';
         }
         setBookedService(chosenService);
         setBookingStep('awaiting_customizations');
@@ -616,13 +616,13 @@ export default function VoiceAssistant({
     ) {
       let chosenService = '';
       if (text.includes('3d') || text.includes('webgl') || text.includes('interactive')) {
-        chosenService = '3D WebGL Experience ($1,000)';
+        chosenService = '3D WebGL Experience';
       } else if (text.includes('agent') || text.includes('ai agent') || text.includes('bot')) {
-        chosenService = 'Autonomous AI Agent ($200)';
+        chosenService = 'Autonomous AI Agent';
       } else if (text.includes('video') || text.includes('ad') || text.includes('commercial')) {
-        chosenService = 'AI Video Commercial ($100)';
+        chosenService = 'AI Video Commercial';
       } else if (text.includes('2d') || text.includes('website') || text.includes('web')) {
-        chosenService = '2D High-Converting Web ($500)';
+        chosenService = '2D High-Converting Web';
       }
 
       if (chosenService) {
@@ -631,7 +631,7 @@ export default function VoiceAssistant({
         speak(`I can take care of your booking for ${chosenService} right now! What extra details and customizations would you like us to build into your project? Tell me about your specific features, design preferences, or requirements.`);
       } else {
         setBookingStep('awaiting_service');
-        speak(`I can take care of your booking right now! Which service would you like to build? We offer 2D Websites for $500, 3D WebGL experiences for $1,000, Autonomous AI Agents for $200, or AI Video production for $100.`);
+        speak(`I can take care of your booking right now! Which service would you like to build? We offer 2D Websites, 3D WebGL experiences, Autonomous AI Agents, or AI Video production. Basically, you choose, we book, and we build.`);
       }
       return;
     }
@@ -648,7 +648,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'Our 3D Interactive WebGL websites start at $1,000. They feature silky-smooth 60 frames per second physics, custom canvas shaders, interactive models, and 100% intellectual property transfer.'
+        'Our 3D Interactive WebGL websites feature silky-smooth 60 frames per second physics, custom canvas shaders, interactive models, and 100% intellectual property transfer. You can book an appointment slot right now, and we will build it for you.'
       );
       return;
     }
@@ -663,7 +663,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'Our 2D Websites start at $500. Built with React and modern responsive architecture, they feature ultra-fast load times, SEO optimization, and a 3 to 5-day turnaround.'
+        'Our 2D Websites are built with React and modern responsive architecture. They feature ultra-fast load times, clean SEO, and rapid turnaround. Book an appointment slot anytime to get started.'
       );
       return;
     }
@@ -678,7 +678,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'Our AI Agents package is $200. We build tailored autonomous AI agents, multi-tool automation workflows, and custom customer chat agents customized strictly to your business.'
+        'For AI Agents, we build tailored autonomous agents, multi-tool automation workflows, and custom customer chat agents customized strictly to your business. Book a slot and we build.'
       );
       return;
     }
@@ -695,7 +695,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'Our AI and Video Production package is $100. We craft tailored marketing visuals, 4K promotional renders, and video advertisements ready for your campaigns.'
+        'For Video Production, we craft tailored marketing visuals, 4K promotional renders, and video advertisements ready for your campaigns. Book a consultation slot and we build.'
       );
       return;
     }
@@ -715,7 +715,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'Genowl pricing is completely transparent: $500 for high-converting 2D Websites, $1,000 for Cinema-grade 3D WebGL, $200 for autonomous AI Agents, and $100 for AI Video generation. All services include full code and IP transfer.'
+        'We operate on a bespoke model: basically, we book and we build. You book your consultation or project slot, we evaluate your requirements and scope, and we deliver with zero bloat and 100% full intellectual property transfer.'
       );
       return;
     }
@@ -731,7 +731,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'We offer core services: 2D modern websites for $500, interactive 3D WebGL websites for $1,000, autonomous AI Agents for $200, and AI video and advertisement generation for $100. Scrolling to the services catalog now.'
+        'We offer four core services: 2D modern websites, interactive 3D WebGL websites, autonomous AI Agents, and AI video generation. We operate on a We Book, We Build model. Scrolling to the services catalog now.'
       );
       return;
     }
@@ -823,7 +823,7 @@ export default function VoiceAssistant({
     ) {
       onNavigate('services');
       speak(
-        'Our 2D websites at $500 are high-speed conversion machines ideal for businesses and landing pages. Our 3D websites at $1,000 feature cinema-grade WebGL physics, shaders, and 60 frames per second scroll animations for luxury brands looking to truly stand out.'
+        'Our 2D websites are high-speed conversion machines ideal for businesses and landing pages. Our 3D websites feature cinema-grade WebGL physics, shaders, and 60 frames per second scroll animations for luxury brands looking to truly stand out. We book and we build for both.'
       );
       return;
     }
@@ -1189,7 +1189,7 @@ export default function VoiceAssistant({
               { label: 'Navigate me for a tour 🚀', cmd: 'navigate me for a tour' },
               { label: 'After Sign Up?', cmd: 'what should I do after signing up?' },
               { label: 'About Genowl', cmd: 'tell me about genowl' },
-              { label: 'Pricing ($500 / $99)', cmd: 'show services and pricing' },
+              { label: 'Services & Booking', cmd: 'show services and booking' },
               { label: 'Book Project', cmd: 'book a project' },
             ].map((chip) => (
               <button

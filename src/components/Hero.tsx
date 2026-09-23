@@ -103,6 +103,10 @@ export default function Hero({ onStartTrial, onOpenBrowserCall }: HeroProps) {
           id="hero-value-props"
           className="flex flex-wrap items-center justify-center gap-x-6 sm:gap-x-8 gap-y-2 text-[11px] sm:text-xs text-zinc-400 mt-6"
         >
+          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#121c13] border border-[#c6f554]/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#c6f554] animate-pulse" />
+            <span className="text-[#c6f554] font-bold tracking-wider uppercase text-[10px] sm:text-[11px] font-mono">We Book &bull; We Build</span>
+          </div>
           <div className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-[#c6f554]" />
             <span>48–72h Turnaround</span>
@@ -112,8 +116,7 @@ export default function Hero({ onStartTrial, onOpenBrowserCall }: HeroProps) {
             <span>100% Commercial IP</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#c6f554] animate-pulse" />
-            <span className="text-[#c6f554] font-medium">30-Min Call Confirmation</span>
+            <span className="text-zinc-300 font-medium">30-Min Outreach</span>
           </div>
         </div>
       </motion.div>

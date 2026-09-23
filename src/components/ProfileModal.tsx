@@ -402,7 +402,7 @@ export default function ProfileModal({
                         <tr key={ord.id} className="hover:bg-white/[0.02]">
                           <td className="py-3 px-4 font-mono text-[#c6f554] font-semibold">{ord.id}</td>
                           <td className="py-3 px-4 font-semibold text-white capitalize">{ord.service}</td>
-                          <td className="py-3 px-4 font-mono text-zinc-200 font-bold">{ord.amount || '$99.00'}</td>
+                          <td className="py-3 px-4 font-mono text-zinc-200 font-bold">{ord.amount || 'We Book & Build'}</td>
                           <td className="py-3 px-4 text-zinc-400">{new Date(ord.createdAt).toLocaleDateString()}</td>
                           <td className="py-3 px-4 text-right">
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#c6f554]/15 text-[#c6f554]">

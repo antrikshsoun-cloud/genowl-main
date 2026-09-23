@@ -95,7 +95,7 @@ export default function Footer({
                   Ready to build something <span className="text-[#c6f554] italic">extraordinary</span>?
                 </h2>
                 <p className="text-xs sm:text-sm text-zinc-400">
-                  Genowl is a platform that provides you multiple services according to your requirements. Basically, we build for you.
+                  Genowl is a platform that provides you multiple services according to your requirements. Basically, we book and we build for you.
                 </p>
               </div>
 
@@ -139,10 +139,10 @@ export default function Footer({
                 </p>
               </div>
 
-              {/* Col 2: Services with Flat Transparent Pricing */}
+              {/* Col 2: Services with Booking Model */}
               <div className="flex flex-col gap-2.5">
                 <span className="font-mono text-[10px] tracking-widest text-[#c6f554] uppercase font-semibold">
-                  Services &amp; Pricing
+                  Services &amp; Booking
                 </span>
                 <div className="flex flex-col gap-1.5">
                   <button
@@ -151,7 +151,7 @@ export default function Footer({
                     className="flex items-center justify-between text-zinc-300 hover:text-[#c6f554] transition-colors cursor-pointer text-left"
                   >
                     <span>2D High-Converting Web</span>
-                    <span className="font-mono text-[#c6f554] font-semibold">$500</span>
+                    <span className="font-mono text-[11px] text-[#c6f554] font-semibold">Book Slot</span>
                   </button>
                   <button
                     type="button"
@@ -159,7 +159,7 @@ export default function Footer({
                     className="flex items-center justify-between text-zinc-300 hover:text-[#f7cc46] transition-colors cursor-pointer text-left"
                   >
                     <span>3D WebGL Experience</span>
-                    <span className="font-mono text-[#f7cc46] font-semibold">$2,500</span>
+                    <span className="font-mono text-[11px] text-[#f7cc46] font-semibold">Book Slot</span>
                   </button>
                   <button
                     type="button"
@@ -167,7 +167,7 @@ export default function Footer({
                     className="flex items-center justify-between text-zinc-300 hover:text-[#c6f554] transition-colors cursor-pointer text-left"
                   >
                     <span>AI Video Commercials</span>
-                    <span className="font-mono text-[#c6f554] font-semibold">$99</span>
+                    <span className="font-mono text-[11px] text-[#c6f554] font-semibold">Book Slot</span>
                   </button>
                 </div>
               </div>

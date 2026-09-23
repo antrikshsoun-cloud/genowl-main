@@ -401,8 +401,9 @@ export async function sendWelcomeEmail(
 Welcome to Genowl Studio! Your verified client account has been successfully created and is now active.
 
 Here is what you can do right now from your Client Hub:
-• Order Premium Work: 2D Websites ($500), 3D WebGL Worlds ($1,000), AI Agents ($200), or Video Generation ($100).
-• 48-Hour Turnaround: Your projects are immediately assigned to production upon order placement.
+• Book Studio Services: 2D Websites, 3D WebGL Worlds, AI Agents, or Video Generation.
+• We Book & Build: Custom tailored scoping and 100% intellectual property transfer.
+• 48-Hour Turnaround: Your projects are immediately assigned to production upon appointment confirmation.
 • 100% Commercial IP Rights: You own all source code, SVGs, and assets with zero royalties or license fees.
 • Live Production Tracker: Check order progress, chat with your designer, and download deliverables directly from your profile.
 • Direct Communication: You can always reply directly to this email or contact support@genowl.tech.
@@ -425,24 +426,24 @@ https://genowl.tech`;
 
     <div style="background-color:#080e0a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin:0 0 20px 0;">
       <h3 style="font-size:13px;font-weight:700;color:#c6f554;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 12px 0;">
-        Studio Capabilities Ready For You:
+        Studio Capabilities (We Book &bull; We Build):
       </h3>
       <table width="100%" cellpadding="6" cellspacing="0" style="font-size:13px;color:#d4d4d8;">
         <tr>
           <td width="24" style="color:#c6f554;">&bull;</td>
-          <td><strong>2D Modern Websites:</strong> $500 Flat &bull; Ultra-fast React architectures</td>
+          <td><strong>2D Modern Websites:</strong> High-converting, ultra-fast React architectures</td>
         </tr>
         <tr>
           <td style="color:#c6f554;">&bull;</td>
-          <td><strong>3D WebGL Worlds:</strong> $1,000 Flat &bull; Three.js Interactive Immersion</td>
+          <td><strong>3D WebGL Worlds:</strong> Cinema-grade Three.js interactive immersion</td>
         </tr>
         <tr>
           <td style="color:#c6f554;">&bull;</td>
-          <td><strong>AI Agents:</strong> $200 Flat &bull; Custom LLM & Workflow Automation</td>
+          <td><strong>AI Agents:</strong> Tailored LLM workflows & intelligent automation</td>
         </tr>
         <tr>
           <td style="color:#c6f554;">&bull;</td>
-          <td><strong>AI Video Generation:</strong> $100 Flat &bull; Cinematic Promo Assets</td>
+          <td><strong>AI Video Generation:</strong> 4K cinematic commercial promo assets</td>
         </tr>
       </table>
     </div>

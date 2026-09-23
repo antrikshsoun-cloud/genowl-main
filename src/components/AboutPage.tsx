@@ -50,7 +50,7 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
     {
       step: '01',
       title: 'Pick Your Service',
-      desc: 'Select from 2D Websites ($500), 3D WebGL ($1,000), AI Agents ($200), Video Generation ($100), or Content Creation ($99).',
+      desc: 'Select from 2D Websites, 3D WebGL, AI Agents, Video Generation, or Content Creation.',
     },
     {
       step: '02',
@@ -67,22 +67,22 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
   const pillars = [
     {
       title: '1. Website Architecture',
-      charge: '$500 / $1,000',
-      highlight: 'From responsive 2D layouts ($500) to cinema-grade interactive 3D WebGL digital worlds ($1,000).',
+      charge: 'We Book & Build',
+      highlight: 'From responsive 2D layouts to cinema-grade interactive 3D WebGL digital worlds.',
     },
     {
       title: '2. AI Agents',
-      charge: '$200',
+      charge: 'We Book & Build',
       highlight: 'Autonomous intelligence systems, multi-step workflow automation, and custom customer chat agents.',
     },
     {
       title: '3. Video Generation',
-      charge: '$100',
+      charge: 'We Book & Build',
       highlight: 'Cinematic visual commercials, social media clips, and promotional reels that command attention.',
     },
     {
       title: '4. Content Creation',
-      charge: '$99',
+      charge: 'We Book & Build',
       highlight: 'Persuasive sales copywriting, marketing articles, and complete brand social assets.',
     },
   ];
@@ -161,7 +161,7 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
       <div className="mb-16 sm:mb-20">
         <div className="text-center mb-8 sm:mb-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">The Services We Provide</h2>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">Four specialized pillars, each at a flat $99 fee</p>
+          <p className="text-xs sm:text-sm text-zinc-400 mt-1">Four specialized pillars &bull; We Book, We Build for you</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 sm:auto-rows-fr gap-5 items-stretch">
@@ -310,7 +310,7 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
             onClick={onNavigateServices}
             className="w-full sm:w-auto px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm text-black bg-gradient-to-r from-[#baf345] to-[#d6fa66] hover:brightness-105 shadow-md transition-all cursor-pointer text-center"
           >
-            Explore Services ($99)
+            Explore Services &amp; Book
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.04 }}

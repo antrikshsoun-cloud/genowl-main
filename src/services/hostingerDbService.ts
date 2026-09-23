@@ -315,7 +315,7 @@ export async function submitServiceBookingToHostinger(payload: ServiceBookingPay
         details: payload.customizations,
         customizations: payload.customizations,
         preferredTime: payload.booked_slot,
-        amount: payload.service_type.includes('2,500') || payload.service_type.includes('3D') ? '$1,000' : (payload.service_type.includes('200') ? '$200' : '$500'),
+        amount: 'We Book & Build',
         status: 'meeting_scheduled',
         createdAt: new Date().toISOString(),
       };

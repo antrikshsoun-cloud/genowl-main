@@ -31,7 +31,7 @@ export default function TrustMetrics() {
     { label: 'Projects Delivered', value: projectsDelivered, detail: 'Updated directly by Genowl team' },
     { label: 'Average Turnaround', value: '48h', detail: 'Rapid execution without delay' },
     { label: 'Commercial IP Rights', value: '100%', detail: 'Full copyright transferred to you' },
-    { label: 'Flat Rate Pricing', value: '$99', detail: 'Zero recurring fees or retainers' },
+    { label: 'Studio Execution', value: 'We Build', detail: 'We Book & We Build for you' },
   ];
 
   const guarantees = [
@@ -83,7 +83,7 @@ export default function TrustMetrics() {
             How We Protect &amp; Deliver For You
           </h3>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Built on transparent pricing, legal IP ownership transfer, and predictable delivery times.
+            Built on bespoke execution, legal IP ownership transfer, and predictable delivery times.
           </p>
         </div>
 

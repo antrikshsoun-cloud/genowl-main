@@ -49,12 +49,12 @@ function parseSpokenPhone(text: string): string | null {
 // Helper to parse service requested
 function parseSpokenService(text: string): string {
   const lower = text.toLowerCase();
-  if (lower.includes('3d') || lower.includes('webgl') || lower.includes('interactive')) return '3D WebGL Experience ($2,500)';
-  if (lower.includes('video') || lower.includes('commercial') || lower.includes('ad')) return 'AI Video Commercial ($99)';
-  if (lower.includes('agent') || lower.includes('yzer') || lower.includes('voice')) return 'Autonomous AI Agent ($200)';
-  if (lower.includes('content') || lower.includes('copy')) return 'Content Creation ($99)';
-  if (lower.includes('2d') || lower.includes('website') || lower.includes('saas')) return '2D High-Converting Web ($500)';
-  return 'General Consultation ($99)';
+  if (lower.includes('3d') || lower.includes('webgl') || lower.includes('interactive')) return '3D WebGL Experience';
+  if (lower.includes('video') || lower.includes('commercial') || lower.includes('ad')) return 'AI Video Commercial';
+  if (lower.includes('agent') || lower.includes('yzer') || lower.includes('voice')) return 'Autonomous AI Agent';
+  if (lower.includes('content') || lower.includes('copy')) return 'Content Creation';
+  if (lower.includes('2d') || lower.includes('website') || lower.includes('saas')) return '2D High-Converting Web';
+  return 'General Consultation';
 }
 
 // Helper to parse meeting or slot intent
@@ -98,7 +98,7 @@ export default function VapiVoiceCallModal({
   const [detectedEmail, setDetectedEmail] = useState(currentUser?.email || '');
   const [detectedPhone, setDetectedPhone] = useState('');
   const [detectedName, setDetectedName] = useState(currentUser?.name || '');
-  const [detectedService, setDetectedService] = useState('2D High-Converting Web ($500)');
+  const [detectedService, setDetectedService] = useState('2D High-Converting Web');
   const [detectedCustomizations, setDetectedCustomizations] = useState('');
   const [detectedMeetingSlot, setDetectedMeetingSlot] = useState('');
   const [hasBookingIntent, setHasBookingIntent] = useState(false);
@@ -169,7 +169,7 @@ export default function VapiVoiceCallModal({
         emailToSave,
         phoneToSave,
         serviceToSave,
-        serviceToSave.includes('3D') ? '$1,000' : '$500',
+        'We Book & Build',
         `Service Booking with YZER AI. Slot: ${slotToSave}\n\nCustomizations: ${customizationsToSave}`,
         'standard',
         ticketId,
@@ -375,10 +375,11 @@ Slogan: "Genowl is a platform that provides you multiple services according to y
 Official US Phone Hotline: +1 (628) 245-9578.
 
 CORE SERVICES:
-1. 2D Web Architecture: $500 (3-5 days delivery, clean SEO, zero bloat).
-2. Interactive 3D WebGL Experiences: $1,000 (60 FPS Three.js, shaders, retina canvas).
-3. Autonomous AI Agents: $200 (Custom tools, workflows, bots).
-4. AI Video Commercials: $100 (4K marketing spots).
+1. 2D Web Architecture (3-5 days delivery, clean SEO, ultra-fast performance, zero bloat).
+2. Interactive 3D WebGL Experiences (60 FPS Three.js, shaders, retina canvas).
+3. Autonomous AI Agents (Custom tools, workflows, intelligent assistants).
+4. AI Video Commercials (4K marketing spots & high-impact reels).
+Philosophy & Model: "We Book. We Build." We operate on a bespoke booking model. Clients book their consultation slot with our studio, we evaluate their exact requirements, and we build. We provide custom quotes after scoping.
 
 CONVERSATION & TALKING GUIDELINES:
 - You do all the talks naturally and charismatically. Speak with confident authority.
