@@ -178,3 +178,14 @@ Restore Genowl Studio memory: I am Antriksh (Co-Founder of Genowl Studio alongsi
     - **Session & Avatar Synchronization**: Automatically pulls verified Google name, email, profile picture (picture), and Google sub ID; saves 7-day session (genowl_current_session); dynamically renders real Google profile photos in Navbar.tsx and ProfileModal.tsx; syncs user to Supabase in the background.
     - **Production Compilation**: Rebuilt standalone single-bundle index.html (1.13 MB) via 
 ode build_standalone.js and updated deploy_hostinger_latest.zip.
+
+11. **Hostinger MySQL User Authentication & Login Audit Pipeline (September 24, 2026)**:
+    - **Hostinger Database Backend (pi/users.php)**: Auto-provisions and synchronizes two dedicated MySQL tables:
+      1. genowl_users: Master user registry storing id, 
+ame, email, vatar, provider (google or email), erified, login_count, last_login_at, and created_at.
+      2. genowl_login_logs: Granular audit log recording every single login and registration event with user_id, email, 
+ame, provider, ction, ip_address, user_agent, and login_at.
+    - **Frontend Hostinger Client Service (src/services/hostingerDbService.ts)**: Added 
+ecordUserLoginToHostinger() to dispatch live background sync calls to /api/users.php.
+    - **Omni-Auth Event Integration (AuthModal.tsx)**: All login pathways (Google OAuth Credential, Google OAuth Custom Popup Client, Manual Email Sign-In, and Manual Email Sign-Up) now instantly record the user and their login event to the Hostinger LiteSpeed MySQL database.
+    - **Production Packaging**: Rebuilt standalone single bundle index.html (1.13 MB) and updated deploy_hostinger_latest.zip including the /api suite.

@@ -7,6 +7,7 @@ import { validatePasswordStrength } from '../utils/passwordValidator.ts';
 import { validateLegalEmail } from '../utils/emailValidator.ts';
 import { sendWelcomeEmail, sendVerificationCodeEmail } from '../services/emailService.ts';
 import { syncUserToSupabase } from '../services/supabaseClient.ts';
+import { recordUserLoginToHostinger } from '../services/hostingerDbService.ts';
 
 declare global {
   interface Window {
@@ -163,6 +164,16 @@ export default function AuthModal({
         verified: true,
       }).catch(() => {});
 
+      // Background sync to Hostinger MySQL Database
+      recordUserLoginToHostinger({
+        id: userRecord.id,
+        name: cleanName,
+        email: cleanEmail,
+        avatar: avatarUrl,
+        provider: 'google',
+        action: 'login',
+      }).catch(() => {});
+
       setIsLoading(false);
       setSuccess(true);
 
@@ -250,6 +261,16 @@ export default function AuthModal({
                 name: cleanName,
                 email: cleanEmail,
                 verified: true,
+              }).catch(() => {});
+
+              // Background sync to Hostinger MySQL Database
+              recordUserLoginToHostinger({
+                id: userRecord.id,
+                name: cleanName,
+                email: cleanEmail,
+                avatar: avatarUrl,
+                provider: 'google',
+                action: 'login',
               }).catch(() => {});
 
               setIsLoading(false);
@@ -408,6 +429,16 @@ export default function AuthModal({
         verified: true,
       }).catch(() => {});
 
+      // Sync login to Hostinger MySQL Database
+      recordUserLoginToHostinger({
+        id: existingUser.id,
+        name: existingUser.name,
+        email: existingUser.email,
+        avatar: existingUser.avatar,
+        provider: 'email',
+        action: 'login',
+      }).catch(() => {});
+
       // Refresh 7-day session
       saveSevenDaySession({
         name: existingUser.name,
@@ -468,6 +499,15 @@ export default function AuthModal({
       name: newUser.name,
       email: newUser.email,
       verified: true,
+    }).catch(() => {});
+
+    // Sync new registered user to Hostinger MySQL Database
+    recordUserLoginToHostinger({
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      provider: 'email',
+      action: 'signup',
     }).catch(() => {});
 
     // Automatically send official Welcome Message to user's Gmail / email inbox

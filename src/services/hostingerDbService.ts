@@ -338,4 +338,59 @@ export async function submitServiceBookingToHostinger(payload: ServiceBookingPay
   }
 }
 
+export interface HostingerUserPayload {
+  id?: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  provider?: 'google' | 'email';
+  action?: 'login' | 'signup';
+}
+
+/**
+ * Record user sign-in or account registration directly to Hostinger MySQL Database
+ * Synchronizes both Google OAuth logins and standard email accounts into `genowl_users`
+ * and records each individual login event in `genowl_login_logs`.
+ */
+export async function recordUserLoginToHostinger(payload: HostingerUserPayload): Promise<{
+  success: boolean;
+  message?: string;
+  error?: string;
+}> {
+  const cleanEmail = (payload.email || '').trim().toLowerCase();
+  if (!cleanEmail || !cleanEmail.includes('@')) {
+    return { success: false, error: 'A valid email is required to record user authentication.' };
+  }
+
+  try {
+    const res = await fetch('/api/users.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: payload.id || `usr_${Date.now().toString(36)}`,
+        name: payload.name || 'Genowl Member',
+        email: cleanEmail,
+        avatar: payload.avatar || '',
+        provider: payload.provider || 'email',
+        action: payload.action || 'login',
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      console.warn('[Hostinger DB] User login sync notice:', data?.error || res.statusText);
+      return { success: false, error: data?.error || 'Database rejected user registration' };
+    }
+
+    return {
+      success: true,
+      message: 'User authentication recorded in Hostinger Database!',
+    };
+  } catch (err: any) {
+    console.warn('[Hostinger DB] User login sync exception:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+
 
