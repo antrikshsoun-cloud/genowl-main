@@ -1,20 +1,65 @@
+# Genowl Studio Robots Directive (SEO, AEO & GEO Optimized)
+# Official Website: https://genowl.tech/
+
 User-agent: *
 Allow: /
 Allow: /favicon.ico
-Allow: /favicon-48x48.png
+Allow: /favicon-*.png
 Allow: /favicon.svg
 Allow: /icon-*.png
 Allow: /apple-touch-icon.png
+Allow: /og-image.png
+Allow: /site.webmanifest
+Disallow: /wp-admin/
+Disallow: /wp-includes/
+Disallow: /wp-content/
+Disallow: /old/
 
+# Search Engine Crawlers (SEO)
 User-agent: Googlebot
 Allow: /
 
 User-agent: Googlebot-Image
 Allow: /
 
-Disallow: /wp-admin/
-Disallow: /wp-includes/
-Disallow: /wp-content/
-Disallow: /old/
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# Generative AI & Answer Engine Crawlers (GEO & AEO)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
 
 Sitemap: https://genowl.tech/sitemap.xml
