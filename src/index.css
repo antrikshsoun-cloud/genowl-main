@@ -267,3 +267,145 @@
   border-color: rgba(247, 204, 70, 0.4);
 }
 
+
+/* ==========================================================================
+   GENOWL MODULAR VOXEL ARCHITECTURE MATRIX (Interactive 3x3x3 Isometric Core)
+   ========================================================================== */
+
+.voxel-stage {
+  perspective: 1200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 380px;
+  position: relative;
+  user-select: none;
+}
+
+.voxel-container {
+  position: relative;
+  top: -10px;
+  transform: skewY(-20deg);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.voxel-layer {
+  position: relative;
+}
+
+.voxel-layer:nth-child(1) {
+  z-index: 2;
+  transform: translate(0, 0);
+}
+
+.voxel-layer:nth-child(2) {
+  z-index: 1;
+  transform: translate(-60px, -60px);
+}
+
+.voxel-layer:nth-child(3) {
+  z-index: 3;
+  transform: translate(60px, 60px);
+}
+
+.voxel-column {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  transform: translate(calc(-70px * var(--x, 0)), calc(-60px * var(--y, 0)));
+}
+
+.voxel-block {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  background: #111a13;
+  border: 1px solid rgba(198, 245, 84, 0.18);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.85);
+  z-index: calc(1 * var(--i, 1));
+  transition: background 1.4s ease-out, filter 1.4s ease-out, border-color 1.4s ease-out;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.voxel-block::before {
+  content: "";
+  position: absolute;
+  left: -40px;
+  top: -1px;
+  width: 40px;
+  height: calc(100% + 2px);
+  background: #090e0a;
+  border-top: 1px solid rgba(198, 245, 84, 0.14);
+  border-left: 1px solid rgba(198, 245, 84, 0.14);
+  border-bottom: 1px solid rgba(198, 245, 84, 0.14);
+  transform-origin: right;
+  transform: skewY(45deg);
+  transition: background 1.4s ease-out, border-color 1.4s ease-out;
+  border-radius: 1px;
+}
+
+.voxel-block::after {
+  content: "";
+  position: absolute;
+  top: -40px;
+  left: -1px;
+  width: calc(100% + 2px);
+  height: 40px;
+  background: #18261b;
+  border-top: 1px solid rgba(198, 245, 84, 0.22);
+  border-left: 1px solid rgba(198, 245, 84, 0.22);
+  border-right: 1px solid rgba(198, 245, 84, 0.22);
+  transform-origin: bottom;
+  transform: skewX(45deg);
+  transition: background 1.4s ease-out, border-color 1.4s ease-out;
+  border-radius: 1px;
+}
+
+/* Hover or Active Cascade Pulse State */
+.voxel-block:hover,
+.voxel-block.is-active {
+  transition: 0s !important;
+  background: var(--voxel-accent, #c6f554) !important;
+  border-color: #ffffff !important;
+  filter: drop-shadow(0 0 28px var(--voxel-glow, rgba(198, 245, 84, 0.95))) !important;
+}
+
+.voxel-block:hover::before,
+.voxel-block.is-active::before {
+  transition: 0s !important;
+  background: var(--voxel-accent, #c6f554) !important;
+  filter: brightness(0.85);
+  border-color: #ffffff !important;
+}
+
+.voxel-block:hover::after,
+.voxel-block.is-active::after {
+  transition: 0s !important;
+  background: var(--voxel-accent, #c6f554) !important;
+  filter: brightness(1.15);
+  border-color: #ffffff !important;
+}
+
+/* Themed Palette Variants */
+.voxel-theme-lime {
+  --voxel-accent: #c6f554;
+  --voxel-glow: rgba(198, 245, 84, 0.95);
+}
+
+.voxel-theme-gold {
+  --voxel-accent: #f7cc46;
+  --voxel-glow: rgba(247, 204, 70, 0.95);
+}
+
+.voxel-theme-cyan {
+  --voxel-accent: #38bdf8;
+  --voxel-glow: rgba(56, 189, 248, 0.95);
+}
+
+.voxel-theme-magenta {
+  --voxel-accent: #ec4899;
+  --voxel-glow: rgba(236, 72, 153, 0.95);
+}

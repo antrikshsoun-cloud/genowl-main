@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowRight, Sparkles, CheckCircle2, ShieldCheck, Zap, Layers, Mail, Instagram } from 'lucide-react';
 import OwlLogo from './OwlLogo.tsx';
 import Card3D from './Card3D.tsx';
+import TechVoxelMatrix from './TechVoxelMatrix.tsx';
 
 function KineticWord({ word, progress, range }: { word: string; progress: any; range: [number, number] }) {
   const opacity = useTransform(progress, range, [0.25, 1]);
@@ -156,6 +157,9 @@ export default function AboutPage({ onNavigateServices, onNavigateContact }: Abo
           ))}
         </div>
       </div>
+
+      {/* Interactive 3D Modular Voxel Engine */}
+      <TechVoxelMatrix onNavigateContact={onNavigateContact} />
 
       {/* Services Breakdown on About */}
       <div className="mb-16 sm:mb-20">
