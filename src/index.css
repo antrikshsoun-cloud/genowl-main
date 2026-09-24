@@ -272,21 +272,40 @@
    GENOWL MODULAR VOXEL ARCHITECTURE MATRIX (Interactive 3x3x3 Isometric Core)
    ========================================================================== */
 
+@keyframes voxelChromaFlow {
+  0% {
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.9));
+  }
+  25% {
+    filter: drop-shadow(0 20px 40px rgba(198, 245, 84, 0.15));
+  }
+  50% {
+    filter: drop-shadow(0 20px 40px rgba(247, 204, 70, 0.15));
+  }
+  75% {
+    filter: drop-shadow(0 20px 40px rgba(56, 189, 248, 0.15));
+  }
+  100% {
+    filter: drop-shadow(0 20px 40px rgba(236, 72, 153, 0.15));
+  }
+}
+
 .voxel-stage {
-  perspective: 1200px;
+  perspective: 1400px;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 380px;
+  min-height: 440px;
   position: relative;
   user-select: none;
+  overflow: visible;
 }
 
 .voxel-container {
   position: relative;
-  top: -10px;
   transform: skewY(-20deg);
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: voxelChromaFlow 12s ease-in-out infinite alternate;
 }
 
 .voxel-layer {
@@ -317,15 +336,17 @@
 }
 
 .voxel-block {
+  --block-color: #c6f554;
+  --block-glow: rgba(198, 245, 84, 0.9);
   position: relative;
   display: inline-block;
   width: 50px;
   height: 50px;
-  background: #111a13;
-  border: 1px solid rgba(198, 245, 84, 0.18);
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.85);
+  background: #101812;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.9);
   z-index: calc(1 * var(--i, 1));
-  transition: background 1.4s ease-out, filter 1.4s ease-out, border-color 1.4s ease-out;
+  transition: background 1.5s cubic-bezier(0.16, 1, 0.3, 1), filter 1.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 1.5s ease-out;
   cursor: pointer;
   border-radius: 2px;
 }
@@ -337,13 +358,13 @@
   top: -1px;
   width: 40px;
   height: calc(100% + 2px);
-  background: #090e0a;
-  border-top: 1px solid rgba(198, 245, 84, 0.14);
-  border-left: 1px solid rgba(198, 245, 84, 0.14);
-  border-bottom: 1px solid rgba(198, 245, 84, 0.14);
+  background: #080d09;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   transform-origin: right;
   transform: skewY(45deg);
-  transition: background 1.4s ease-out, border-color 1.4s ease-out;
+  transition: background 1.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 1.5s ease-out;
   border-radius: 1px;
 }
 
@@ -354,58 +375,38 @@
   left: -1px;
   width: calc(100% + 2px);
   height: 40px;
-  background: #18261b;
-  border-top: 1px solid rgba(198, 245, 84, 0.22);
-  border-left: 1px solid rgba(198, 245, 84, 0.22);
-  border-right: 1px solid rgba(198, 245, 84, 0.22);
+  background: #17241a;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
   transform-origin: bottom;
   transform: skewX(45deg);
-  transition: background 1.4s ease-out, border-color 1.4s ease-out;
+  transition: background 1.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 1.5s ease-out;
   border-radius: 1px;
 }
 
-/* Hover or Active Cascade Pulse State */
+/* Hover or Active Light Wave State with Dynamic Per-Block Neon Color */
 .voxel-block:hover,
 .voxel-block.is-active {
   transition: 0s !important;
-  background: var(--voxel-accent, #c6f554) !important;
+  background: var(--block-color) !important;
   border-color: #ffffff !important;
-  filter: drop-shadow(0 0 28px var(--voxel-glow, rgba(198, 245, 84, 0.95))) !important;
+  filter: drop-shadow(0 0 32px var(--block-glow)) !important;
 }
 
 .voxel-block:hover::before,
 .voxel-block.is-active::before {
   transition: 0s !important;
-  background: var(--voxel-accent, #c6f554) !important;
-  filter: brightness(0.85);
+  background: var(--block-color) !important;
+  filter: brightness(0.82);
   border-color: #ffffff !important;
 }
 
 .voxel-block:hover::after,
 .voxel-block.is-active::after {
   transition: 0s !important;
-  background: var(--voxel-accent, #c6f554) !important;
-  filter: brightness(1.15);
+  background: var(--block-color) !important;
+  filter: brightness(1.22);
   border-color: #ffffff !important;
 }
 
-/* Themed Palette Variants */
-.voxel-theme-lime {
-  --voxel-accent: #c6f554;
-  --voxel-glow: rgba(198, 245, 84, 0.95);
-}
-
-.voxel-theme-gold {
-  --voxel-accent: #f7cc46;
-  --voxel-glow: rgba(247, 204, 70, 0.95);
-}
-
-.voxel-theme-cyan {
-  --voxel-accent: #38bdf8;
-  --voxel-glow: rgba(56, 189, 248, 0.95);
-}
-
-.voxel-theme-magenta {
-  --voxel-accent: #ec4899;
-  --voxel-glow: rgba(236, 72, 153, 0.95);
-}

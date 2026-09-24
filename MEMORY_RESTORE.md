@@ -202,3 +202,9 @@ ode build_standalone.js and regenerated deploy_hostinger_latest.zip (556 KB) con
     - **Telemetry HUD**: Displays real-time latency, coordinate, category, and technical capability for all 27 Genowl engineering modules.
     - **Palette Swapping & Wave Cascade**: Interactive palette buttons (Electric Lime, Cyber Gold, Cyan, Magenta) and automated sequential light sweep.
     - **Production Verification**: Single-bundle standalone index.html (1.17 MB) and deploy_hostinger_latest.zip (561 KB) updated and synced.
+
+14. **Voxel Engine Architectural Alignment & Dynamic Multi-Color Sweep (September 24, 2026)**:
+    - **Logical Architecture Anchoring**: Positioned as the visual manifestation of Genowl's core value proposition ("We build for you — 27 complex modules stacked into one production"). Explicit 3-tier strata: Tier 3 (3D Experience / Green), Tier 2 (Intelligence & Voice / Yellow), Tier 1 (Cloud & Security / Blue & Pink).
+    - **Dynamic Multi-Color Flow**: Eliminated manual color pickers; sweeping across the cube lights up Green -> Yellow -> Blue -> Pink, blooming into an organic multi-color neon matrix with a 1.5s phosphor decay trail.
+    - **Eliminated Obscured Text**: Removed overlapping hint pills; guaranteed full vertical stage clearance (min-h-[460px]).
+    - **Production Sync**: Rebuilt standalone index.html (1.18 MB), updated deploy_hostinger_latest.zip (562 KB), committed and pushed to origin/main.
