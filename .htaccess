@@ -1,0 +1,62 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 1. Force HTTPS & Canonical Non-WWW (eliminates redirect hops & SSL errors)
+  RewriteCond %{HTTPS} off [OR]
+  RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+  RewriteRule ^(.*)$ https://genowl.tech/$1 [L,R=301]
+
+  # 2. Redirect legacy WordPress Google indexed links (301 Permanent Redirect)
+  RewriteRule ^home/?$ / [R=301,L]
+  RewriteRule ^index\.php$ / [R=301,L]
+  RewriteRule ^wp-(.*)$ / [R=301,L]
+  RewriteRule ^category/(.*)$ / [R=301,L]
+  RewriteRule ^tag/(.*)$ / [R=301,L]
+  RewriteRule ^sample-page/?$ / [R=301,L]
+  RewriteRule ^author/(.*)$ / [R=301,L]
+  RewriteRule ^feed/?$ / [R=301,L]
+
+  # 3. CRITICAL: Never rewrite real existing files or directories
+  # This guarantees favicon.ico, images, icons, manifest, and frames load instantly with 200 OK
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # 4. Fallback aliases if assets are inside dist/
+  RewriteCond %{DOCUMENT_ROOT}/dist/$1 -f
+  RewriteRule ^(.*)$ dist/$1 [L]
+
+  # 5. Single Page Application (SPA) Fallback: route all other paths to index.html
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Disable directory listing
+Options -Indexes
+
+# High-Performance Caching & Correct MIME Types for static assets
+<IfModule mod_mime.c>
+  AddType image/x-icon .ico
+  AddType image/svg+xml .svg
+  AddType image/png .png
+  AddType image/webp .webp
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/x-icon "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType application/manifest+json "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Enable CORS for fonts and icons
+  <FilesMatch "\.(ico|png|svg|webp|webmanifest|woff2?)$">
+    Header set Access-Control-Allow-Origin "*"
+  </FilesMatch>
+</IfModule>

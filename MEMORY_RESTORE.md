@@ -189,3 +189,9 @@ ame, provider, ction, ip_address, user_agent, and login_at.
 ecordUserLoginToHostinger() to dispatch live background sync calls to /api/users.php.
     - **Omni-Auth Event Integration (AuthModal.tsx)**: All login pathways (Google OAuth Credential, Google OAuth Custom Popup Client, Manual Email Sign-In, and Manual Email Sign-Up) now instantly record the user and their login event to the Hostinger LiteSpeed MySQL database.
     - **Production Packaging**: Rebuilt standalone single bundle index.html (1.13 MB) and updated deploy_hostinger_latest.zip including the /api suite.
+
+12. **3D Floating Architecture Cube, Isometric Social Dock & Hostinger Package (September 24, 2026)**:
+    - **3D Interactive Floating Architecture Cube (ServicePillarCube3D.tsx)**: 6-faced CSS 3D cube embedded in ServicesPage.tsx showcasing Genowl core offerings with perpetual 60 FPS floating, magnetic directional cursor tilt via equestAnimationFrame lerping, specular sheen, and quick-focus face selectors.
+    - **3D Extruded Isometric Social Touchpoints Dock (IsometricSocialDock.tsx)**: Responsive isometric 3D channel dock embedded in Footer.tsx (2x2 on mobile, 4x1 on desktop) linking ?? (@GENOWL_TECH), Instagram (@genowl_tech), YZER Voice Hotline (+1 628 245-9578), and Support desk (support@genowl.tech).
+    - **Hostinger LiteSpeed Production Packaging**: Recompiled production standalone index.html (1.16 MB) via 
+ode build_standalone.js and regenerated deploy_hostinger_latest.zip (556 KB) containing .htaccess, pi/, search engine directives, and high-DPR favicon suite.
