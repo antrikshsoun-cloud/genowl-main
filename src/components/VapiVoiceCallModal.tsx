@@ -7,6 +7,7 @@ import { UserProfile } from './AuthModal.tsx';
 import { OFFICIAL_PHONE_DISPLAY, OFFICIAL_PHONE_TEL, sendSlotBookingEmail } from '../services/emailService.ts';
 import { submitProjectLeadToHostinger, submitServiceBookingToHostinger, parseSpelledEmail, extractKeywordsFromText } from '../services/hostingerDbService.ts';
 import { syncOrderToSupabase } from '../services/supabaseClient.ts';
+import LightsaberFightLoader from './LightsaberFightLoader.tsx';
 
 const VAPI_PUBLIC_KEY = '985f0bb7-f6a5-4c59-95cb-eb346e331609';
 const VAPI_ASSISTANT_ID = '9facf4ab-efc8-45f4-a270-50713b8d4592';
@@ -536,9 +537,12 @@ IMPORTANT: Do not submit non-booking calls or casual chats to the database. Only
           {/* Call Status Indicator */}
           <div className="mt-2 mb-4">
             {callStatus === 'connecting' && (
-              <div className="inline-flex items-center gap-2 text-xs font-medium text-[#f7cc46]">
-                <span className="w-2 h-2 rounded-full bg-[#f7cc46] animate-ping" />
-                <span>Connecting live audio stream...</span>
+              <div className="flex flex-col items-center justify-center my-2">
+                <LightsaberFightLoader
+                  label="Connecting Live Audio Stream..."
+                  sublabel="Handshaking WebRTC audio channel to YZER AI Creative Director"
+                  scale={0.85}
+                />
               </div>
             )}
 

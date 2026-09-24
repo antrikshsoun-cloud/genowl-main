@@ -25,6 +25,7 @@ import { sendSlotBookingEmail } from '../services/emailService.ts';
 import { syncOrderToSupabase } from '../services/supabaseClient.ts';
 import { submitBookingToHostinger, submitProjectLeadToHostinger } from '../services/hostingerDbService.ts';
 import { getStylesForService } from '../data/serviceStyles.ts';
+import LightsaberFightLoader from './LightsaberFightLoader.tsx';
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -373,7 +374,18 @@ export default function OrderModal({
           </div>
         ) : (
           /* STEP 1: PROJECT BRIEF & SLOT BOOKING FORM */
-          <div>
+          <div className="relative">
+            {/* Lightsaber Fight Loading Overlay during Submission */}
+            {isSubmitting && (
+              <div className="absolute inset-0 -m-6 sm:-m-8 bg-[#070a07]/95 backdrop-blur-md z-40 flex flex-col items-center justify-center p-6 rounded-3xl">
+                <LightsaberFightLoader
+                  label="Synthesizing Custom Architecture..."
+                  sublabel="Connecting to Hostinger Database & Securing Dedicated Sprint Slot..."
+                  scale={1.2}
+                />
+              </div>
+            )}
+
             <div className="mb-4">
               <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                 Book Project Slot

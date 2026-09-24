@@ -213,3 +213,8 @@ ode build_standalone.js and regenerated deploy_hostinger_latest.zip (556 KB) con
     - **Kinetic Laser Bracket Animation (.genowl-nav-bracket)**: Clamping dual-rail top/bottom laser borders (#c6f554) with expanding holographic glass fill applied to both Desktop and Mobile drawer menus.
     - **Mobile Touch-Drag Illumination**: Continuous finger touch-drag tracking (onTouchMove) via document.elementFromPoint() enabling mobile visitors to paint neon light across the 3D voxel cube.
     - **Production Packaging & Git**: Single-bundle standalone index.html (1.18 MB) compiled, deploy_hostinger_latest.zip (562 KB) refreshed, committed and pushed to origin/main.
+
+16. **Lightsaber Fight Duel Loader Integration (September 25, 2026)**:
+    - **Original Lightsaber Fight Loader (LightsaberFightLoader.tsx)**: 100% CSS animation with original green (#87c054) and red (#f06363) blades, blade expansion, 410° clashing swing physics, and 5 radial spark particles.
+    - **Modal Integration**: Embedded as the primary loading state in OrderModal.tsx (during project slot reservation) and VapiVoiceCallModal.tsx (during WebRTC audio stream handshake).
+    - **Production Packaging & Git**: Single-bundle standalone index.html (1.18 MB) compiled, deploy_hostinger_latest.zip (563 KB) refreshed, committed and pushed to origin/main.
