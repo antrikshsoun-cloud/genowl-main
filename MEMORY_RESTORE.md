@@ -208,3 +208,8 @@ ode build_standalone.js and regenerated deploy_hostinger_latest.zip (556 KB) con
     - **Dynamic Multi-Color Flow**: Eliminated manual color pickers; sweeping across the cube lights up Green -> Yellow -> Blue -> Pink, blooming into an organic multi-color neon matrix with a 1.5s phosphor decay trail.
     - **Eliminated Obscured Text**: Removed overlapping hint pills; guaranteed full vertical stage clearance (min-h-[460px]).
     - **Production Sync**: Rebuilt standalone index.html (1.18 MB), updated deploy_hostinger_latest.zip (562 KB), committed and pushed to origin/main.
+
+15. **Kinetic Laser Clamping Navbar Animation & Mobile Touch-Drag Engine (September 25, 2026)**:
+    - **Kinetic Laser Bracket Animation (.genowl-nav-bracket)**: Clamping dual-rail top/bottom laser borders (#c6f554) with expanding holographic glass fill applied to both Desktop and Mobile drawer menus.
+    - **Mobile Touch-Drag Illumination**: Continuous finger touch-drag tracking (onTouchMove) via document.elementFromPoint() enabling mobile visitors to paint neon light across the 3D voxel cube.
+    - **Production Packaging & Git**: Single-bundle standalone index.html (1.18 MB) compiled, deploy_hostinger_latest.zip (562 KB) refreshed, committed and pushed to origin/main.

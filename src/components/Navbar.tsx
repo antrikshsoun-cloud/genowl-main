@@ -69,8 +69,8 @@ export default function Navbar({
           id="navbar-container"
           className="relative flex items-center gap-4 sm:gap-6 px-3 sm:px-5 py-1.5 sm:py-2 rounded-full bg-[#0d140e]/85 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] transition-all duration-300"
         >
-          {/* Desktop Navigation Links with Spring LayoutId Morphing */}
-          <ul id="desktop-nav-links" className="hidden md:flex items-center gap-1 text-xs font-medium relative">
+          {/* Desktop Navigation Links with Kinetic Laser Clamp Brackets */}
+          <ul id="desktop-nav-links" className="hidden md:flex items-center gap-1.5 text-xs font-medium relative">
             {navLinks.map((link) => {
               const isActive = currentPage.toLowerCase() === link.id.toLowerCase();
               return (
@@ -78,19 +78,10 @@ export default function Navbar({
                   <button
                     type="button"
                     onClick={() => onNavigate(link.id)}
-                    className={`relative z-10 px-3.5 py-1.5 rounded-full transition-colors duration-200 cursor-pointer ${
-                      isActive ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white'
-                    }`}
+                    className={`genowl-nav-bracket ${isActive ? 'is-active' : ''}`}
                   >
                     {link.label}
                   </button>
-                  {isActive && (
-                    <motion.div
-                      layoutId="navbar-active-pill"
-                      transition={{ type: 'spring', stiffness: 220, damping: 26, mass: 0.7 }}
-                      className="absolute inset-0 rounded-full bg-white/[0.09] border border-[#c6f554]/40 shadow-[0_0_12px_rgba(198,245,84,0.25)]"
-                    />
-                  )}
                 </li>
               );
             })}
@@ -228,25 +219,26 @@ export default function Navbar({
                 </div>
               )}
 
-              <ul className="space-y-1">
-                {navLinks.map((link) => (
-                  <li key={link.id}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onNavigate(link.id);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                        currentPage.toLowerCase() === link.id.toLowerCase()
-                          ? 'bg-white/10 text-white font-medium'
-                          : 'text-zinc-400 hover:text-white'
-                      }`}
-                    >
-                      {link.label}
-                    </button>
-                  </li>
-                ))}
+              <ul className="space-y-2">
+                {navLinks.map((link) => {
+                  const isActive = currentPage.toLowerCase() === link.id.toLowerCase();
+                  return (
+                    <li key={link.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onNavigate(link.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`genowl-nav-bracket w-full !justify-start !text-left !px-4 !py-3 !text-sm ${
+                          isActive ? 'is-active' : ''
+                        }`}
+                      >
+                        {link.label}
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
 
               <div className="pt-2 border-t border-white/10 space-y-2">

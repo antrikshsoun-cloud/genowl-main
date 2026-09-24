@@ -364,6 +364,25 @@ export default function TechVoxelMatrix({ onNavigateContact, onOpenOrder }: Tech
     }
   };
 
+  // Mobile finger drag continuous light-painting handler
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isCascading) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (element && element.classList.contains('voxel-block')) {
+      const idxStr = element.getAttribute('data-node-index');
+      if (idxStr !== null) {
+        const idx = parseInt(idxStr, 10);
+        if (!isNaN(idx) && TECH_NODES[idx]) {
+          setActiveNode(TECH_NODES[idx]);
+          element.classList.add('is-active');
+          setTimeout(() => element.classList.remove('is-active'), 1200);
+        }
+      }
+    }
+  };
+
   // 3 Layers (each 3 columns of 3 blocks = 9 * 3 = 27 blocks)
   const columnsData = [
     { x: -1, y: 0, items: [3, 2, 1] },
@@ -434,8 +453,11 @@ export default function TechVoxelMatrix({ onNavigateContact, onOpenOrder }: Tech
             </button>
           </div>
 
-          {/* Isometric Voxel Cube Stage (Strictly Sized, Absolutely NO Text Underneath) */}
-          <div className="voxel-stage w-full scale-[0.80] sm:scale-90 md:scale-100 transition-transform">
+          {/* Isometric Voxel Cube Stage (Strictly Sized, Mobile Touch-Drag Enabled) */}
+          <div 
+            onTouchMove={handleTouchMove}
+            className="voxel-stage w-full scale-[0.74] sm:scale-90 md:scale-100 transition-transform touch-none"
+          >
             <div className="voxel-container">
               {[0, 1, 2].map((layerIndex) => (
                 <div key={layerIndex} className="voxel-layer">
@@ -456,6 +478,7 @@ export default function TechVoxelMatrix({ onNavigateContact, onOpenOrder }: Tech
                         return (
                           <span
                             key={itemIdx}
+                            data-node-index={globalIndex}
                             className={`voxel-block ${isLightActive ? 'is-active' : ''}`}
                             style={{
                               '--i': itemI,
