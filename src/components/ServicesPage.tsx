@@ -4,6 +4,7 @@ import { Globe, Video, Brain, PenTool, CheckCircle2, ArrowRight, Sparkles, Box, 
 import ServicesFAQ from './ServicesFAQ.tsx';
 import TrustMetrics from './TrustMetrics.tsx';
 import Card3D from './Card3D.tsx';
+import ServicePillarCube3D from './ServicePillarCube3D.tsx';
 
 interface ServicesPageProps {
   onSelectService: (serviceName: string) => void;
@@ -126,6 +127,9 @@ export default function ServicesPage({ onSelectService, onNavigateContact }: Ser
           From high-converting <span className="text-white font-semibold">2D Websites</span> and cinema-grade <span className="text-[#c6f554] font-semibold">3D WebGL experiences</span>, to custom AI systems, Video &amp; Content. Basically, you choose, we book, and we build. 100% IP ownership guaranteed.
         </p>
       </div>
+
+      {/* Interactive 3D Services Architecture Cube */}
+      <ServicePillarCube3D onSelectService={onSelectService} />
 
       {/* Services Grid with Symmetric 1fr Row/Column Sizing and Equal Gaps */}
       <div className="grid grid-cols-1 md:grid-cols-2 md:auto-rows-fr gap-6 lg:gap-8 mb-16 items-stretch">

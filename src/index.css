@@ -60,3 +60,210 @@
 .animate-radar {
   animation: radarSweep 10s linear infinite;
 }
+
+/* 3D Interactive Architecture Cube Sheen & Specular Lighting */
+.cube-face {
+  backface-visibility: visible;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.cube-face::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 20%, rgba(255, 255, 255, 0.15) 50%, transparent 80%);
+  top: -100%;
+  left: -100%;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateZ(20px);
+  pointer-events: none;
+}
+
+.cube-face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.cube-face:hover::before {
+  top: 100%;
+  left: 100%;
+}
+
+.cube-face:hover::after {
+  opacity: 1;
+}
+
+/* 3D Isometric Extruded Social Grid (Footer) */
+.iso-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 16px;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 10px 12px 14px 14px;
+  perspective: 1000px;
+}
+
+@media (min-width: 640px) {
+  .iso-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    max-width: 860px;
+    gap: 16px 20px;
+    padding: 12px 16px 16px 16px;
+  }
+}
+
+.iso-grid-item {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  transition: z-index 0.3s ease;
+}
+
+.iso-grid-item:hover,
+.iso-grid-item:active {
+  z-index: 20;
+}
+
+.iso-card {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 180px;
+  height: 52px;
+  background: #0d150e;
+  text-align: left;
+  padding-left: 12px;
+  padding-right: 8px;
+  transform: rotate(-18deg) skew(16deg) translate(0, 0);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, background 0.35s ease, border-color 0.35s ease;
+  box-shadow: -12px 12px 10px rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  position: relative;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.iso-card::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: -12px;
+  height: 100%;
+  width: 12px;
+  background: #070c08;
+  transition: background 0.35s ease, border-color 0.35s ease;
+  transform: rotate(0deg) skewY(-45deg);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.iso-card::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: -6px;
+  height: 12px;
+  width: 100%;
+  background: #111a12;
+  transition: background 0.35s ease, border-color 0.35s ease;
+  transform: rotate(0deg) skewX(-45deg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.iso-card:hover,
+.iso-card:active,
+.iso-card:focus-visible {
+  transform: rotate(-18deg) skew(16deg) translate(12px, -8px);
+  box-shadow: -24px 24px 20px rgba(0, 0, 0, 0.85);
+  z-index: 20;
+}
+
+/* Channel 1: 𝕏 / Twitter */
+.iso-card-x:hover,
+.iso-card-x:active {
+  background: #0a110b;
+  border-color: #c6f554;
+  box-shadow: -32px 32px 28px rgba(198, 245, 84, 0.28);
+}
+.iso-card-x:hover::before,
+.iso-card-x:active::before {
+  background: #050805;
+  border-color: rgba(198, 245, 84, 0.45);
+}
+.iso-card-x:hover::after,
+.iso-card-x:active::after {
+  background: #142217;
+  border-color: rgba(198, 245, 84, 0.45);
+}
+
+/* Channel 2: Instagram */
+.iso-card-instagram:hover,
+.iso-card-instagram:active {
+  background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+  border-color: #e4405f;
+  box-shadow: -32px 32px 28px rgba(228, 64, 95, 0.35);
+}
+.iso-card-instagram:hover::before,
+.iso-card-instagram:active::before {
+  background: #682691;
+  border-color: rgba(228, 64, 95, 0.4);
+}
+.iso-card-instagram:hover::after,
+.iso-card-instagram:active::after {
+  background: #b82b47;
+  border-color: rgba(228, 64, 95, 0.4);
+}
+
+/* Channel 3: YZER Voice Hotline */
+.iso-card-voice:hover,
+.iso-card-voice:active {
+  background: #053b49;
+  border-color: #00f2fe;
+  box-shadow: -32px 32px 28px rgba(0, 242, 254, 0.35);
+}
+.iso-card-voice:hover::before,
+.iso-card-voice:active::before {
+  background: #032731;
+  border-color: rgba(0, 242, 254, 0.4);
+}
+.iso-card-voice:hover::after,
+.iso-card-voice:active::after {
+  background: #09596e;
+  border-color: rgba(0, 242, 254, 0.4);
+}
+
+/* Channel 4: Support Email */
+.iso-card-email:hover,
+.iso-card-email:active {
+  background: #473202;
+  border-color: #f7cc46;
+  box-shadow: -32px 32px 28px rgba(247, 204, 70, 0.35);
+}
+.iso-card-email:hover::before,
+.iso-card-email:active::before {
+  background: #2e2001;
+  border-color: rgba(247, 204, 70, 0.4);
+}
+.iso-card-email:hover::after,
+.iso-card-email:active::after {
+  background: #6e4d03;
+  border-color: rgba(247, 204, 70, 0.4);
+}
+
